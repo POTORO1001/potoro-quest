@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>ポ・トロクエスト v21（iPhone縦UI）</title>
+<style>
+  :root{ --ui:#101522; --fg:#eef2ff; --acc:#ff7ad6; --pad:12px; }
+  *{ box-sizing:border-box; -webkit-user-select:none; user-select:none; touch-action:manipulation; }
+  html,body{ height:100%; margin:0; background:#0b0f18; color:var(--fg);
+    font-family:ui-sans-serif,system-ui,"Hiragino Kaku Gothic ProN",Meiryo,sans-serif; }
+  .app{ min-height:100%; display:flex; flex-direction:column; gap:8px;
+    padding:env(safe-area-inset-top) var(--pad) calc(96px + env(safe-area-inset-bottom)) var(--pad); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .title{ font-weight:800; color:var(--acc); }
+  .small{ opacity:.9; font-size:12px; }
+  .screen{ display:flex; justify-content:center; }
+  canvas{ image-rendering:pixelated; width:100%; max-width:100vw; height:auto; background:#000;
+    border-radius:12px; outline:1px solid #2b3246; }
+  .toolbar{ display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-top:2px; }
+  .btn{ background:#1a2238; color:#e8ecff; border:1px solid #34406a; border-radius:10px; padding:8px 12px; font-weight:700; }
+  .btn:active{ transform:translateY(1px); }
+  /* On-screen controls */
+  .controls{ position:fixed; left:0; right:0; bottom:0;
+    padding:8px env(safe-area-inset-right) calc(8px + env(safe-area-inset-bottom)) env(safe-area-inset-left);
+    display:flex; align-items:flex-end; justify-content:space-between; gap:8px;
+    background:linear-gradient(180deg, rgba(11,15,24,0), rgba(11,15,24,.75)); }
+  .dpad{ display:grid; grid-template-columns:56px 56px 56px; grid-template-rows:56px 56px 56px; gap:6px; }
+  .dpad .sp{ visibility:hidden; }
+  .btnc{ width:56px; height:56px; border-radius:12px; border:1px solid #34406a; background:#111729; color:#e8ecff;
+    font-weight:900; font-size:16px; display:flex; align-items:center; justify-content:center; }
+  .btnc:active{ transform:scale(0.98); background:#0d1220; }
+  .actions{ display:grid; grid-template-columns:repeat(3,88px); gap:6px; align-items:end; }
+  .btnL{ width:88px; height:56px; border-radius:12px; border:1px solid #34406a; background:#17213a; color:#e8ecff; font-weight:800; }
+  .btnL:active{ transform:scale(0.98); background:#121a2e; }
+  @media (min-width:560px){
+    .actions{ grid-template-columns:repeat(3,110px); }
+    .btnL{ height:64px; }
+    .btnc{ width:64px; height:64px; }
+    .dpad{ grid-template-columns:64px 64px 64px; grid-template-rows:64px 64px 64px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div>
+      <div class="title">ポ・トロクエスト v21</div>
+      <div class="small">iPhone縦レイアウト：フルマップ表示＋仮想ボタン（タップ対応）</div>
+    </div>
+    <div class="toolbar">
+      <button class="btn" id="btnEquip">装備</button>
+      <button class="btn" id="btnMute">効果音: ON</button>
+      <button class="btn" id="btnReset">最初から</button>
+      <button class="btn" id="btnStart">開始</button>
+      <button class="btn" id="btnFull">全画面</button>
+    </div>
+  </div>
+
+  <div class="screen">
+    <canvas id="game" width="320" height="240" aria-label="game canvas"></canvas>
+  </div>
+</div>
+
+<!-- On-screen controls -->
+<div class="controls">
+  <div class="dpad">
+    <div class="sp"></div>
+    <button class="btnc" data-k="ArrowUp">▲</button>
+    <div class="sp"></div>
+    <button class="btnc" data-k="ArrowLeft">◀</button>
+    <div class="sp"></div>
+    <button class="btnc" data-k="ArrowRight">▶</button>
+    <div class="sp"></div>
+    <button class="btnc" data-k="ArrowDown">▼</button>
+    <div class="sp"></div>
+  </div>
+  <div class="actions">
+    <button class="btnL" data-k="Enter">OK</button>
+    <button class="btnL" data-k="KeyX" data-alt="Escape">戻る</button>
+    <button class="btnL" id="btnActEquip">装備</button>
+  </div>
+</div>
+
+<script>
+/* ======== Core data & state ======== */
+const VIEW_W=320, VIEW_H=240, TILE=16;
+const MAP=[
+ [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+ [1,0,0,0,1,0,0,0,0,0,1,0,3,0,0,0,1,0,0,1],
+ [1,0,1,0,1,0,1,1,1,0,1,0,1,1,1,0,1,0,0,1],
+ [1,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,1,1,0,1],
+ [1,0,1,1,1,1,0,1,1,1,1,1,0,1,1,0,0,1,0,1],
+ [1,0,0,0,0,1,0,0,0,0,3,1,0,0,0,0,0,1,0,1],
+ [1,1,1,1,0,1,1,1,1,0,1,1,1,1,0,1,0,1,0,1],
+ [1,0,0,1,0,0,0,0,1,0,0,0,0,1,0,1,0,1,0,1],
+ [1,0,1,1,1,1,1,0,1,1,1,1,0,1,0,1,0,1,0,1],
+ [1,0,0,0,0,0,1,0,0,0,0,1,0,1,0,0,0,0,0,1],
+ [1,0,1,1,1,0,1,1,1,1,0,1,0,1,1,1,1,1,0,1],
+ [1,0,0,0,1,0,0,0,3,1,0,0,0,0,0,0,0,1,2,1],
+ [1,1,1,0,1,1,1,0,1,1,1,1,1,1,1,1,0,1,6,1],
+ [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,3,1],
+ [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+];
+// 0:木目通路 / 1:壁(緑) / 2:重扉 / 3:宝箱 / 4:空箱 / 6:ボス
+
+const WEAPONS=[
+  {id:"duster", name:"フェザーダスター", atk:2},
+  {id:"broom", name:"マジカルホーキ", atk:4},
+  {id:"vacuum_ex", name:"異国の掃除機", atk:7},
+];
+const UNIFORMS=[
+  {id:"legs_stocking", slot:"legs", name:"黒のストッキング", def:2},
+  {id:"body_apron", slot:"body", name:"純白エプロン", def:4},
+  {id:"head_ribbon", slot:"head", name:"メイドカチューシャ", def:7},
+  {id:"body_replica6", slot:"body", name:"六代目メイド服(レプリカ)", def:7}, // レア(宝箱のみ/1/500)
+];
+const ITEMS=[
+  {id:"omurice", name:"オムライス", kind:"healHP", power:20},
+  {id:"tea", name:"紅茶", kind:"healMP", power:10},
+  {id:"horse", name:"くろれきし", kind:"insta", power:0}, // 旧おうまさん
+];
+
+const heroBase={name:"まろ（見習いメイド）", lv:1, hp:24, maxhp:24, mp:8, maxmp:8, atk:5, def:2, exp:0,
+  weapon:null, u_legs:null, u_body:null, u_head:null,
+  invW:[WEAPONS[0]], invU:[UNIFORMS[0]], invI:[{id:"omurice",qty:1},{id:"tea",qty:1},{id:"horse",qty:1}] };
+
+let ENEMIES=[
+  {name:"定時のご主人様", hp:18, atk:4, def:1, exp:9},
+  {name:"残業のご主人様", hp:24, atk:6, def:2, exp:14},
+  {name:"叱責を受けたご主人様", hp:28, atk:7, def:2, exp:18},
+];
+let BOSS={name:"残業かつ叱責されたご主人様", hp:60, atk:9, def:3, exp:55, boss:true};
+
+const CHEST_LOOT={
+  "12,1": {type:"weapon", item:WEAPONS[1]},
+  "10,5": {type:"uniform", item:UNIFORMS[1]},
+  "8,11":  {type:"uniform", item:UNIFORMS[2]},
+  "18,13": {type:"weapon", item:WEAPONS[2]},
+};
+
+// ---------- Audio ----------
+let mute=false;
+function audio(){ try{ return audio.ctx||(audio.ctx=new(window.AudioContext||window.webkitAudioContext)()); }catch(e){ return null; } }
+function tone(f=440,ms=70,type='square',vol=0.5, when=0){ if(mute) return; const c=audio(); if(!c) return; const o=c.createOscillator(), g=c.createGain(); o.type=type; o.frequency.value=f; g.gain.value=vol; o.connect(g); g.connect(c.destination); const t=c.currentTime+when/1000; o.start(t); o.stop(t+ms/1000); }
+function seq(steps){ let offset=0; for(const s of steps){ tone(s.f,s.ms,s.type||'sine', s.vol??0.5, offset); offset+= (s.wait ?? s.ms); }}
+
+// ---------- Global State ----------
+let state={ hero:JSON.parse(JSON.stringify(heroBase)), x:1,y:1,facing:2, mode:"title",
+  dialogQueue:[], battle:null, bossAlive:true, openedChests:{}, title:{blink:0,show:true}, nameMode:false, playerName:null,
+  popups:[], maxPopups:4, shakeT:0, shakeMag:0, shakeDur:0, shakeDecay:0.8 };
+
+const cvs=document.getElementById('game'); const ctx=cvs.getContext('2d');
+// 1x1透明をデフォルト（画像が無くてもOK）
+const logoImg=new Image(); logoImg.src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="; let logoReady=false; logoImg.onload=()=>{logoReady=true;};
+
+// ---------- Rendering ----------
+function draw(){
+  ctx.save();
+  if(state.shakeT>0){
+    const ratio = state.shakeT / state.shakeDur;
+    const s = state.shakeMag * ratio;
+    const dx = (Math.random()*2-1)*s;
+    const dy = (Math.random()*2-1)*s;
+    ctx.translate(dx,dy);
+  }
+  if(state.mode==="title") { drawTitle(); ctx.restore(); return; }
+  // map
+  for(let j=0;j<15;j++){ for(let i=0;i<20;i++){ let t=MAP[j][i]; if(t===3 && state.openedChests[i+","+j]) t=4;
+    if(MAP[j][i]===0) drawWood(i*16,j*16,16,16);
+    else { ctx.fillStyle="#1f3b2d"; ctx.fillRect(i*16,j*16,16,16); ctx.fillStyle="#28543d"; for(let k=0;k<16;k+=4) ctx.fillRect(i*16, j*16+k, 16, 1); }
+  }}
+  for(let j=0;j<15;j++){ for(let i=0;i<20;i++){ const t=MAP[j][i];
+    if(t===3 || (t===4 && !state.openedChests[i+","+j])){ ctx.fillStyle="#b48a3c"; ctx.fillRect(i*16+3,j*16+5,10,8); ctx.fillStyle="#6d5b2c"; ctx.fillRect(i*16+3,j*16+9,10,1); }
+    else if(t===4 && state.openedChests[i+","+j]){ ctx.fillStyle="#6d5b2c"; ctx.fillRect(i*16+3,j*16+9,10,4); ctx.fillStyle="#b48a3c"; ctx.fillRect(i*16+3,j*16+5,10,3); }
+    else if(t===2){ ctx.fillStyle="#264a36"; ctx.fillRect(i*16+2,j*16+2,12,12); }
+    else if(t===6){ ctx.fillStyle="#3fa36b"; ctx.fillRect(i*16+4,j*16+4,8,8); }
+  }}
+  drawText("玄関ホール",18,4,"#a4e0b0"); drawText("大広間",256,212,"#7ad39f");
+  drawMaid(state.x,state.y,state.facing); drawHUD();
+  if(state.mode==="dialog") drawDialog(); else if(state.mode==="battle") drawBattle(); else if(state.mode==="equip") drawEquip();
+  // FX front
+  drawPopups();
+  ctx.restore();
+}
+function drawWood(x,y,w,h){ ctx.fillStyle="#8a6b3a"; ctx.fillRect(x,y,w,h); ctx.fillStyle="#b48a3c"; for(let k=2;k<h;k+=4) ctx.fillRect(x, y+k, w, 1); ctx.fillStyle="#7a5f33"; for(let k=3;k<w;k+=6) ctx.fillRect(x+k, y+1, 1, h-2); }
+function drawTitle(){ ctx.fillStyle="#0b0f18"; ctx.fillRect(0,0,320,240); for(let i=0;i<240;i+=8){ ctx.fillStyle=(i/8)%2? "#111a2a":"#0e1626"; ctx.fillRect(0,i,320,8); }
+  if(logoReady) ctx.drawImage(logoImg,(320-200)/2,28,200,200);
+  drawTitleText("ポ・トロクエスト",160,12); if(state.title.show) drawText("PRESS START",104,212,"#e8ecff");
+}
+function drawTitleText(t,cx,y){ ctx.fillStyle="#ff7ad6"; ctx.font="bold 16px sans-serif"; ctx.textBaseline="top"; const w=ctx.measureText(t).width; ctx.fillText(t,cx-w/2,y); }
+function drawText(t,x,y,c="#fff",font="10px monospace"){ ctx.fillStyle=c; ctx.font=font; ctx.textBaseline="top"; ctx.fillText(t,x,y); }
+function drawMaid(tx,ty,dir){ const x=tx*16,y=ty*16,h=state.hero; ctx.fillStyle="#6b3f2a"; ctx.fillRect(x+5,y+2,6,4); ctx.fillStyle="#ffecd6"; ctx.fillRect(x+6,y+5,4,4); ctx.fillStyle="#ffd6f2"; ctx.fillRect(x+5,y+9,6,7);
+  if(h.u_body){ ctx.fillStyle="#ffffff"; ctx.fillRect(x+6,y+10,4,4); }
+  const legsCol=h.u_legs?"#2b2b3a":"#222"; ctx.fillStyle=legsCol; ctx.fillRect(x+5,y+16,2,2); ctx.fillRect(x+9,y+16,2,2);
+  if(h.u_head){ ctx.fillStyle="#ff9ad6"; ctx.fillRect(x+7,y+1,2,2); }
+  if(dir===1){ ctx.fillStyle="#ff9ad6"; ctx.fillRect(x+11,y+7,2,2); }
+  if(dir===3){ ctx.fillStyle="#ff9ad6"; ctx.fillRect(x+3,y+7,2,2); }
+}
+function drawPanel(x,y,w,h){ ctx.fillStyle="rgba(16,21,34,.92)"; ctx.fillRect(x,y,w,h); ctx.strokeStyle="#2b3246"; ctx.strokeRect(x+0.5,y+0.5,w-1,h-1); }
+function totalDef(h){ return h.def + (h.u_legs?h.u_legs.def:0) + (h.u_body?h.u_body.def:0) + (h.u_head?h.u_head.def:0); }
+function drawHUD(){ ctx.fillStyle="rgba(0,0,0,.55)"; ctx.fillRect(0,0,320,18); const h=state.hero; const atk=h.atk+(h.weapon?h.weapon.atk:0), def=totalDef(h);
+  drawText(`${h.name}  LV:${h.lv}  HP:${h.hp}/${h.maxhp}  MP:${h.mp}/${h.maxmp}  ATK:${atk}  DEF:${def}`,4,4,"#fff"); }
+function drawDialog(){ const lines=state.dialogQueue.length?state.dialogQueue[0].split("\n"):["..."]; drawPanel(8,160,304,72);
+  for(let i=0;i<lines.length;i++) drawText(lines[i],14,166+i*12); drawText("▼ タップ/OKで進む",184,222,"#a4b0ff"); }
+function drawBattle(){ const b=state.battle,h=state.hero,e=b.enemy; drawPanel(8,20,304,208);
+  drawText("《戦闘》",16,24,"#fff"); drawText(`${e.name}  HP:${e.hp}`,16,40,"#ffd37a"); drawText(`${h.name}  HP:${h.hp}/${h.maxhp} MP:${h.mp}/${h.maxmp}`,144,40,"#7ad3ff");
+  let y=56; for(let i=0;i<Math.min(6,b.log.length); i++){ const idx=b.log.length-1-i; drawText(b.log[idx],16,y,"#ddd"); y+=12; }
+  if(b.phase==="select"){ const menu=["いやす","おまじない","ぼうぎょ","どうぐ"]; const cols=2,w=120,hgt=18; let mx=320-8-cols*w-8,my=240-8-2*hgt-8; drawPanel(mx,my,cols*w+8,2*hgt+8);
+    for(let i=0;i<menu.length;i++){ const cx=mx+4+(i%cols)*w, cy=my+4+Math.floor(i/cols)*hgt; const sel=(b.sel||0)===i; ctx.fillStyle=sel?"rgba(255,122,214,.25)":"transparent"; ctx.fillRect(cx,cy,w,hgt); drawText(menu[i],cx+4,cy+4,sel?"#ffd6f2":"#fff"); }
+  } else if(b.phase==="omajinai"){ drawPanel(20,56,280,120); drawText("《おまじない》 ↑↓で選択 / OKで実行 / 戻るで戻る",28,60,"#fff");
+    const list=["もえもえぎゅー (MP5)","おいしくなーれ (MP10)"];
+    for(let i=0;i<list.length;i++){ const y2=78+i*14, sel=(b.omSel||0)===i; if(sel){ ctx.fillStyle="rgba(255,122,214,.22)"; ctx.fillRect(24,y2-2,272,14); } drawText(list[i],32,y2, sel?"#ffe6f7":"#fff"); }
+  } else if(b.phase==="item") drawItemMenu();
+  else if(b.phase==="inter") drawText("ターン終了。次のターンへ（OK）",16,212,"#a4b0ff");
+}
+function drawItemMenu(){ const h=state.hero; const list=h.invI.filter(it=>it.qty>0); drawPanel(20,56,280,120);
+  drawText("《どうぐ》 ↑↓で選択 / OKで使用 / 戻るで戻る",28,60,"#fff");
+  if(list.length===0){ drawText("まだ何も持っていない…",28,76,"#ddd"); return; }
+  for(let i=0;i<list.length;i++){ const y=78+i*14, sel=(state.battle.itemSel||0)===i; if(sel){ ctx.fillStyle="rgba(122,225,255,.22)"; ctx.fillRect(24,y-2,272,14); }
+    const base=ITEMS.find(x=>x.id===list[i].id); const label = `${base.name} ×${list[i].qty}`; drawText(label,32,y, sel?"#e7faff":"#fff"); }
+}
+
+// ---------- FX ----------
+function addPopup(x,y,text,color="#fff",size=12,up=20,stay=400,fade=200){
+  if(state.popups.length>=state.maxPopups) state.popups.shift();
+  state.popups.push({x,y,text,color,size,vy:-up/stay,life:stay+fade,stay,fade});
+}
+function drawPopups(){
+  const arr=state.popups;
+  for(let i=arr.length-1;i>=0;i--){
+    const p=arr[i]; const total=p.stay+p.fade; const gone = total - p.life;
+    let alpha=1; if(gone>p.stay) alpha=Math.max(0,1-(gone-p.stay)/p.fade);
+    const yy = p.y - (gone * (-p.vy));
+    ctx.globalAlpha=alpha; drawText(p.text, p.x, yy, p.color, `bold ${p.size}px monospace`); ctx.globalAlpha=1;
+    p.life--; if(p.life<=0) arr.splice(i,1);
+  }
+}
+function startShake(mag=6, dur=120, decay=0.8){
+  state.shakeMag=mag; state.shakeDur=dur; state.shakeT=dur; state.shakeDecay=decay;
+}
+
+// ---------- Input & Loop ----------
+const keys={}; document.addEventListener('keydown',e=>{ keys[e.code]=true; if(e.code==="Space") e.preventDefault(); if(state.mode==="title" && (e.code==="Enter"||e.code==="Space")) startNameEntry(); });
+document.addEventListener('keyup',e=>{ delete keys[e.code]; });
+let last=0,acc=0; function loop(ts){ const dt=(ts-last)/1000; last=ts; acc+=dt; while(acc>1/60){ update(1/60); acc-=1/60; } draw(); requestAnimationFrame(loop); } requestAnimationFrame(loop);
+let moveCooldown=0, actionCooldown=0; function pressed(a){ return a.some(k=>keys[k]); }
+function update(dt){ if(state.mode==='title') return titleUpdate(dt);
+  if(state.mode==='dialog'){ if(pressed(["Enter","Space"]) && actionCooldown<=0){ actionCooldown=0.18; state.dialogQueue.shift(); if(state.dialogQueue.length===0) state.mode='field'; } }
+  else if(state.mode==='battle') battleUpdate(dt);
+  else if(state.mode==='equip') equipUpdate(dt);
+  else fieldUpdate(dt);
+  moveCooldown=Math.max(0,moveCooldown-dt); actionCooldown=Math.max(0,actionCooldown-dt);
+  if(state.shakeT>0){ state.shakeT -= dt*1000; if(state.shakeT<0) state.shakeT=0; }
+}
+function titleUpdate(dt){ state.title.blink+=dt; if(state.title.blink>=0.6){ state.title.blink=0; state.title.show=!state.title.show; } }
+
+// 名前入力（iPhone向けに prompt 採用）
+function startNameEntry(){
+  armAudio();
+  const ask=() => {
+    const v = prompt("お名前を決めてください（12文字まで）","");
+    if(v===null) return false;
+    const name=(v||"").trim().slice(0,12);
+    if(!name){ alert("名前を入力してください"); return ask(); }
+    state.hero.name=name; state.playerName=name; return true;
+  };
+  if(ask()) state.mode='field';
+}
+
+// ---------- Field ----------
+function fieldUpdate(dt){
+  const dx=(keys["ArrowRight"]||keys["KeyD"])?1:(keys["ArrowLeft"]||keys["KeyA"])?-1:0;
+  const dy=(keys["ArrowDown"]||keys["KeyS"])?1:(keys["ArrowUp"]||keys["KeyW"])?-1:0;
+  if(moveCooldown<=0 && (dx||dy)){
+    const nx=Math.max(0,Math.min(19,state.x+dx)), ny=Math.max(0,Math.min(14,state.y+dy)); let t=MAP[ny][nx];
+    if(t!==1){
+      state.x=nx; state.y=ny; moveCooldown=0.12;
+      if(dx>0) state.facing=1; else if(dx<0) state.facing=3; else if(dy<0) state.facing=0; else if(dy>0) state.facing=2;
+      if(t===0 && Math.random()<0.12) startBattle(copyEnemy(ENEMIES[Math.floor(Math.random()*ENEMIES.length)]));
+      if(t===2){ state.mode='dialog'; state.dialogQueue=["重厚な扉がゆっくりと開いた…","大広間から気配を感じる。"]; }
+      if(t===6 && state.bossAlive){ state.mode='dialog'; state.dialogQueue=[ `${BOSS.name}：「ここまで来たか。屋敷の作法、見せてみろ！」`, "—— 戦闘開始 ——" ]; queueAfterDialog(()=>startBattle(copyEnemy(BOSS))); }
+      if(t===3){
+        const key=nx+","+ny;
+        if(!state.openedChests[key]){
+          const loot=CHEST_LOOT[key];
+          if(loot){ giveLoot(loot); state.openedChests[key]=true; seq([{f:880,ms:60,type:'square',vol:0.5},{f:1320,ms:60,type:'square',vol:0.5}]); }
+          else state.openedChests[key]=true;
+          state.mode='dialog'; const got = loot ? loot.item.name : "なにか"; state.dialogQueue=[`宝箱をあけた！`,`「${got}」を手に入れた！`];
+          // レア 1/500（重複無し）
+          try{
+            if(Math.random()<1/500){
+              const u=state.hero.invU;
+              if(!u.some(x=>x.id==="body_replica6")){
+                const rare=UNIFORMS.find(v=>v.id==="body_replica6");
+                if(rare){ u.push(rare); state.dialogQueue.push(`さらに「${rare.name}」を手に入れた！`); }
+              }
+            }
+          }catch(e){}
+        }
+      }
+    }
+  }
+  if(keys["KeyE"] && actionCooldown<=0){ actionCooldown=0.2; openEquip(); }
+}
+function queueAfterDialog(fn){ const orig=state.dialogQueue.shift.bind(state.dialogQueue);
+  state.dialogQueue.shift=function(){ const v=Array.prototype.shift.apply(this,arguments); if(this.length===0){ state.dialogQueue.shift=orig; fn(); } return v; } }
+function copyEnemy(t){ return JSON.parse(JSON.stringify(t)); }
+function hasItem(list, id){ return list.some(i=>i.id===id); }
+function giveLoot(loot){ const h=state.hero; if(loot.type==="weapon"){ if(!hasItem(h.invW, loot.item.id)) h.invW.push(loot.item); } else { if(!hasItem(h.invU, loot.item.id)) h.invU.push(loot.item); } }
+
+// ---------- Battle ----------
+function startBattle(enemy){ state.battle={enemy,phase:'select',log:[`「${enemy.name}」があらわれた！`],sel:0,turn:1,itemSel:0,defending:false,omSel:0}; state.mode='battle'; }
+function battleUpdate(dt){ const b=state.battle,h=state.hero,e=b.enemy;
+  if(b.phase==='select'){
+    if(keys["ArrowLeft"]&&b.sel%2===1) b.sel--;
+    if(keys["ArrowRight"]&&b.sel%2===0) b.sel++;
+    if(keys["ArrowUp"]&&b.sel>1) b.sel-=2;
+    if(keys["ArrowDown"]&&b.sel<2) b.sel+=2;
+    if((keys["Enter"]||keys["Space"]) && actionCooldown<=0){
+      actionCooldown=0.18;
+      if(b.sel===0){
+        const atk=h.atk+(h.weapon?h.weapon.atk:0); const dmg=Math.max(1, atk - e.def + Math.floor(Math.random()*3));
+        e.hp-=dmg; b.log.push(`${h.name}のいやしの一撃！ ${e.name}に${dmg}ダメージ！`);
+        addPopup(200,74, String(dmg), "#ffffff", 12, 20, 400, 200);
+        seq([{f:320,ms:70,type:'square',vol:0.5},{f:220,ms:70,type:'square',vol:0.5}]);
+        if(e.hp<=0) return winBattle(); enemyAct();
+      }else if(b.sel===1){
+        b.phase='omajinai'; b.omSel=0;
+      }else if(b.sel===2){
+        b.defending=true; b.log.push("身をかためた！ 次の攻撃のダメージを減少");
+        enemyAct();
+      }else if(b.sel===3){
+        b.phase='item'; b.itemSel=0;
+      }
+    }
+  }else if(b.phase==='omajinai'){
+    if(keys["ArrowUp"] && b.omSel>0) b.omSel--;
+    if(keys["ArrowDown"] && b.omSel<1) b.omSel++;
+    if(keys["Escape"]||keys["KeyX"]) b.phase='select';
+    if((keys["Enter"]||keys["Space"]) && actionCooldown<=0){
+      actionCooldown=0.18;
+      if(b.omSel===0){
+        if(h.mp>=5){ h.mp-=5; e.hp-=20; b.log.push("おまじない『もえもえぎゅー』！ 20ダメージ！");
+          addPopup(200,74, "20", "#ffffff", 12, 20, 400, 200);
+          seq([{f:660,ms:80,type:'square',vol:0.5},{f:990,ms:80,type:'square',vol:0.5}]);
+          if(e.hp<=0) return winBattle(); enemyAct(); }
+        else b.log.push("MPがたりない…");
+      }else{
+        if(h.mp>=10){ h.mp-=10; const gain=h.maxhp-h.hp; h.hp=h.maxhp; b.log.push(`おまじない『おいしくなーれ』！ HPが${gain}回復して全快！`);
+          if(gain>0) addPopup(96,74, "+"+gain, "#66e0ff", 12, 14, 350, 200);
+          seq([{f:523,ms:300,type:'sine',vol:0.5,wait:0},{f:659,ms:300,type:'sine',vol:0.5,wait:0},{f:784,ms:300,type:'sine',vol:0.5,wait:0}]);
+          enemyAct(); }
+        else b.log.push("MPがたりない…");
+      }
+    }
+  }else if(b.phase==='item'){
+    const list=h.invI.filter(it=>it.qty>0);
+    if(keys["ArrowUp"] && b.itemSel>0) b.itemSel--;
+    if(keys["ArrowDown"] && b.itemSel<Math.max(0,list.length-1)) b.itemSel++;
+    if(keys["Escape"]||keys["KeyX"]) b.phase='select';
+    if((keys["Enter"]||keys["Space"]) && actionCooldown<=0){
+      actionCooldown=0.18;
+      if(list.length===0){ b.log.push("まだ何も持っていない…"); b.phase='select'; return; }
+      const stack=list[b.itemSel]; const base=ITEMS.find(x=>x.id===stack.id);
+      if(!base){ b.phase='select'; return; }
+      useItem(base, stack, b, h, e);
+    }
+  }else if(b.phase==='inter'){
+    if((keys["Enter"]||keys["Space"]) && actionCooldown<=0){ actionCooldown=0.18; b.phase='select'; b.sel=0; b.turn++; }
+  }
+}
+function useItem(base, stack, b, h, e){
+  let msg="";
+  if(base.kind==="healHP"){
+    const before=h.hp; h.hp=Math.min(h.maxhp, h.hp+base.power);
+    const g=h.hp-before; msg=`${base.name}を食べた！ HPが${g}回復！`; if(g>0) addPopup(96,74,"+"+g,"#66e0ff",12,14,350,200);
+  }else if(base.kind==="healMP"){
+    const before=h.mp; h.mp=Math.min(h.maxmp, h.mp+base.power);
+    const g=h.mp-before; msg=`${base.name}を飲んだ！ MPが${g}回復！`; if(g>0) addPopup(96,90,"+"+g,"#5aa3ff",12,14,350,200);
+  }else if(base.kind==="insta"){
+    e.hp=0; msg=`${base.name}を召喚した！ ${e.name}はみるみるうちに倒れた！`; addPopup(200,74,"撃破！","#ffd700",16,20,400,200);
+  }
+  stack.qty=Math.max(0, stack.qty-1);
+  const inMain = state.hero.invI.find(s=>s.id===stack.id); if(inMain) inMain.qty=stack.qty;
+  b.log.push(msg);
+  if(e.hp<=0){ return winBattle(); }
+  enemyAct();
+}
+function enemyAttackMessage(name, dmg){
+  if(name==="残業かつ叱責されたご主人様") return `ご主人様から叱責されつつ残業と言われた時の気持ちが伝わる！！${dmg}ダメージをうけた！`;
+  if(name==="定時のご主人様") return `ご主人様から明日も仕事かの気持ちが伝わる！！${dmg}ダメージをうけた！`;
+  if(name==="残業のご主人様") return `ご主人様から残業と言われた時の気持ちが伝わる！！${dmg}ダメージをうけた！`;
+  if(name==="叱責を受けたご主人様" || name==="叱責されたご主人様") return `ご主人様から叱責された時の気持ちが伝わる！！${dmg}ダメージをうけた！`;
+  return `${name}のこうげき！ ${dmg}ダメージ！`;
+}
+function enemyAct(){ const b=state.battle,h=state.hero,e=b.enemy; const def=totalDef(h);
+  let dmg=Math.max(1, e.atk - def + Math.floor(Math.random()*3));
+  if(b.defending){ dmg=Math.floor(dmg/2); b.defending=false; }
+  h.hp-=dmg; addPopup(96,74,"-"+dmg,"#ff5555",12,16,350,200); startShake(6,120,0.8); seq([{f:180,ms:120,type:'sine',vol:0.5}]);
+  b.log.push(enemyAttackMessage(e.name, dmg));
+  if(h.hp<=0){ b.log.push(`${h.name}は倒れてしまった…`); setTimeout(()=>gameOver(),500); } else b.phase='inter';
+}
+function winBattle(){ const b=state.battle,h=state.hero,e=b.enemy; b.log.push(`${e.name}をたおした！`); seq([{f:523,ms:120,type:'sine',vol:0.5},{f:659,ms:120,type:'sine',vol:0.5},{f:784,ms:120,type:'sine',vol:0.5}]); h.exp+=e.exp;
+  const needNextBefore = h.lv*22 - h.exp; b.log.push(`EXP+${e.exp} / 次のレベルまで ${Math.max(0,needNextBefore)}`);
+  const need=h.lv*22; if(h.exp>=need){ h.exp-=need; h.lv++; h.maxhp+=6; h.maxmp+=2; h.atk+=2; h.def+=1; h.hp=h.maxhp; h.mp=h.maxmp; b.log.push(`レベルが${h.lv}になった！`); }
+  if(!e.boss && Math.random()<0.30){
+    const id = (Math.random()<0.5) ? "omurice" : "tea";
+    const base = ITEMS.find(x=>x.id===id);
+    const stack = h.invI.find(s=>s.id===id);
+    if(stack) stack.qty += 1; else h.invI.push({id, qty:1});
+    b.log.push(`「${base.name}」を手に入れた！`);
+  }
+  if(e.boss){ state.bossAlive=false; setTimeout(()=>{ state.mode='dialog'; state.dialogQueue=[ `${BOSS.name}：「見事だ。君は真のメイドだ！」`, " —— クリア！おめでとう 🎉 —— " ]; endBattle(true); },500); }
+  else setTimeout(()=>endBattle(true),300);
+}
+function endBattle(v){ state.mode='field'; state.battle=null; }
+function gameOver(){ state.mode='dialog'; state.dialogQueue=['目の前が真っ黒になった…','玄関ホールから出直そう。']; const lastName = state.hero && state.hero.name ? state.hero.name : (state.playerName||null); state.hero=JSON.parse(JSON.stringify(heroBase)); if(lastName){ state.hero.name = lastName; state.playerName = lastName; } state.x=1; state.y=1; state.battle=null; }
+
+// ---------- Equip ----------
+let equipState={cat:0, sel:0, fromBattle:false};
+function openEquip(fromBattle=false){ equipState={cat:0,sel:0,fromBattle}; state.mode='equip'; }
+function equipList(cat,h){ if(cat===0) return h.invW; if(cat===1) return h.invU.filter(i=>i.slot==='legs'); if(cat===2) return h.invU.filter(i=>i.slot==='body'); return h.invU.filter(i=>i.slot==='head'); }
+function equipUpdate(dt){ const h=state.hero, list=equipList(equipState.cat,h); if(keys["ArrowLeft"]||keys["KeyQ"]) equipState.cat=(equipState.cat+3)%4; if(keys["ArrowRight"]||keys["KeyE"]) equipState.cat=(equipState.cat+1)%4; if(keys["ArrowUp"] && equipState.sel>0) equipState.sel--; if(keys["ArrowDown"] && equipState.sel<list.length-1) equipState.sel++; if((keys["Enter"]||keys["Space"])){ const it=list[equipState.sel]; if(it) equipItem(h,it); closeEquip(true); } if(keys["Escape"]||keys["KeyX"]) closeEquip(false); }
+function equipItem(h,it){ if(it.atk) h.weapon=it; else if(it.slot==='legs') h.u_legs=it; else if(it.slot==='body') h.u_body=it; else h.u_head=it; }
+function drawEquip(){ const h=state.hero; drawPanel(8,16,304,208); drawText("《装備》",16,20,"#fff"); drawText(`武器: ${h.weapon?h.weapon.name:"(なし)"}`,16,36,"#ffd6f2"); drawText(`脚:   ${h.u_legs?h.u_legs.name:"(なし)"}`,16,48,"#a4ffea"); drawText(`胴:   ${h.u_body?h.u_body.name:"(なし)"}`,16,60,"#a4ffea"); drawText(`頭:   ${h.u_head?h.u_head.name:"(なし)"}`,16,72,"#a4ffea"); drawText("←→カテゴリ / ↑↓選択 / 決定で装備 / 戻るで閉じる",16,88,"#ddd"); const title=["武器","脚（ストッキング）","胴（エプロン）","頭（カチューシャ）"][equipState.cat]; drawText("カテゴリ: "+title,16,104,"#fff"); const list=equipList(equipState.cat,h); for(let i=0;i<list.length;i++){ const y=120+i*14, sel=i===equipState.sel; if(sel){ctx.fillStyle="rgba(122,225,255,.22)"; ctx.fillRect(12,y-2,296,14);} const it=list[i]; drawText(`${it.name} ${it.atk?`(+ATK ${it.atk})`:`(+DEF ${it.def})`}`,20,y, sel?"#e7faff":"#fff"); } }
+function closeEquip(used){ if(state.mode!=='equip') return; if(state.battle){ state.mode='battle'; if(used){ state.battle.log.push("装備をととのえた！"); enemyAct(); } } else state.mode='field'; }
+
+// ---------- Buttons ----------
+document.getElementById('btnReset').onclick=()=>{ if(confirm("最初からはじめますか？")) state={ hero:JSON.parse(JSON.stringify(heroBase)), x:1,y:1,facing:2, mode:"title", dialogQueue:[], battle:null, bossAlive:true, openedChests:{}, title:{blink:0,show:true}, nameMode:false, playerName:state.playerName, popups:[], shakeT:0 }; };
+document.getElementById('btnMute').onclick=(e)=>{ mute=!mute; e.target.textContent="効果音: "+(mute?"OFF":"ON"); };
+document.getElementById('btnFull').onclick=()=>{ const el=document.getElementById('game'); if(!document.fullscreenElement){ el.requestFullscreen && el.requestFullscreen(); } else { document.exitFullscreen && document.exitFullscreen(); } };
+document.getElementById('btnEquip').onclick=()=>openEquip(false);
+document.getElementById('btnStart').onclick=()=>{ if(state.mode==='title') startNameEntry(); };
+document.getElementById('btnActEquip').onclick=()=>openEquip(false);
+
+// ---------- On-screen controls → key emulation ----------
+const keysHold={};
+function press(code, duration=120){
+  keys[code]=true;
+  setTimeout(()=>{ delete keys[code]; }, duration);
+}
+function bindPad(){
+  document.querySelectorAll('.btnc').forEach(b=>{
+    const code=b.getAttribute('data-k');
+    let tid=null;
+    const start=()=>{ press(code); tid=setInterval(()=>press(code), 150); };
+    const end=()=>{ if(tid){ clearInterval(tid); tid=null; delete keys[code]; } };
+    b.addEventListener('touchstart', e=>{ e.preventDefault(); start(); }, {passive:false});
+    b.addEventListener('mousedown', e=>{ e.preventDefault(); start(); });
+    ['touchend','touchcancel','mouseup','mouseleave'].forEach(ev=> b.addEventListener(ev, end, {passive:true}));
+  });
+  document.querySelectorAll('.btnL').forEach(b=>{
+    let main=b.getAttribute('data-k'); let alt=b.getAttribute('data-alt');
+    b.addEventListener('click', e=>{ e.preventDefault(); press(main); if(alt) setTimeout(()=>press(alt), 10); });
+  });
+}
+bindPad();
+
+// Tap to advance dialogs/title
+cvs.addEventListener('click',()=>{ if(state.mode==='title'){ startNameEntry(); return; } if(state.mode==='dialog'){ press('Enter'); } });
+
+// iOS audio unlock on first touch
+function armAudio(){ try{ const c=(window.AudioContext||window.webkitAudioContext)?audio():null; if(c&&c.state==='suspended'&&c.resume) c.resume(); }catch(_ ){} }
+['pointerdown','touchstart'].forEach(ev=>{ document.addEventListener(ev, ()=>armAudio(), {once:true, passive:true}); });
+
+// Title blink
+setInterval(()=>{ if(state.mode==='title') state.title.show=!state.title.show; }, 600);
+</script>
+</body>
+</html>
