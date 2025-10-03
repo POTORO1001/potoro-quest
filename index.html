@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>ポ・トロクエスト v22l（タイトル強制表示 / 連続装備フィードバック）</title>
+<title>ポ・トロクエスト v22m（装備カテゴリ←→デバウンス）</title>
 <style>
   :root{ --ui:#101522; --fg:#eef2ff; --acc:#ff7ad6; --pad:12px; }
   *{ box-sizing:border-box; -webkit-user-select:none; user-select:none; touch-action:manipulation; }
@@ -62,8 +62,8 @@
 <div class="app">
   <div class="topbar">
     <div>
-      <div class="title">ポ・トロクエスト v22l</div>
-      <div class="small">タイトル強制表示 / 連続装備フィードバック</div>
+      <div class="title">ポ・トロクエスト v22m</div>
+      <div class="small">装備カテゴリ←→デバウンス / HUD常時表示</div>
     </div>
     <div class="toolbar">
       <button class="btn" id="btnEquip">装備</button>
@@ -791,8 +791,11 @@ function gameOver(){
 }
 
 /* ======== Equip ======== */
-let equipState={cat:0, sel:0, fromBattle:false, feedback:0};
-function openEquip(fromBattle=false){ equipState={cat:0,sel:0,fromBattle,feedback:0}; state.mode='equip'; }
+let equipState={cat:0, sel:0, fromBattle:false, feedback:0, navCd:0};
+function openEquip(fromBattle=false){
+  equipState={cat:0, sel:0, fromBattle, feedback:0, navCd:0};
+  state.mode='equip';
+}
 function equipList(cat,h){
   if(cat===0) return h.invW;
   if(cat===1) return h.invU.filter(i=>i.slot==='legs');
@@ -805,14 +808,27 @@ function clampSel(){
 }
 function equipUpdate(dt){
   const h=state.hero, list=equipList(equipState.cat,h);
-  if(keys["ArrowLeft"]||keys["KeyQ"]){ equipState.cat=(equipState.cat+3)%4; clampSel(); }
-  if(keys["ArrowRight"]||keys["KeyE"]){ equipState.cat=(equipState.cat+1)%4; clampSel(); }
+
+  // ▼ カテゴリ左右切替のデバウンス
+  equipState.navCd = Math.max(0, (equipState.navCd||0) - dt);
+  if((keys["ArrowLeft"]||keys["KeyQ"]) && equipState.navCd===0){
+    equipState.cat=(equipState.cat+3)%4; clampSel();
+    equipState.navCd = 0.20; // 200ms
+  }
+  if((keys["ArrowRight"]||keys["KeyE"]) && equipState.navCd===0){
+    equipState.cat=(equipState.cat+1)%4; clampSel();
+    equipState.navCd = 0.20;
+  }
+
+  // 上下は従来どおり
   if(keys["ArrowUp"] && equipState.sel>0) equipState.sel--;
   if(keys["ArrowDown"] && equipState.sel<list.length-1) equipState.sel++;
+
+  // OKで装備（閉じずに続けて装備可能）
   if((keys["Enter"]||keys["Space"])){
     const it=list[equipState.sel]; if(it){
       equipItem(h,it);
-      equipState.feedback = 60; // 1秒弱のフィードバック
+      equipState.feedback = 60;
       seq([{f:660,ms:60,type:'triangle',vol:0.4}]);
     }
   }
@@ -896,7 +912,7 @@ function resetToTitle(){
 function armAudio(){ try{ const c=(window.AudioContext||window.webkitAudioContext)?audio():null; if(c&&c.state==='suspended'&&c.resume) c.resume(); }catch(_ ){} }
 ['pointerdown','touchstart'].forEach(ev=>{ document.addEventListener(ev, ()=>armAudio(), {once:true, passive:true}); });
 
-/* ★ タイトル強制表示：初期モードを再設定（まれな誤遷移防止） */
+/* タイトル強制表示 */
 document.addEventListener('DOMContentLoaded', ()=>{
   state.mode='title'; prevMode='title'; state.title.show=true;
 });
@@ -910,7 +926,7 @@ function getHallPos(){
   return {x:W-2,y:H-2};
 }
 
-/* 初回生成（マップは用意するがモードはタイトル固定） */
+/* 初回生成 */
 regenerateWorld();
 </script>
 </body>
