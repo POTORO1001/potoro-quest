@@ -21,6 +21,57 @@
   .dialog h2{margin:0 0 8px} .row{display:flex;gap:10px;margin-top:8px} .row input{flex:1}
 </style>
 </head>
+  <script>
+// === iPhoneタップ対応ホットフィックス（v20 用） ===
+(function(){
+  try{
+    const cvs = document.getElementById('game');
+
+    // iOSの初回タップでオーディオ解除
+    function armAudio(){
+      try{
+        const C = window.AudioContext||window.webkitAudioContext;
+        if (C && typeof audio === 'function') {
+          const ctx = audio();
+          if (ctx && ctx.state === 'suspended' && ctx.resume) ctx.resume();
+        }
+      }catch(_){}
+    }
+
+    function tapAdvance(){
+      armAudio();
+      if (!window.state) return;
+      if (state.mode === 'title') {
+        // タイトル → 名前入力へ
+        if (typeof startNameEntry === 'function') startNameEntry();
+      } else if (state.mode === 'dialog') {
+        // ダイアログ送り（Enterキー擬似）
+        if (typeof keys !== 'undefined') {
+          keys["Enter"] = true;
+          setTimeout(()=>{ delete keys["Enter"]; }, 60);
+        }
+      }
+    }
+
+    // キャンバスをタップ/タッチ/クリックで進行
+    ['pointerdown','touchstart','click'].forEach(ev=>{
+      cvs.addEventListener(ev,(e)=>{ e.preventDefault(); tapAdvance(); }, {passive:false});
+    });
+
+    // 念のためキャンバス外でもタップで進める（タイトル/会話時のみ）
+    ['pointerdown','touchstart'].forEach(ev=>{
+      document.addEventListener(ev,(e)=>{
+        if (window.state && (state.mode==='title' || state.mode==='dialog')) tapAdvance();
+      }, {passive:true, capture:true});
+    });
+
+    // PRESS START点滅（保険）
+    setInterval(()=>{ if (window.state && state.mode==='title') state.title.show = !state.title.show; }, 600);
+  }catch(e){}
+})();
+// === /iPhoneタップ対応ホットフィックス ===
+</script>
+
 <body>
 <div class="wrap">
   <canvas id="game" width="320" height="240" aria-label="game canvas"></canvas>
