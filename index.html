@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>ポ・トロクエスト v22d（装備滞在/ログ折返し/戦BGMロング）</title>
+<title>ポ・トロクエスト v22e（タイトル修正/装備滞在/ログ折返し/戦BGMロング）</title>
 <style>
   :root{ --ui:#101522; --fg:#eef2ff; --acc:#ff7ad6; --pad:12px; }
   *{ box-sizing:border-box; -webkit-user-select:none; user-select:none; touch-action:manipulation; }
@@ -21,7 +21,7 @@
   .btn{ background:#1a2238; color:#e8ecff; border:1px solid #34406a; border-radius:10px; padding:8px 12px; font-weight:700; }
   .btn:active{ transform:translateY(1px); }
 
-  /* --- 下部コントロール（装備ボタン常時可視） --- */
+  /* 下部コントロール（装備ボタン常時可視） */
   .controls{
     position:fixed; left:0; right:0; bottom:0;
     z-index:1000;
@@ -67,8 +67,8 @@
 <div class="app">
   <div class="topbar">
     <div>
-      <div class="title">ポ・トロクエスト v22d</div>
-      <div class="small">iPhone縦レイアウト / 装備メニュー滞在 / 戦闘ログ折返し / 戦BGMロング</div>
+      <div class="title">ポ・トロクエスト v22e</div>
+      <div class="small">タイトル修正 / iPhone縦UI / 装備メニュー滞在 / 戦闘ログ折返し / 戦BGMロング</div>
     </div>
     <div class="toolbar">
       <button class="btn" id="btnEquip">装備</button>
@@ -144,7 +144,7 @@ const UNIFORMS=[
 const ITEMS=[
   {id:"omurice", name:"オムライス", kind:"healHP", power:20},
   {id:"tea", name:"紅茶", kind:"healMP", power:10},
-  {id:"horse", name:"くろれきし", kind:"insta", power:0}, // 旧おうまさん
+  {id:"horse", name:"くろれきし", kind:"insta", power:0},
 ];
 
 const heroBase={name:"まろ（見習いメイド）", lv:1, hp:24, maxhp:24, mp:8, maxmp:8, atk:5, def:2, exp:0,
@@ -171,7 +171,7 @@ function audio(){ try{ return audio.ctx||(audio.ctx=new(window.AudioContext||win
 function tone(f=440,ms=70,type='square',vol=0.5, when=0){ if(mute) return; const c=audio(); if(!c) return; const o=c.createOscillator(), g=c.createGain(); o.type=type; o.frequency.value=f; g.gain.value=vol; o.connect(g); g.connect(c.destination); const t=c.currentTime+when/1000; o.start(t); o.stop(t+ms/1000); }
 function seq(steps){ let offset=0; for(const s of steps){ tone(s.f,s.ms,s.type||'sine', s.vol??0.5, offset); offset+= (s.wait ?? s.ms); }}
 
-// ---- BGM（通常/ボス：通常は緊迫ロング版）----
+// ---- BGM（通常/ボス） 通常は緊迫ロング ----
 let bgmTimer=null, bgmKind=null;
 function bgmStop(){ if(bgmTimer){ clearInterval(bgmTimer); bgmTimer=null; } bgmKind=null; }
 function bgmStart(kind){
@@ -183,7 +183,6 @@ function bgmStart(kind){
   const loop = (bar, steps) => { const play=()=>seq(steps); play(); bgmTimer=setInterval(play, bar); };
 
   if(kind==="field"){
-    // 穏やかフィールド
     loop(1600, [
       {f:262,ms:140,vol:0.22,type:'sine'},{f:330,ms:140,vol:0.20,type:'sine'},
       {f:392,ms:140,vol:0.20,type:'sine'},{f:523,ms:140,vol:0.20,type:'sine'},
@@ -193,29 +192,23 @@ function bgmStart(kind){
       {f:330,ms:160,vol:0.16,type:'sine'},{f:262,ms:200,vol:0.16,type:'sine'}
     ]);
   }else if(kind==="battle"){
-    // ★緊迫・ロング（約1.9秒フレーズ）：低音+ハイ短音、疑似スネア
     loop(1900, [
-      // 低音リフ
       {f:196,ms:110,vol:0.34,type:'square'},{f:0,ms:40,vol:0,type:'sine'},
       {f:233,ms:110,vol:0.34,type:'square'},{f:0,ms:20,vol:0,type:'sine'},
       {f:262,ms:110,vol:0.34,type:'square'},{f:0,ms:20,vol:0,type:'sine'},
       {f:233,ms:110,vol:0.34,type:'square'},
-      // スタッカート＋疑似スネア
       {f:784,ms:70,vol:0.28,type:'triangle'},{f:0,ms:20,vol:0,type:'sine'},
       {f:880,ms:70,vol:0.30,type:'triangle'},
       {f:0,ms:20,vol:0,type:'sine'},
-      {f:120,ms:60,vol:0.35,type:'square'}, // 擬似スネア（低周波）
-      // 後半上昇
+      {f:120,ms:60,vol:0.35,type:'square'},
       {f:294,ms:110,vol:0.34,type:'square'},{f:0,ms:20,vol:0,type:'sine'},
       {f:330,ms:110,vol:0.34,type:'square'},{f:0,ms:20,vol:0,type:'sine'},
       {f:370,ms:110,vol:0.34,type:'square'},
-      // フィル
       {f:988,ms:80,vol:0.32,type:'triangle'},
       {f:880,ms:80,vol:0.30,type:'triangle'},
       {f:784,ms:140,vol:0.30,type:'square'}
     ]);
   }else if(kind==="boss"){
-    // ボス（従来）：重め・低音強調
     loop(1400, [
       {f:196,ms:150,vol:0.36,type:'square'},{f:247,ms:150,vol:0.34,type:'square'},
       {f:294,ms:150,vol:0.34,type:'square'},{f:392,ms:150,vol:0.32,type:'square'},
@@ -234,7 +227,7 @@ let state={ hero:JSON.parse(JSON.stringify(heroBase)), x:1,y:1,facing:2, mode:"t
   visited: Array.from({length:15},()=>Array(20).fill(false)) // フォグ用
 };
 
-const cvs=document.getElementById('game'); const ctx=cvs.getContext('2d');
+const cvs=document.getElementById('game'); const ctx=cvs.getContext('2d'); // ← ここで1回だけ宣言
 
 // ---------- Rendering ----------
 function draw(){
@@ -267,7 +260,7 @@ function draw(){
   drawText("玄関ホール",18,4,"#a4e0b0"); drawText("大広間",256,212,"#7ad39f");
   drawMaid(state.x,state.y,state.facing); drawHUD();
 
-  // Fog of War overlay
+  // Fog of War overlay（未踏破は黒）
   drawFog();
 
   if(state.mode==="dialog") drawDialog(); else if(state.mode==="battle") drawBattle(); else if(state.mode==="equip") drawEquip();
@@ -287,7 +280,7 @@ function drawTitle(){
 function drawTitleText(t,cx,y){ ctx.fillStyle="#ff7ad6"; ctx.font="bold 18px sans-serif"; ctx.textBaseline="top"; const w=ctx.measureText(t).width; ctx.fillText(t,cx-w/2,y); }
 function drawText(t,x,y,c="#fff",font="10px monospace"){ ctx.fillStyle=c; ctx.font=font; ctx.textBaseline="top"; ctx.fillText(t,x,y); }
 
-// --- 折り返し描画用ユーティリティ（日本語対応：文字単位で幅判定）---
+// --- 折り返し描画（日本語） ---
 function wrapLines(text, maxW, font="10px monospace"){
   ctx.font = font;
   const lines=[];
@@ -341,10 +334,9 @@ function drawDialog(){ const lines=state.dialogQueue.length?state.dialogQueue[0]
 function drawBattle(){
   const b=state.battle,h=state.hero,e=b.enemy; drawPanel(8,20,304,208);
   drawText("《戦闘》",16,24,"#fff");
-  drawText(`${e.name}`,16,40,"#ffd37a"); // 敵HPは非表示
+  drawText(`${e.name}`,16,40,"#ffd37a");
   drawText(`${h.name}  HP:${h.hp}/${h.maxhp} MP:${h.mp}/${h.maxmp}`,144,40,"#7ad3ff");
 
-  // 折り返し付きログ（最大6行）
   const startIdx=Math.max(0,b.log.length-10);
   const logs=b.log.slice(startIdx);
   drawParagraph(logs, 16, 56, "#ddd", "10px monospace", 276, 6, 12);
@@ -428,12 +420,11 @@ let prevMode="title";
 function update(dt){
   if(state.mode==='title') return titleUpdate(dt);
 
-  // BGM切替
   if(prevMode!==state.mode){
     if(state.mode==='field' || state.mode==='equip' || state.mode==='dialog'){
       bgmStart('field');
     }else if(state.mode==='battle'){
-      // startBattle で明示切替済み
+      // startBattle で切替済み
     }else{
       bgmStop();
     }
@@ -457,7 +448,7 @@ function titleUpdate(dt){
   state.title.blink+=dt; if(state.title.blink>=0.6){ state.title.blink=0; state.title.show=!state.title.show; }
 }
 
-// 名前入力（iPhone向けに prompt）
+// 名前入力
 function startNameEntry(){
   armAudio();
   const ask=() => {
@@ -657,21 +648,12 @@ function openEquip(fromBattle=false){ equipState={cat:0,sel:0,fromBattle}; state
 function equipList(cat,h){ if(cat===0) return h.invW; if(cat===1) return h.invU.filter(i=>i.slot==='legs'); if(cat===2) return h.invU.filter(i=>i.slot==='body'); return h.invU.filter(i=>i.slot==='head'); }
 function equipUpdate(dt){
   const h=state.hero, list=equipList(equipState.cat,h);
-
-  // ←→ カテゴリ、↑↓ 選択
   if(keys["ArrowLeft"]||keys["KeyQ"]) equipState.cat=(equipState.cat+3)%4;
   if(keys["ArrowRight"]||keys["KeyE"]) equipState.cat=(equipState.cat+1)%4;
   if(keys["ArrowUp"] && equipState.sel>0) equipState.sel--;
   if(keys["ArrowDown"] && equipState.sel<list.length-1) equipState.sel++;
-
-  // ★ 装備決定してもメニューに留まる（マップ/戦闘に戻らない）
-  if((keys["Enter"]||keys["Space"])){
-    const it=list[equipState.sel];
-    if(it) equipItem(h,it); // 反映のみ
-  }
-
-  // ★ 「戻る」で閉じる（戦闘中はターン消費して敵行動）
-  if(keys["Escape"]||keys["KeyX"]) closeEquip(true);
+  if((keys["Enter"]||keys["Space"])){ const it=list[equipState.sel]; if(it) equipItem(h,it); } // 留まる
+  if(keys["Escape"]||keys["KeyX"]) closeEquip(true); // 戻るで閉じる
 }
 function equipItem(h,it){ if(it.atk) h.weapon=it; else if(it.slot==='legs') h.u_legs=it; else if(it.slot==='body') h.u_body=it; else h.u_head=it; }
 function drawEquip(){
@@ -695,7 +677,7 @@ function closeEquip(used){
   if(state.mode!=='equip') return;
   if(state.battle){
     state.mode='battle';
-    if(used){ state.battle.log.push("装備をととのえた！"); enemyAct(); } // 戦闘中は戻ったタイミングでターン消費
+    if(used){ state.battle.log.push("装備をととのえた！"); enemyAct(); }
   } else {
     state.mode='field';
   }
@@ -731,8 +713,7 @@ function bindPad(){
 }
 bindPad();
 
-// Tap to advance dialogs/title
-const cvs=document.getElementById('game');
+// Tap to advance dialogs/title（※ ここで再定義しない！既存の cvs を使用）
 cvs.addEventListener('click',()=>{ if(state.mode==='title'){ startNameEntry(); return; } if(state.mode==='dialog'){ press('Enter'); } });
 
 // iOS audio unlock on first touch
