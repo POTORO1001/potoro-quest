@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>ポ・トロクエスト v22k（HUD常時表示 / 装備ヘルプ文修正）</title>
+<title>ポ・トロクエスト v22l（タイトル強制表示 / 連続装備フィードバック）</title>
 <style>
   :root{ --ui:#101522; --fg:#eef2ff; --acc:#ff7ad6; --pad:12px; }
   *{ box-sizing:border-box; -webkit-user-select:none; user-select:none; touch-action:manipulation; }
@@ -41,11 +41,8 @@
 
   .actions{ display:flex; flex-direction:column; gap:8px; align-items:stretch; min-width:200px; }
   .actions-row{ display:flex; gap:8px; justify-content:space-between; }
-  .btnL{
-    flex:1 1 0;
-    height:56px; border-radius:12px; border:1px solid #34406a;
-    background:#17213a; color:#e8ecff; font-weight:800;
-  }
+  .btnL{ flex:1 1 0; height:56px; border-radius:12px; border:1px solid #34406a;
+    background:#17213a; color:#e8ecff; font-weight:800; }
   .btnL:active{ transform:scale(0.98); background:#121a2e; }
 
   @media (max-width:360px){
@@ -56,7 +53,7 @@
   }
   @media (min-width:560px){
     .btnc{ width:64px; height:64px; }
-    .dpad{ grid-template-columns:64px 64px 64px; grid-template-rows:64px 64px 64px; }
+    .dpad{ grid-template-columns:64px 64px 64px; grid-template-rows:64px 64px; }
     .btnL{ height:64px; }
   }
 </style>
@@ -65,8 +62,8 @@
 <div class="app">
   <div class="topbar">
     <div>
-      <div class="title">ポ・トロクエスト v22k</div>
-      <div class="small">HUD常時表示 / 装備ヘルプ「OK=装備」</div>
+      <div class="title">ポ・トロクエスト v22l</div>
+      <div class="small">タイトル強制表示 / 連続装備フィードバック</div>
     </div>
     <div class="toolbar">
       <button class="btn" id="btnEquip">装備</button>
@@ -129,7 +126,7 @@ const ITEMS=[
   {id:"horse",   name:"くろれきし", kind:"insta",  power:0},
 ];
 
-/* ======== Enemies（ロンダルキア級） ======== */
+/* ======== Enemies ======== */
 let ENEMIES=[
   {name:"定時のご主人様",       hp:42, atk:10, def:6, exp:22},
   {name:"残業のご主人様",       hp:55, atk:12, def:7, exp:30},
@@ -148,14 +145,11 @@ function audio(){ try{ return audio.ctx||(audio.ctx=new(window.AudioContext||win
 function tone(f=440,ms=70,type='square',vol=0.5, when=0){ if(mute) return; const c=audio(); if(!c) return; const o=c.createOscillator(), g=c.createGain(); o.type=type; o.frequency.value=f; g.gain.value=vol; o.connect(g); g.connect(c.destination); const t=c.currentTime+when/1000; o.start(t); o.stop(t+ms/1000); }
 function seq(steps){ let offset=0; for(const s of steps){ tone(s.f,s.ms,s.type||'sine', s.vol??0.5, offset); offset+= (s.wait ?? s.ms); }}
 
-/* ======== BGM（省略：前版どおり） ======== */
+/* ======== BGM ======== */
 let bgmTimer=null, bgmKind=null;
 function bgmStop(){ if(bgmTimer){ clearInterval(bgmTimer); bgmTimer=null; } bgmKind=null; }
 function bgmStart(kind){
-  if(mute) return;
-  if(bgmKind===kind) return;
-  bgmStop();
-  bgmKind=kind;
+  if(mute) return; if(bgmKind===kind) return; bgmStop(); bgmKind=kind;
   const loop = (bar, steps) => { const play=()=>seq(steps); play(); bgmTimer=setInterval(play, bar); };
   if(kind==="field"){
     loop(1600, [
@@ -195,7 +189,7 @@ function bgmStart(kind){
   }
 }
 
-/* ======== World / Map（省略：前版同等） ======== */
+/* ======== World / Map ======== */
 let MAP = makeFilled(1);          // 1:壁, 0:通路, 2:扉, 3:宝箱(青), 4:空箱, 6:ボス
 let hallMask = makeFilled(false); // 大広間（1マス）
 let CHEST_LOOT = {};
@@ -203,7 +197,6 @@ let CHEST_LOOT = {};
 function makeFilled(val){ return Array.from({length:H},()=>Array(W).fill(val)); }
 function inBounds(x,y){ return x>=0 && y>=0 && x<W && y<H; }
 
-/* 迷路・配置生成（同） */
 function regenerateWorld(){
   MAP = makeFilled(1);
   hallMask = makeFilled(false);
@@ -324,10 +317,8 @@ function draw(){ ctx.save();
 
   drawMaid(state.x,state.y,state.facing);
 
-  /* ★先に霧を描く（HUDより前）→ HUDは常時最前面で表示 */
+  // 霧 → HUD（常時）
   drawFog();
-
-  /* ★HUDは最後に描画＝常時見える */
   drawHUD();
 
   if(state.mode==="dialog") drawDialog();
@@ -800,17 +791,33 @@ function gameOver(){
 }
 
 /* ======== Equip ======== */
-let equipState={cat:0, sel:0, fromBattle:false};
-function openEquip(fromBattle=false){ equipState={cat:0,sel:0,fromBattle}; state.mode='equip'; }
-function equipList(cat,h){ if(cat===0) return h.invW; if(cat===1) return h.invU.filter(i=>i.slot==='legs'); if(cat===2) return h.invU.filter(i=>i.slot==='body'); return h.invU.filter(i=>i.slot==='head'); }
+let equipState={cat:0, sel:0, fromBattle:false, feedback:0};
+function openEquip(fromBattle=false){ equipState={cat:0,sel:0,fromBattle,feedback:0}; state.mode='equip'; }
+function equipList(cat,h){
+  if(cat===0) return h.invW;
+  if(cat===1) return h.invU.filter(i=>i.slot==='legs');
+  if(cat===2) return h.invU.filter(i=>i.slot==='body');
+  return h.invU.filter(i=>i.slot==='head');
+}
+function clampSel(){
+  const list=equipList(equipState.cat,state.hero);
+  if(equipState.sel>=list.length) equipState.sel=Math.max(0,list.length-1);
+}
 function equipUpdate(dt){
   const h=state.hero, list=equipList(equipState.cat,h);
-  if(keys["ArrowLeft"]||keys["KeyQ"]) equipState.cat=(equipState.cat+3)%4;
-  if(keys["ArrowRight"]||keys["KeyE"]) equipState.cat=(equipState.cat+1)%4;
+  if(keys["ArrowLeft"]||keys["KeyQ"]){ equipState.cat=(equipState.cat+3)%4; clampSel(); }
+  if(keys["ArrowRight"]||keys["KeyE"]){ equipState.cat=(equipState.cat+1)%4; clampSel(); }
   if(keys["ArrowUp"] && equipState.sel>0) equipState.sel--;
   if(keys["ArrowDown"] && equipState.sel<list.length-1) equipState.sel++;
-  if((keys["Enter"]||keys["Space"])){ const it=list[equipState.sel]; if(it) equipItem(h,it); }
+  if((keys["Enter"]||keys["Space"])){
+    const it=list[equipState.sel]; if(it){
+      equipItem(h,it);
+      equipState.feedback = 60; // 1秒弱のフィードバック
+      seq([{f:660,ms:60,type:'triangle',vol:0.4}]);
+    }
+  }
   if(keys["Escape"]||keys["KeyX"]) closeEquip(true);
+  if(equipState.feedback>0) equipState.feedback--;
 }
 function equipItem(h,it){ if(it.atk) h.weapon=it; else if(it.slot==='legs') h.u_legs=it; else if(it.slot==='body') h.u_body=it; else h.u_head=it; }
 function drawEquip(){
@@ -819,13 +826,13 @@ function drawEquip(){
   drawText(`脚:   ${h.u_legs?h.u_legs.name:"(なし)"}`,16,48,"#a4ffea");
   drawText(`胴:   ${h.u_body?h.u_body.name:"(なし)"}`,16,60,"#a4ffea");
   drawText(`頭:   ${h.u_head?h.u_head.name:"(なし)"}`,16,72,"#a4ffea");
-  /* ★ヘルプ文言を「OK=装備」に変更 */
   drawText("←→カテゴリ / ↑↓選択 / OK=装備 / 戻る=閉じる",16,88,"#ddd");
+  if(equipState.feedback>0){ drawText("装備しました（続けて装備できます）",16,102,"#a4ffcc"); }
   const title=["武器","脚（ストッキング）","胴（エプロン）","頭（カチューシャ）"][equipState.cat];
-  drawText("カテゴリ: "+title,16,104,"#fff");
+  drawText("カテゴリ: "+title,16,118,"#fff");
   const list=equipList(equipState.cat,h);
   for(let i=0;i<list.length;i++){
-    const y=120+i*14, sel=i===equipState.sel;
+    const y=134+i*14, sel=i===equipState.sel;
     if(sel){ctx.fillStyle="rgba(122,225,255,.22)"; ctx.fillRect(12,y-2,296,14);}
     const it=list[i];
     drawText(`${it.name} ${it.atk?`(+ATK ${it.atk})`:`(+DEF ${it.def})`}`,20,y, sel?"#e7faff":"#fff");
@@ -872,8 +879,8 @@ function bindPad(){
 }
 bindPad();
 
-const cvs=document.getElementById('game');
-cvs.addEventListener('click',()=>{ 
+const canvasEl=document.getElementById('game');
+canvasEl.addEventListener('click',()=>{ 
   if(state.mode==='title'){ startNameEntry(); return; }
   if(state.mode==='dialog'){ press('Enter'); return; }
   if(state.mode==='end'){ resetToTitle(); }
@@ -882,14 +889,19 @@ cvs.addEventListener('click',()=>{
 function resetToTitle(){
   state={ hero:JSON.parse(JSON.stringify(heroBase)), x:1,y:1,facing:2, mode:"title", dialogQueue:[], battle:null, bossAlive:true, openedChests:{}, title:{blink:0,show:true}, nameMode:false, playerName:state.playerName, popups:[], shakeT:0, visited:Array.from({length:H},()=>Array(W).fill(false)), afterDialogFn:null };
   regenerateWorld();
-  prevMode='title';
-  bgmStop();
+  prevMode='title'; bgmStop();
 }
 
 /* iOS audio unlock */
 function armAudio(){ try{ const c=(window.AudioContext||window.webkitAudioContext)?audio():null; if(c&&c.state==='suspended'&&c.resume) c.resume(); }catch(_ ){} }
 ['pointerdown','touchstart'].forEach(ev=>{ document.addEventListener(ev, ()=>armAudio(), {once:true, passive:true}); });
 
+/* ★ タイトル強制表示：初期モードを再設定（まれな誤遷移防止） */
+document.addEventListener('DOMContentLoaded', ()=>{
+  state.mode='title'; prevMode='title'; state.title.show=true;
+});
+
+/* タイトルの点滅 */
 setInterval(()=>{ if(state.mode==='title') state.title.show=!state.title.show; }, 600);
 
 /* Util */
@@ -898,7 +910,7 @@ function getHallPos(){
   return {x:W-2,y:H-2};
 }
 
-/* 初回生成 */
+/* 初回生成（マップは用意するがモードはタイトル固定） */
 regenerateWorld();
 </script>
 </body>
