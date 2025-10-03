@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>ポ・トロクエスト v22i（おまじないLv解禁：3/5）</title>
+<title>ポ・トロクエスト v22j（戦闘後は戻るボタンで退場）</title>
 <style>
   :root{ --ui:#101522; --fg:#eef2ff; --acc:#ff7ad6; --pad:12px; }
   *{ box-sizing:border-box; -webkit-user-select:none; user-select:none; touch-action:manipulation; }
@@ -41,11 +41,8 @@
 
   .actions{ display:flex; flex-direction:column; gap:8px; align-items:stretch; min-width:200px; }
   .actions-row{ display:flex; gap:8px; justify-content:space-between; }
-  .btnL{
-    flex:1 1 0;
-    height:56px; border-radius:12px; border:1px solid #34406a;
-    background:#17213a; color:#e8ecff; font-weight:800;
-  }
+  .btnL{ flex:1 1 0; height:56px; border-radius:12px; border:1px solid #34406a;
+    background:#17213a; color:#e8ecff; font-weight:800; }
   .btnL:active{ transform:scale(0.98); background:#121a2e; }
 
   @media (max-width:360px){
@@ -65,8 +62,8 @@
 <div class="app">
   <div class="topbar">
     <div>
-      <div class="title">ポ・トロクエスト v22i</div>
-      <div class="small">おまじない：Lv3「おいしくなーれ」 / Lv5「にしきぬやまー」解禁</div>
+      <div class="title">ポ・トロクエスト v22j</div>
+      <div class="small">Lv解禁（3/5）＋ 勝利後は「戻る」で退場</div>
     </div>
     <div class="toolbar">
       <button class="btn" id="btnEquip">装備</button>
@@ -129,7 +126,7 @@ const ITEMS=[
   {id:"horse",   name:"くろれきし", kind:"insta",  power:0},
 ];
 
-/* ======== Enemies（前版 v22h と同じ：ロンダルキア級） ======== */
+/* ======== Enemies（ロンダルキア級） ======== */
 let ENEMIES=[
   {name:"定時のご主人様",       hp:42, atk:10, def:6, exp:22},
   {name:"残業のご主人様",       hp:55, atk:12, def:7, exp:30},
@@ -148,7 +145,7 @@ function audio(){ try{ return audio.ctx||(audio.ctx=new(window.AudioContext||win
 function tone(f=440,ms=70,type='square',vol=0.5, when=0){ if(mute) return; const c=audio(); if(!c) return; const o=c.createOscillator(), g=c.createGain(); o.type=type; o.frequency.value=f; g.gain.value=vol; o.connect(g); g.connect(c.destination); const t=c.currentTime+when/1000; o.start(t); o.stop(t+ms/1000); }
 function seq(steps){ let offset=0; for(const s of steps){ tone(s.f,s.ms,s.type||'sine', s.vol??0.5, offset); offset+= (s.wait ?? s.ms); }}
 
-/* ======== BGM（省略・前版同様） ======== */
+/* ======== BGM（省略：前版と同一） ======== */
 let bgmTimer=null, bgmKind=null;
 function bgmStop(){ if(bgmTimer){ clearInterval(bgmTimer); bgmTimer=null; } bgmKind=null; }
 function bgmStart(kind){
@@ -195,8 +192,8 @@ function bgmStart(kind){
   }
 }
 
-/* ======== World / Map（最奥1マス＝ボス、宝箱青） ======== */
-let MAP = makeFilled(1);          // 1:壁, 0:通路, 2:扉, 3:宝箱, 4:空箱, 6:ボス
+/* ======== World / Map ======== */
+let MAP = makeFilled(1);          // 1:壁, 0:通路, 2:扉, 3:宝箱(青), 4:空箱, 6:ボス
 let hallMask = makeFilled(false); // 大広間（1マス）
 let CHEST_LOOT = {};
 
@@ -208,7 +205,7 @@ function regenerateWorld(){
   hallMask = makeFilled(false);
   CHEST_LOOT = {};
 
-  // 迷路生成（DFS、奇数座標）
+  // 迷路生成
   function neighbors(x,y){ return [[x+2,y],[x-2,y],[x,y+2],[x,y-2]].filter(([nx,ny])=> nx>0 && ny>0 && nx<W-1 && ny<H-1); }
   function carve(x,y){
     MAP[y][x]=0;
@@ -222,7 +219,7 @@ function regenerateWorld(){
   }
   carve(1,1);
 
-  // (1,1)から最遠通路 → 大広間(1マス)
+  // 最奥を大広間(1マス)に
   const q=[[1,1]], dist=makeFilled(-1); dist[1][1]=0;
   const dirs=[[1,0],[-1,0],[0,1],[0,-1]];
   while(q.length){
@@ -238,10 +235,9 @@ function regenerateWorld(){
   for(let y=0;y<H;y++) for(let x=0;x<W;x++){
     if(MAP[y][x]===0 && dist[y][x]>best){ best=dist[y][x]; hx=x; hy=y; }
   }
-  hallMask[hy][hx]=true;
-  MAP[hy][hx]=6; // ボス
+  hallMask[hy][hx]=true; MAP[hy][hx]=6; // ボス
 
-  // 扉(2)を手前通路に
+  // 扉
   for(const [dx,dy] of dirs){
     const nx=hx+dx, ny=hy+dy;
     if(inBounds(nx,ny) && MAP[ny][nx]===0 && dist[ny][nx]===best-1){ MAP[ny][nx]=2; break; }
@@ -283,7 +279,7 @@ let state={
 
 const cvs=document.getElementById('game'); const ctx=cvs.getContext('2d');
 
-/* ======== Rendering（前版踏襲：青宝箱／赤ボス／木目/緑） ======== */
+/* ======== Rendering ======== */
 function draw(){ ctx.save();
   if(state.shakeT>0){
     const r = state.shakeT/state.shakeDur, s=state.shakeMag*r;
@@ -292,7 +288,7 @@ function draw(){ ctx.save();
   if(state.mode==="title"){ drawTitle(); ctx.restore(); return; }
   if(state.mode==="end"){ drawEnd(); ctx.restore(); return; }
 
-  // tiles
+  // タイル
   for(let j=0;j<H;j++){ for(let i=0;i<W;i++){
     let t=MAP[j][i]; if(t===3 && state.openedChests[i+","+j]) t=4;
     if(t===0 || t===3 || t===4 || t===6 || t===2){
@@ -304,7 +300,7 @@ function draw(){ ctx.save();
     }
   }}
 
-  // objects
+  // オブジェクト
   for(let j=0;j<H;j++){ for(let i=0;i<W;i++){
     const t=MAP[j][i];
     if(t===3 || (t===4 && !state.openedChests[i+","+j])){
@@ -320,7 +316,7 @@ function draw(){ ctx.save();
     }
   }}
 
-  // labels
+  // ラベル
   drawText("玄関ホール",18,4,"#a4e0b0");
   const hall = getHallPos();
   drawText("大広間", hall.x*TILE+4, Math.max(0,hall.y*TILE-10), "#ff6b6b", "bold 10px monospace");
@@ -361,7 +357,7 @@ function centerText(t,cx,y,font="12px monospace",color="#fff"){
 function drawTitleText(t,cx,y){ ctx.fillStyle="#ff7ad6"; ctx.font="bold 18px sans-serif"; const w=ctx.measureText(t).width; ctx.fillText(t,cx-w/2,y); }
 function drawText(t,x,y,c="#fff",font="10px monospace"){ ctx.fillStyle=c; ctx.font=font; ctx.textBaseline="top"; ctx.fillText(t,x,y); }
 
-/* 折返しユーティリティ */
+/* 折返し */
 function wrapLines(text, maxW, font="10px monospace"){
   ctx.font = font; const lines=[];
   for(const raw of (""+text).split("\n")){
@@ -409,7 +405,7 @@ function drawDialog(){
   drawText("▼ タップ/OKで進む",184,222,"#a4b0ff");
 }
 
-/* === おまじないメニュー（Lvに応じて動的生成） === */
+/* === おまじない（Lvで解禁） === */
 function getOmajinaiList(h){
   const list = [
     {id:'moe',    name:'もえもえぎゅー (MP5)',   mp:5,  type:'damage20'},
@@ -451,6 +447,9 @@ function drawBattle(){
     }
   } else if(b.phase==="item") drawItemMenu();
   else if(b.phase==="inter") drawText("ターン終了。次のターンへ（OK）",16,212,"#a4b0ff");
+  else if(b.phase==="finished"){
+    drawText("《戦闘終了》 戻るボタンでマップへ戻ります",16,212,"#a4ffcc");
+  }
 }
 
 function drawItemMenu(){ const h=state.hero; const list=h.invI.filter(it=>it.qty>0);
@@ -507,7 +506,10 @@ function startShake(mag=6, dur=120, decay=0.8){
 
 /* ======== Input & Loop ======== */
 const keys={};
-document.addEventListener('keydown',e=>{ keys[e.code]=true; if(e.code==="Space") e.preventDefault(); if(state.mode==="title" && (e.code==="Enter"||e.code==="Space")) startNameEntry(); if(state.mode==="end" && (e.code==="Enter"||e.code==="Space")) resetToTitle(); });
+document.addEventListener('keydown',e=>{ keys[e.code]=true; if(e.code==="Space") e.preventDefault();
+  if(state.mode==="title" && (e.code==="Enter"||e.code==="Space")) startNameEntry();
+  if(state.mode==="end" && (e.code==="Enter"||e.code==="Space")) resetToTitle();
+});
 document.addEventListener('keyup',e=>{ delete keys[e.code]; });
 let last=0,acc=0; function loop(ts){ const dt=(ts-last)/1000; last=ts; acc+=dt; while(acc>1/60){ update(1/60); acc-=1/60; } draw(); requestAnimationFrame(loop); } requestAnimationFrame(loop);
 let moveCooldown=0, actionCooldown=0; function pressed(a){ return a.some(k=>keys[k]); }
@@ -638,7 +640,8 @@ function battleUpdate(dt){
     if((keys["Enter"]||keys["Space"]) && actionCooldown<=0){
       actionCooldown=0.18;
       if(b.sel===0){
-        const atk=h.atk+(h.weapon?h.weapon.atk:0); const dmg=Math.max(1, atk - e.def + Math.floor(Math.random()*3));
+        const atk=h.atk+(h.weapon?h.weapon.atk:0);
+        const dmg=Math.max(1, atk - e.def + Math.floor(Math.random()*3));
         e.hp-=dmg; b.log.push(`${h.name}のいやしの一撃！ ${e.name}に${dmg}ダメージ！`);
         addPopup(200,74, String(dmg), "#ffffff", 12, 20, 400, 200);
         seq([{f:320,ms:70,type:'square',vol:0.5},{f:220,ms:70,type:'square',vol:0.5}]);
@@ -662,7 +665,6 @@ function battleUpdate(dt){
       if(list.length===0){ b.log.push("まだ何も覚えていない…"); b.phase='select'; return; }
       const sp=list[b.omSel];
       if(h.mp < sp.mp){ b.log.push("MPがたりない…"); return; }
-      // 消費
       h.mp -= sp.mp;
       if(sp.type==='damage20'){
         e.hp-=20; b.log.push("おまじない『もえもえぎゅー』！ 20ダメージ！");
@@ -696,6 +698,11 @@ function battleUpdate(dt){
     }
   }else if(b.phase==='inter'){
     if((keys["Enter"]||keys["Space"]) && actionCooldown<=0){ actionCooldown=0.18; b.phase='select'; b.sel=0; b.turn++; }
+  }else if(b.phase==='finished'){
+    // 戻る（KeyX/Escape）でのみ終了
+    if((keys["Escape"]||keys["KeyX"]) && actionCooldown<=0){
+      actionCooldown=0.18; endBattle(true);
+    }
   }
 }
 
@@ -739,7 +746,7 @@ function winBattle(){
   b.log.push(`${e.name}をたおした！`);
   seq([{f:523,ms:120,type:'sine',vol:0.5},{f:659,ms:120,type:'sine',vol:0.5},{f:784,ms:120,type:'sine',vol:0.5}]);
 
-  // ★レベルアップを複数回に耐える形に
+  // レベル処理 & 習得告知
   h.exp+=e.exp;
   let leveled=false;
   while(h.exp >= h.lv*22){
@@ -766,14 +773,16 @@ function winBattle(){
   if(e.boss){
     setTimeout(()=>showEnding(), 700);
   }else{
-    setTimeout(()=>endBattle(true),300);
+    // ★自動では戻らない。ユーザーが「戻る」するまでログを閲覧可
+    b.log.push("—— 戦闘終了 ——（戻るボタンでマップへ）");
+    b.phase='finished';
   }
 }
 
 function showEnding(){ bgmStop(); state.mode='end'; }
 function endBattle(){ state.mode='field'; state.battle=null; bgmStart('field'); }
 
-/* ======== Game Over：毎回マップ再生成（名前保持） ======== */
+/* ======== Game Over（名前保持で毎回マップ再生成） ======== */
 function gameOver(){
   const lastName = state.hero && state.hero.name ? state.hero.name : (state.playerName||null);
   state.hero=JSON.parse(JSON.stringify(heroBase));
