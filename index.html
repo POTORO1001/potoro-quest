@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>ポ・トロクエスト v22g（宝箱=青／大広間=最奥1マス）</title>
+<title>ポ・トロクエスト v22i（おまじないLv解禁：3/5）</title>
 <style>
   :root{ --ui:#101522; --fg:#eef2ff; --acc:#ff7ad6; --pad:12px; }
   *{ box-sizing:border-box; -webkit-user-select:none; user-select:none; touch-action:manipulation; }
@@ -65,8 +65,8 @@
 <div class="app">
   <div class="topbar">
     <div>
-      <div class="title">ポ・トロクエスト v22g</div>
-      <div class="small">宝箱=青 / 大広間=最奥1マス（ボス＆扉）</div>
+      <div class="title">ポ・トロクエスト v22i</div>
+      <div class="small">おまじない：Lv3「おいしくなーれ」 / Lv5「にしきぬやまー」解禁</div>
     </div>
     <div class="toolbar">
       <button class="btn" id="btnEquip">装備</button>
@@ -82,6 +82,7 @@
   </div>
 </div>
 
+<!-- On-screen controls -->
 <div class="controls">
   <div class="dpad">
     <div class="sp"></div>
@@ -128,13 +129,13 @@ const ITEMS=[
   {id:"horse",   name:"くろれきし", kind:"insta",  power:0},
 ];
 
-/* ======== Enemies ======== */
+/* ======== Enemies（前版 v22h と同じ：ロンダルキア級） ======== */
 let ENEMIES=[
-  {name:"定時のご主人様", hp:18, atk:4, def:1, exp:9},
-  {name:"残業のご主人様", hp:24, atk:6, def:2, exp:14},
-  {name:"叱責を受けたご主人様", hp:28, atk:7, def:2, exp:18},
+  {name:"定時のご主人様",       hp:42, atk:10, def:6, exp:22},
+  {name:"残業のご主人様",       hp:55, atk:12, def:7, exp:30},
+  {name:"叱責を受けたご主人様", hp:68, atk:14, def:9, exp:38},
 ];
-let BOSS={name:"残業かつ叱責されたご主人様", hp:60, atk:9, def:3, exp:55, boss:true};
+let BOSS={name:"残業かつ叱責されたご主人様", hp:130, atk:18, def:12, exp:120, boss:true};
 
 /* ======== Player base ======== */
 const heroBase={name:"まろ（見習いメイド）", lv:1, hp:24, maxhp:24, mp:8, maxmp:8, atk:5, def:2, exp:0,
@@ -147,7 +148,7 @@ function audio(){ try{ return audio.ctx||(audio.ctx=new(window.AudioContext||win
 function tone(f=440,ms=70,type='square',vol=0.5, when=0){ if(mute) return; const c=audio(); if(!c) return; const o=c.createOscillator(), g=c.createGain(); o.type=type; o.frequency.value=f; g.gain.value=vol; o.connect(g); g.connect(c.destination); const t=c.currentTime+when/1000; o.start(t); o.stop(t+ms/1000); }
 function seq(steps){ let offset=0; for(const s of steps){ tone(s.f,s.ms,s.type||'sine', s.vol??0.5, offset); offset+= (s.wait ?? s.ms); }}
 
-/* ======== BGM (field/battle/boss) ======== */
+/* ======== BGM（省略・前版同様） ======== */
 let bgmTimer=null, bgmKind=null;
 function bgmStop(){ if(bgmTimer){ clearInterval(bgmTimer); bgmTimer=null; } bgmKind=null; }
 function bgmStart(kind){
@@ -194,16 +195,15 @@ function bgmStart(kind){
   }
 }
 
-/* ======== World / Map ======== */
+/* ======== World / Map（最奥1マス＝ボス、宝箱青） ======== */
 let MAP = makeFilled(1);          // 1:壁, 0:通路, 2:扉, 3:宝箱, 4:空箱, 6:ボス
-let hallMask = makeFilled(false); // 大広間（今回は1マス）
+let hallMask = makeFilled(false); // 大広間（1マス）
 let CHEST_LOOT = {};
 
 function makeFilled(val){ return Array.from({length:H},()=>Array(W).fill(val)); }
 function inBounds(x,y){ return x>=0 && y>=0 && x<W && y<H; }
 
 function regenerateWorld(){
-  // 全壁
   MAP = makeFilled(1);
   hallMask = makeFilled(false);
   CHEST_LOOT = {};
@@ -222,7 +222,7 @@ function regenerateWorld(){
   }
   carve(1,1);
 
-  // BFSで(1,1)から最遠通路を探索 → そこを大広間(1マス)に
+  // (1,1)から最遠通路 → 大広間(1マス)
   const q=[[1,1]], dist=makeFilled(-1); dist[1][1]=0;
   const dirs=[[1,0],[-1,0],[0,1],[0,-1]];
   while(q.length){
@@ -238,20 +238,16 @@ function regenerateWorld(){
   for(let y=0;y<H;y++) for(let x=0;x<W;x++){
     if(MAP[y][x]===0 && dist[y][x]>best){ best=dist[y][x]; hx=x; hy=y; }
   }
-  // 大広間=1マス
   hallMask[hy][hx]=true;
-  // ボスを大広間に
-  MAP[hy][hx]=6;
-  // 大広間直前の通路に扉(2)：distが一つ小さい隣接通路
-  let doorPlaced=false;
+  MAP[hy][hx]=6; // ボス
+
+  // 扉(2)を手前通路に
   for(const [dx,dy] of dirs){
     const nx=hx+dx, ny=hy+dy;
-    if(inBounds(nx,ny) && MAP[ny][nx]===0 && dist[ny][nx]===best-1){
-      MAP[ny][nx]=2; doorPlaced=true; break;
-    }
+    if(inBounds(nx,ny) && MAP[ny][nx]===0 && dist[ny][nx]===best-1){ MAP[ny][nx]=2; break; }
   }
 
-  // 宝箱をランダム4つ（大広間/扉/開始位置以外）
+  // 宝箱（青）4つ
   const candidates=[];
   for(let y=1;y<H-1;y++) for(let x=1;x<W-1;x++){
     if(MAP[y][x]===0 && !(x===1&&y===1) && !(x===hx&&y===hy)) candidates.push([x,y]);
@@ -281,18 +277,20 @@ let state={
   dialogQueue:[], battle:null, bossAlive:true, openedChests:{},
   title:{blink:0,show:true}, nameMode:false, playerName:null,
   popups:[], maxPopups:4, shakeT:0, shakeMag:0, shakeDur:0, shakeDecay:0.8,
-  visited: Array.from({length:H},()=>Array(W).fill(false))
+  visited: Array.from({length:H},()=>Array(W).fill(false)),
+  afterDialogFn:null
 };
 
 const cvs=document.getElementById('game'); const ctx=cvs.getContext('2d');
 
-/* ======== Rendering ======== */
+/* ======== Rendering（前版踏襲：青宝箱／赤ボス／木目/緑） ======== */
 function draw(){ ctx.save();
   if(state.shakeT>0){
     const r = state.shakeT/state.shakeDur, s=state.shakeMag*r;
     ctx.translate((Math.random()*2-1)*s,(Math.random()*2-1)*s);
   }
   if(state.mode==="title"){ drawTitle(); ctx.restore(); return; }
+  if(state.mode==="end"){ drawEnd(); ctx.restore(); return; }
 
   // tiles
   for(let j=0;j<H;j++){ for(let i=0;i<W;i++){
@@ -310,23 +308,19 @@ function draw(){ ctx.save();
   for(let j=0;j<H;j++){ for(let i=0;i<W;i++){
     const t=MAP[j][i];
     if(t===3 || (t===4 && !state.openedChests[i+","+j])){
-      // ★ 青い宝箱
       ctx.fillStyle="#3a6db4"; ctx.fillRect(i*TILE+3,j*TILE+5,10,8);
       ctx.fillStyle="#284b8a"; ctx.fillRect(i*TILE+3,j*TILE+9,10,1);
     } else if(t===4 && state.openedChests[i+","+j]){
-      // 開封後（青フタ開き）
       ctx.fillStyle="#284b8a"; ctx.fillRect(i*TILE+3,j*TILE+9,10,4);
       ctx.fillStyle="#3a6db4"; ctx.fillRect(i*TILE+3,j*TILE+5,10,3);
     } else if(t===2){
-      // 扉（赤系で目立たせる）
       ctx.fillStyle="#8b3434"; ctx.fillRect(i*TILE+2,j*TILE+2,12,12);
     } else if(t===6){
-      // ボス（赤）
       ctx.fillStyle="#e84d4d"; ctx.fillRect(i*TILE+4,j*TILE+4,8,8);
     }
   }}
 
-  // ラベル
+  // labels
   drawText("玄関ホール",18,4,"#a4e0b0");
   const hall = getHallPos();
   drawText("大広間", hall.x*TILE+4, Math.max(0,hall.y*TILE-10), "#ff6b6b", "bold 10px monospace");
@@ -352,6 +346,18 @@ function drawTitle(){
   drawTitleText("ポ・トロクエスト",160,80);
   if(state.title.show) drawText("PRESS START",104,140,"#e8ecff","bold 14px sans-serif");
 }
+function drawEnd(){
+  ctx.fillStyle="#0b0f18"; ctx.fillRect(0,0,VIEW_W,VIEW_H);
+  const name = state.playerName || state.hero?.name || "あなた";
+  const line = `${name}は一人前のメイドになった！`;
+  centerText(line, VIEW_W/2, VIEW_H/2 - 10, "bold 14px sans-serif", "#ffe9f7");
+  drawText("end", VIEW_W-36, VIEW_H-18, "#d0d4ff", "bold 12px monospace");
+}
+function centerText(t,cx,y,font="12px monospace",color="#fff"){
+  ctx.font=font; ctx.fillStyle=color;
+  const w=ctx.measureText(t).width; ctx.fillText(t,cx-w/2,y);
+}
+
 function drawTitleText(t,cx,y){ ctx.fillStyle="#ff7ad6"; ctx.font="bold 18px sans-serif"; const w=ctx.measureText(t).width; ctx.fillText(t,cx-w/2,y); }
 function drawText(t,x,y,c="#fff",font="10px monospace"){ ctx.fillStyle=c; ctx.font=font; ctx.textBaseline="top"; ctx.fillText(t,x,y); }
 
@@ -403,11 +409,26 @@ function drawDialog(){
   drawText("▼ タップ/OKで進む",184,222,"#a4b0ff");
 }
 
+/* === おまじないメニュー（Lvに応じて動的生成） === */
+function getOmajinaiList(h){
+  const list = [
+    {id:'moe',    name:'もえもえぎゅー (MP5)',   mp:5,  type:'damage20'},
+  ];
+  if(h.lv >= 3){
+    list.push({id:'oishi',  name:'おいしくなーれ (MP10)', mp:10, type:'healFull'});
+  }
+  if(h.lv >= 5){
+    list.push({id:'nishiki', name:'にしきぬやまー (MP15)', mp:15, type:'insta'});
+  }
+  return list;
+}
+
 function drawBattle(){
   const b=state.battle,h=state.hero,e=b.enemy; drawPanel(8,20,304,208);
   drawText("《戦闘》",16,24,"#fff");
   drawText(`${e.name}`,16,40,"#ffd37a");
   drawText(`${h.name}  HP:${h.hp}/${h.maxhp} MP:${h.mp}/${h.maxmp}`,144,40,"#7ad3ff");
+
   const startIdx=Math.max(0,b.log.length-10);
   drawParagraph(b.log.slice(startIdx), 16, 56, "#ddd", "10px monospace", 276, 6, 12);
 
@@ -420,9 +441,14 @@ function drawBattle(){
       drawText(menu[i],cx+4,cy+4,sel?"#ffd6f2":"#fff");
     }
   } else if(b.phase==="omajinai"){
+    const list=getOmajinaiList(state.hero);
     drawPanel(20,56,280,120); drawText("《おまじない》 ↑↓で選択 / OKで実行 / 戻るで戻る",28,60,"#fff");
-    const list=["もえもえぎゅー (MP5)","おいしくなーれ (MP10)"];
-    for(let i=0;i<list.length;i++){ const y2=78+i*14, sel=(b.omSel||0)===i; if(sel){ ctx.fillStyle="rgba(255,122,214,.22)"; ctx.fillRect(24,y2-2,272,14); } drawText(list[i],32,y2, sel?"#ffe6f7":"#fff"); }
+    if(list.length===0){ drawText("まだ何も覚えていない…",28,78,"#ddd"); }
+    for(let i=0;i<list.length;i++){
+      const y2=78+i*14, sel=(b.omSel||0)===i;
+      if(sel){ ctx.fillStyle="rgba(255,122,214,.22)"; ctx.fillRect(24,y2-2,272,14); }
+      drawText(list[i].name,32,y2, sel?"#ffe6f7":"#fff");
+    }
   } else if(b.phase==="item") drawItemMenu();
   else if(b.phase==="inter") drawText("ターン終了。次のターンへ（OK）",16,212,"#a4b0ff");
 }
@@ -481,7 +507,7 @@ function startShake(mag=6, dur=120, decay=0.8){
 
 /* ======== Input & Loop ======== */
 const keys={};
-document.addEventListener('keydown',e=>{ keys[e.code]=true; if(e.code==="Space") e.preventDefault(); if(state.mode==="title" && (e.code==="Enter"||e.code==="Space")) startNameEntry(); });
+document.addEventListener('keydown',e=>{ keys[e.code]=true; if(e.code==="Space") e.preventDefault(); if(state.mode==="title" && (e.code==="Enter"||e.code==="Space")) startNameEntry(); if(state.mode==="end" && (e.code==="Enter"||e.code==="Space")) resetToTitle(); });
 document.addEventListener('keyup',e=>{ delete keys[e.code]; });
 let last=0,acc=0; function loop(ts){ const dt=(ts-last)/1000; last=ts; acc+=dt; while(acc>1/60){ update(1/60); acc-=1/60; } draw(); requestAnimationFrame(loop); } requestAnimationFrame(loop);
 let moveCooldown=0, actionCooldown=0; function pressed(a){ return a.some(k=>keys[k]); }
@@ -493,17 +519,24 @@ function update(dt){
   if(prevMode!==state.mode){
     if(state.mode==='field' || state.mode==='equip' || state.mode==='dialog'){ bgmStart('field'); }
     else if(state.mode==='battle'){ /* 切替済み */ }
+    else if(state.mode==='end'){ bgmStop(); }
     else{ bgmStop(); }
     prevMode=state.mode;
   }
 
   if(state.mode==='dialog'){
     if(pressed(["Enter","Space"]) && actionCooldown<=0){
-      actionCooldown=0.18; state.dialogQueue.shift(); if(state.dialogQueue.length===0) state.mode='field';
+      actionCooldown=0.18;
+      state.dialogQueue.shift();
+      if(state.dialogQueue.length===0){
+        const fn=state.afterDialogFn; state.afterDialogFn=null;
+        if(typeof fn==="function"){ fn(); } else { state.mode='field'; }
+      }
     }
   }
   else if(state.mode==='battle') battleUpdate(dt);
   else if(state.mode==='equip') equipUpdate(dt);
+  else if(state.mode==='end'){ /* any */ }
   else fieldUpdate(dt);
 
   moveCooldown=Math.max(0,moveCooldown-dt); actionCooldown=Math.max(0,actionCooldown-dt);
@@ -545,16 +578,20 @@ function fieldUpdate(dt){
 
       reveal(state.x, state.y, 3);
 
-      if(t===0 && Math.random()<0.12) startBattle(copyEnemy(ENEMIES[Math.floor(Math.random()*ENEMIES.length)]));
+      if(t===0 && Math.random()<0.16) startBattle(copyEnemy(ENEMIES[Math.floor(Math.random()*ENEMIES.length)]));
 
-      if(t===2){ state.mode='dialog'; state.dialogQueue=["重厚な扉がきしんだ…","大広間から気配を感じる。"]; }
+      if(t===2){
+        state.mode='dialog';
+        state.dialogQueue=["重厚な扉がきしんだ…","大広間から気配を感じる。"];
+        state.afterDialogFn=null;
+      }
 
       if(t===6 && state.bossAlive){
         state.mode='dialog';
         const n = state.hero.name || "あなた";
         const speech = `よくぞ来た${n}よ！ わしがご主人様の中のご主人様、ご主人王である。わしの日常の疲れを思い知るがよいっ！`;
         state.dialogQueue=[speech,"—— 戦闘開始 ——"];
-        queueAfterDialog(()=>startBattle(copyEnemy(BOSS)));
+        state.afterDialogFn = ()=> startBattle(copyEnemy(BOSS));
       }
 
       if(t===3){
@@ -573,6 +610,7 @@ function fieldUpdate(dt){
               }
             }
           }catch(e){}
+          state.afterDialogFn=null;
         }
       }
     }
@@ -580,14 +618,6 @@ function fieldUpdate(dt){
   if(keys["KeyE"] && actionCooldown<=0){ actionCooldown=0.2; openEquip(); }
 }
 
-function queueAfterDialog(fn){
-  const orig=state.dialogQueue.shift.bind(state.dialogQueue);
-  state.dialogQueue.shift=function(){
-    const v=Array.prototype.shift.apply(this,arguments);
-    if(this.length===0){ state.dialogQueue.shift=orig; fn(); }
-    return v;
-  }
-}
 function copyEnemy(t){ return JSON.parse(JSON.stringify(t)); }
 function hasItem(list, id){ return list.some(i=>i.id===id); }
 function giveLoot(loot){ const h=state.hero; if(loot.type==="weapon"){ if(!hasItem(h.invW, loot.item.id)) h.invW.push(loot.item); } else { if(!hasItem(h.invU, loot.item.id)) h.invU.push(loot.item); } }
@@ -623,23 +653,33 @@ function battleUpdate(dt){
       }
     }
   }else if(b.phase==='omajinai'){
+    const list=getOmajinaiList(h);
     if(keys["ArrowUp"] && b.omSel>0) b.omSel--;
-    if(keys["ArrowDown"] && b.omSel<1) b.omSel++;
+    if(keys["ArrowDown"] && b.omSel<Math.max(0,list.length-1)) b.omSel++;
     if(keys["Escape"]||keys["KeyX"]) b.phase='select';
     if((keys["Enter"]||keys["Space"]) && actionCooldown<=0){
       actionCooldown=0.18;
-      if(b.omSel===0){
-        if(h.mp>=5){ h.mp-=5; e.hp-=20; b.log.push("おまじない『もえもえぎゅー』！ 20ダメージ！");
-          addPopup(200,74, "20", "#ffffff", 12, 20, 400, 200);
-          seq([{f:660,ms:80,type:'square',vol:0.5},{f:990,ms:80,type:'square',vol:0.5}]);
-          if(e.hp<=0) return winBattle(); enemyAct(); }
-        else b.log.push("MPがたりない…");
-      }else{
-        if(h.mp>=10){ h.mp-=10; const gain=h.maxhp-h.hp; h.hp=h.maxhp; b.log.push(`おまじない『おいしくなーれ』！ HPが${gain}回復して全快！`);
-          if(gain>0) addPopup(96,74, "+"+gain, "#66e0ff", 12, 14, 350, 200);
-          seq([{f:523,ms:300,type:'sine',vol:0.5,wait:0},{f:659,ms:300,type:'sine',vol:0.5,wait:0},{f:784,ms:300,type:'sine',vol:0.5,wait:0}]);
-          enemyAct(); }
-        else b.log.push("MPがたりない…");
+      if(list.length===0){ b.log.push("まだ何も覚えていない…"); b.phase='select'; return; }
+      const sp=list[b.omSel];
+      if(h.mp < sp.mp){ b.log.push("MPがたりない…"); return; }
+      // 消費
+      h.mp -= sp.mp;
+      if(sp.type==='damage20'){
+        e.hp-=20; b.log.push("おまじない『もえもえぎゅー』！ 20ダメージ！");
+        addPopup(200,74, "20", "#ffffff", 12, 20, 400, 200);
+        seq([{f:660,ms:80,type:'square',vol:0.5},{f:990,ms:80,type:'square',vol:0.5}]);
+        if(e.hp<=0) return winBattle();
+        enemyAct();
+      }else if(sp.type==='healFull'){
+        const gain=h.maxhp-h.hp; h.hp=h.maxhp; b.log.push("おまじない『おいしくなーれ』！ HPが全回復！");
+        if(gain>0) addPopup(96,74, "+"+gain, "#66e0ff", 12, 14, 350, 200);
+        seq([{f:523,ms:300,type:'sine',vol:0.5},{f:659,ms:300,type:'sine',vol:0.5},{f:784,ms:300,type:'sine',vol:0.5}]);
+        enemyAct();
+      }else if(sp.type==='insta'){
+        e.hp=0; b.log.push("おまじない『にしきぬやまー』！ 圧倒的な気配が敵を飲み込む…！");
+        addPopup(200,74,"撃破！","#ffd700",16,20,400,200);
+        seq([{f:330,ms:120,type:'square',vol:0.5},{f:660,ms:120,type:'square',vol:0.5},{f:990,ms:120,type:'square',vol:0.5}]);
+        return winBattle();
       }
     }
   }else if(b.phase==='item'){
@@ -691,12 +731,30 @@ function enemyAct(){ const b=state.battle,h=state.hero,e=b.enemy; const def=tota
   h.hp-=dmg; addPopup(96,74,"-"+dmg,"#ff5555",12,16,350,200);
   startShake(6,120,0.8); seq([{f:180,ms:120,type:'sine',vol:0.5}]);
   b.log.push(enemyAttackMessage(e.name, dmg));
-  if(h.hp<=0){ b.log.push(`${h.name}は倒れてしまった…`); setTimeout(()=>gameOver(),500); } else b.phase='inter';
+  if(h.hp<=0){ b.log.push(`${h.name}は倒れてしまった…`); setTimeout(()=>gameOver(),400); } else b.phase='inter';
 }
 
-function winBattle(){ const b=state.battle,h=state.hero,e=b.enemy; b.log.push(`${e.name}をたおした！`); seq([{f:523,ms:120,type:'sine',vol:0.5},{f:659,ms:120,type:'sine',vol:0.5},{f:784,ms:120,type:'sine',vol:0.5}]); h.exp+=e.exp;
-  const needNextBefore = h.lv*22 - h.exp; b.log.push(`EXP+${e.exp} / 次のレベルまで ${Math.max(0,needNextBefore)}`);
-  const need=h.lv*22; if(h.exp>=need){ h.exp-=need; h.lv++; h.maxhp+=6; h.maxmp+=2; h.atk+=2; h.def+=1; h.hp=h.maxhp; h.mp=h.maxmp; b.log.push(`レベルが${h.lv}になった！`); }
+function winBattle(){
+  const b=state.battle,h=state.hero,e=b.enemy;
+  b.log.push(`${e.name}をたおした！`);
+  seq([{f:523,ms:120,type:'sine',vol:0.5},{f:659,ms:120,type:'sine',vol:0.5},{f:784,ms:120,type:'sine',vol:0.5}]);
+
+  // ★レベルアップを複数回に耐える形に
+  h.exp+=e.exp;
+  let leveled=false;
+  while(h.exp >= h.lv*22){
+    h.exp -= h.lv*22;
+    h.lv++; leveled=true;
+    h.maxhp+=6; h.maxmp+=2; h.atk+=2; h.def+=1; h.hp=h.maxhp; h.mp=h.maxmp;
+    b.log.push(`レベルが${h.lv}になった！`);
+    if(h.lv===3){ b.log.push("おまじない『おいしくなーれ』を覚えた！"); }
+    if(h.lv===5){ b.log.push("おまじない『にしきぬやまー』を覚えた！"); }
+  }
+  if(!leveled){
+    const needNextBefore = h.lv*22 - h.exp;
+    b.log.push(`EXP+${e.exp} / 次のレベルまで ${Math.max(0,needNextBefore)}`);
+  }
+
   if(!e.boss && Math.random()<0.30){
     const id = (Math.random()<0.5) ? "omurice" : "tea";
     const base = ITEMS.find(x=>x.id===id);
@@ -704,19 +762,30 @@ function winBattle(){ const b=state.battle,h=state.hero,e=b.enemy; b.log.push(`$
     if(stack) stack.qty += 1; else h.invI.push({id, qty:1});
     b.log.push(`「${base.name}」を手に入れた！`);
   }
-  if(e.boss){ state.bossAlive=false; setTimeout(()=>{ state.mode='dialog'; state.dialogQueue=[ `……`, " —— クリア！おめでとう 🎉 —— " ]; endBattle(true); },500); }
-  else setTimeout(()=>endBattle(true),300);
+
+  if(e.boss){
+    setTimeout(()=>showEnding(), 700);
+  }else{
+    setTimeout(()=>endBattle(true),300);
+  }
 }
 
-function endBattle(v){ state.mode='field'; state.battle=null; bgmStart('field'); }
+function showEnding(){ bgmStop(); state.mode='end'; }
+function endBattle(){ state.mode='field'; state.battle=null; bgmStart('field'); }
+
+/* ======== Game Over：毎回マップ再生成（名前保持） ======== */
 function gameOver(){
-  state.mode='dialog';
-  state.dialogQueue=['目の前が真っ黒になった…','玄関ホールから出直そう。'];
   const lastName = state.hero && state.hero.name ? state.hero.name : (state.playerName||null);
   state.hero=JSON.parse(JSON.stringify(heroBase));
   if(lastName){ state.hero.name = lastName; state.playerName = lastName; }
   state.battle=null;
-  state.x=1; state.y=1; reveal(state.x,state.y,3); bgmStart('field');
+  regenerateWorld();
+  state.bossAlive=true;
+  state.openedChests={};
+  state.mode='dialog';
+  state.dialogQueue=['目の前が真っ黒になった…','屋敷の気配が変わったようだ（マップが変化した）'];
+  state.afterDialogFn=null;
+  bgmStart('field');
 }
 
 /* ======== Equip ======== */
@@ -763,9 +832,9 @@ function closeEquip(used){
 /* ======== Buttons / Touch ======== */
 document.getElementById('btnReset').onclick=()=>{ if(confirm("最初からはじめますか？")){
   bgmStop();
-  state={ hero:JSON.parse(JSON.stringify(heroBase)), x:1,y:1,facing:2, mode:"title", dialogQueue:[], battle:null, bossAlive:true, openedChests:{}, title:{blink:0,show:true}, nameMode:false, playerName:state.playerName, popups:[], shakeT:0, visited:Array.from({length:H},()=>Array(W).fill(false)) };
+  state={ hero:JSON.parse(JSON.stringify(heroBase)), x:1,y:1,facing:2, mode:"title", dialogQueue:[], battle:null, bossAlive:true, openedChests:{}, title:{blink:0,show:true}, nameMode:false, playerName:state.playerName, popups:[], shakeT:0, visited:Array.from({length:H},()=>Array(W).fill(false)), afterDialogFn:null };
   prevMode='title';
-  regenerateWorld(); // ★タイトル復帰ごとに別マップ
+  regenerateWorld(); // タイトル復帰時も新規生成
 } };
 document.getElementById('btnMute').onclick=(e)=>{ mute=!mute; e.target.textContent="効果音: "+(mute?"OFF":"ON"); if(mute) bgmStop(); else{ if(state.mode==='field' || state.mode==='equip' || state.mode==='dialog') bgmStart('field'); else if(state.mode==='battle'){ const boss = state.battle?.enemy?.boss; bgmStart(boss ? 'boss' : 'battle'); } } };
 document.getElementById('btnFull').onclick=()=>{ const el=document.getElementById('game'); if(!document.fullscreenElement){ el.requestFullscreen && el.requestFullscreen(); } else { document.exitFullscreen && document.exitFullscreen(); } };
@@ -791,8 +860,20 @@ function bindPad(){
 }
 bindPad();
 
-cvs.addEventListener('click',()=>{ if(state.mode==='title'){ startNameEntry(); return; } if(state.mode==='dialog'){ press('Enter'); } });
+cvs.addEventListener('click',()=>{ 
+  if(state.mode==='title'){ startNameEntry(); return; }
+  if(state.mode==='dialog'){ press('Enter'); return; }
+  if(state.mode==='end'){ resetToTitle(); }
+});
 
+function resetToTitle(){
+  state={ hero:JSON.parse(JSON.stringify(heroBase)), x:1,y:1,facing:2, mode:"title", dialogQueue:[], battle:null, bossAlive:true, openedChests:{}, title:{blink:0,show:true}, nameMode:false, playerName:state.playerName, popups:[], shakeT:0, visited:Array.from({length:H},()=>Array(W).fill(false)), afterDialogFn:null };
+  regenerateWorld();
+  prevMode='title';
+  bgmStop();
+}
+
+/* iOS audio unlock */
 function armAudio(){ try{ const c=(window.AudioContext||window.webkitAudioContext)?audio():null; if(c&&c.state==='suspended'&&c.resume) c.resume(); }catch(_ ){} }
 ['pointerdown','touchstart'].forEach(ev=>{ document.addEventListener(ev, ()=>armAudio(), {once:true, passive:true}); });
 
