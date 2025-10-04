@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>ポ・トロクエスト v22v（叱責＆ボス強化 / オムライス30 / 道具ボタン / 説明書）</title>
+<title>ポ・トロクエスト v22w（タイトル修正）</title>
 <style>
   :root{ --ui:#101522; --fg:#eef2ff; --acc:#ff7ad6; --pad:12px; }
   *{ box-sizing:border-box; -webkit-user-select:none; user-select:none; touch-action:manipulation; }
@@ -62,8 +62,8 @@
 <div class="app">
   <div class="topbar">
     <div>
-      <div class="title">ポ・トロクエスト v22v</div>
-      <div class="small">叱責＆ボス強化 / オムライス30 / 道具ボタン / 説明書</div>
+      <div class="title">ポ・トロクエスト v22w</div>
+      <div class="small">タイトル表示修正（変数重複を解消）</div>
     </div>
     <div class="toolbar">
       <button class="btn" id="btnHelp">説明</button>
@@ -122,7 +122,7 @@ const UNIFORMS=[
   {id:"body_replica6", slot:"body", name:"六代目メイド服(レプリカ)", def:7},
 ];
 const ITEMS=[
-  {id:"omurice", name:"オムライス", kind:"healHP", power:30}, // ★30に変更
+  {id:"omurice", name:"オムライス", kind:"healHP", power:30},
   {id:"tea",     name:"紅茶",       kind:"healMP", power:10},
   {id:"horse",   name:"くろれきし", kind:"insta",  power:0},
 ];
@@ -131,9 +131,9 @@ const ITEMS=[
 let ENEMIES=[
   {name:"定時のご主人様",       hp:42,  atk:10, def:6,  exp:22},
   {name:"残業のご主人様",       hp:70,  atk:14, def:8,  exp:36},
-  {name:"叱責を受けたご主人様", hp:110, atk:18, def:12, exp:60}, // ★さらに強化
+  {name:"叱責を受けたご主人様", hp:110, atk:18, def:12, exp:60},
 ];
-let BOSS={name:"残業かつ叱責されたご主人様", hp:220, atk:24, def:16, exp:200, boss:true}; // ★さらに強化
+let BOSS={name:"残業かつ叱責されたご主人様", hp:220, atk:24, def:16, exp:200, boss:true};
 
 /* ======== Player base ======== */
 const heroBase={name:"まろ（見習いメイド）", lv:1, hp:24, maxhp:24, mp:8, maxmp:8, atk:5, def:2, exp:0,
@@ -194,8 +194,8 @@ function bgmStart(kind){
 let MAP = makeFilled(1);          // 1:壁, 0:通路, 2:扉, 3:宝箱(青), 4:空箱, 6:ボス
 let hallMask = makeFilled(false); // 大広間（1マス）
 let CHEST_LOOT = {};
-let DIST = null;
-let BOSS_DOOR = {x:1, y:1};
+let DIST = null;                  // ★重複しないようにここでのみ宣言
+let BOSS_DOOR = {x:1, y:1};       // ★重複しないようにここでのみ宣言
 
 function makeFilled(val){ return Array.from({length:H},()=>Array(W).fill(val)); }
 function inBounds(x,y){ return x>=0 && y>=0 && x<W && y<H; }
@@ -444,7 +444,6 @@ function drawBattle(){
   const b=state.battle,h=state.hero,e=b.enemy;
   drawPanel(8,20,304,208);
 
-  // 戦闘終了（結果のみ）
   if(b.phase==="finished"){
     const lines = [];
     lines.push(b.victoryLine || `${h.name}は　${e.name}を　いやした！`);
@@ -456,12 +455,10 @@ function drawBattle(){
     return;
   }
 
-  // 通常時のヘッダ
   drawText("《戦闘》",16,24,"#fff");
   drawText(`${e.name}`,16,40,"#ffd37a");
   drawText(`${h.name}  HP:${h.hp}/${h.maxhp} MP:${h.mp}/${h.maxmp}`,144,40,"#7ad3ff");
 
-  // ログ
   const startIdx=Math.max(0,b.log.length-10);
   drawParagraph(b.log.slice(startIdx), 16, 56, "#ddd", "10px monospace", 276, 6, 12);
 
@@ -539,7 +536,6 @@ function startShake(mag=6, dur=120, decay=0.8){
 }
 
 /* 距離割合→出現テーブル */
-let DIST=null, BOSS_DOOR={x:1,y:1};
 function distPercentToBossDoor(x,y){
   if(!DIST || !inBounds(x,y)) return 0;
   const d = DIST[y]?.[x] ?? -1;
@@ -875,7 +871,6 @@ function useItem(base, stack, b, h, e){
       return winBattle();
     }
   }
-  // 共通：在庫更新
   if(base.kind!=="insta" || e.boss){ stack.qty=Math.max(0, stack.qty-1); const inMain = h.invI.find(s=>s.id===stack.id); if(inMain) inMain.qty=stack.qty; }
   b.log.push(msg);
   if(e.hp<=0){ return winBattle(); }
@@ -890,7 +885,7 @@ function enemyAttackMessage(name, dmg){
   return `${name}のこうげき！ ${dmg}ダメージ！`;
 }
 
-/* ▼ 勝利：結果のみの finished 画面へ ▼ */
+/* ▼ 勝利：結果のみ表示 ▼ */
 function winBattle(){
   const b=state.battle,h=state.hero,e=b.enemy;
   b.log.push(`${e.name}をたおした！`);
@@ -900,29 +895,21 @@ function winBattle(){
   const gotItems = [];
   const post = [];
 
-  // EXP & Level up
   h.exp += e.exp;
   while(h.exp >= h.lv*22){
     h.exp -= h.lv*22;
     h.lv++;
     h.maxhp += 6; h.maxmp += 2; h.atk += 2; h.def += 1;
     h.hp = h.maxhp; h.mp = h.maxmp;
-    b.log.push(`レベルが${h.lv}になった！`);
     post.push(`${h.name}は　レベルが　あがった！`);
-    if(h.lv===3 || h.lv===5){
-      post.push(`${h.name}は　あたらしいおまじないを　おぼえた！`);
-      if(h.lv===3) b.log.push("おまじない『おいしくなーれ』を覚えた！");
-      if(h.lv===5) b.log.push("おまじない『にしきぬやまー』を覚えた！");
-    }
+    if(h.lv===3 || h.lv===5){ post.push(`${h.name}は　あたらしいおまじないを　おぼえた！`); }
   }
 
-  // ドロップ（通常敵のみ）
   if(!e.boss && Math.random()<0.30){
     const id = (Math.random()<0.5) ? "omurice" : "tea";
     const base = ITEMS.find(x=>x.id===id);
     const stack = h.invI.find(s=>s.id===id);
     if(stack) stack.qty += 1; else h.invI.push({id, qty:1});
-    b.log.push(`「${base.name}」を手に入れた！`);
     gotItems.push(base.name);
   }
 
@@ -946,7 +933,7 @@ function enemyAct(){ const b=state.battle; if(!b) return; const h=state.hero,e=b
   h.hp-=dmg; addPopup(96,74,"-"+dmg,"#ff5555",12,16,350,200);
   startShake(6,120,0.8); seq([{f:180,ms:120,type:'sine',vol:0.5}]);
   b.log.push(enemyAttackMessage(e.name, dmg));
-  if(h.hp<=0){ b.log.push(`${h.name}は倒れてしまった…`); setTimeout(()=>gameOver(),400); } else b.phase='inter';
+  if(h.hp<=0){ setTimeout(()=>gameOver(),400); } else b.phase='inter';
 }
 
 function showEnding(){ bgmStop(); state.mode='end'; }
@@ -1055,8 +1042,6 @@ document.getElementById('btnStart').onclick=()=>{ if(state.mode==='title') start
 
 document.getElementById('btnActEquip').onclick=()=>openEquip(false);
 document.getElementById('btnActItems').onclick=()=>openItemsField();
-
-const topEquip = document.getElementById('btnEquip'); if(topEquip) topEquip.remove(); // 念のため
 
 function press(code, duration=120){ keys[code]=true; setTimeout(()=>{ delete keys[code]; }, duration); }
 function bindPad(){
