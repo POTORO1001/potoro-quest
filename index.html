@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>ポ・トロクエスト v22m（装備カテゴリ←→デバウンス）</title>
+<title>ポ・トロクエスト v22n（距離ゾーン出現＆戦闘結果まとめ）</title>
 <style>
   :root{ --ui:#101522; --fg:#eef2ff; --acc:#ff7ad6; --pad:12px; }
   *{ box-sizing:border-box; -webkit-user-select:none; user-select:none; touch-action:manipulation; }
@@ -62,8 +62,8 @@
 <div class="app">
   <div class="topbar">
     <div>
-      <div class="title">ポ・トロクエスト v22m</div>
-      <div class="small">装備カテゴリ←→デバウンス / HUD常時表示</div>
+      <div class="title">ポ・トロクエスト v22n</div>
+      <div class="small">距離ゾーン出現（0–30/31–60/61–ボス前）＆戦闘結果まとめ表示</div>
     </div>
     <div class="toolbar">
       <button class="btn" id="btnEquip">装備</button>
@@ -126,7 +126,7 @@ const ITEMS=[
   {id:"horse",   name:"くろれきし", kind:"insta",  power:0},
 ];
 
-/* ======== Enemies ======== */
+/* ======== Enemies（ロンダルキア級） ======== */
 let ENEMIES=[
   {name:"定時のご主人様",       hp:42, atk:10, def:6, exp:22},
   {name:"残業のご主人様",       hp:55, atk:12, def:7, exp:30},
@@ -193,6 +193,9 @@ function bgmStart(kind){
 let MAP = makeFilled(1);          // 1:壁, 0:通路, 2:扉, 3:宝箱(青), 4:空箱, 6:ボス
 let hallMask = makeFilled(false); // 大広間（1マス）
 let CHEST_LOOT = {};
+// ★距離ゾーン用
+let DIST = null;                 // BFS距離マップ（入口からの距離）
+let BOSS_DOOR = {x:1, y:1};      // ボス前の扉の座標
 
 function makeFilled(val){ return Array.from({length:H},()=>Array(W).fill(val)); }
 function inBounds(x,y){ return x>=0 && y>=0 && x<W && y<H; }
@@ -215,7 +218,7 @@ function regenerateWorld(){
   }
   carve(1,1);
 
-  // 最奥 = 大広間1マス＆扉
+  // BFSで距離テーブル作成（入口(1,1)から）
   const q=[[1,1]], dist=makeFilled(-1); dist[1][1]=0;
   const dirs=[[1,0],[-1,0],[0,1],[0,-1]];
   while(q.length){
@@ -227,14 +230,23 @@ function regenerateWorld(){
       }
     }
   }
+  DIST = dist; // ★保存
+
+  // 最奥（距離が最大の通路）= 大広間(6) を1マス
   let hx=1, hy=1, best=-1;
   for(let y=0;y<H;y++) for(let x=0;x<W;x++){
     if(MAP[y][x]===0 && dist[y][x]>best){ best=dist[y][x]; hx=x; hy=y; }
   }
   hallMask[hy][hx]=true; MAP[hy][hx]=6;
+
+  // 手前に扉(2)を1枚：座標も保存（★）
   for(const [dx,dy] of dirs){
     const nx=hx+dx, ny=hy+dy;
-    if(inBounds(nx,ny) && MAP[ny][nx]===0 && dist[ny][nx]===best-1){ MAP[ny][nx]=2; break; }
+    if(inBounds(nx,ny) && MAP[ny][nx]===0 && dist[ny][nx]===best-1){
+      MAP[ny][nx]=2;
+      BOSS_DOOR = {x:nx, y:ny}; // ★ボス前の距離基準
+      break;
+    }
   }
 
   // 宝箱 4つ（青）
@@ -500,6 +512,30 @@ function startShake(mag=6, dur=120, decay=0.8){
   state.shakeMag=mag; state.shakeDur=dur; state.shakeT=dur; state.shakeDecay=decay;
 }
 
+/* ======== 距離割合 → 出現テーブル ======== */
+function distPercentToBossDoor(x,y){
+  if(!DIST || !inBounds(x,y)) return 0;
+  const d = DIST[y]?.[x] ?? -1;
+  const md = DIST[BOSS_DOOR.y]?.[BOSS_DOOR.x] ?? -1;
+  if(d<0 || md<=0) return 0;
+  let pct = Math.floor((d / md) * 100);
+  if(pct<0) pct=0; if(pct>100) pct=100;
+  return pct;
+}
+function pickEnemyFor(x,y){
+  const p = distPercentToBossDoor(x,y);
+  if(p <= 30){
+    return copyEnemy(ENEMIES[0]);                // 定時のみ
+  }else if(p <= 60){
+    const idx = Math.random()<0.5 ? 0 : 1;       // 定時/残業
+    return copyEnemy(ENEMIES[idx]);
+  }else{
+    const r = Math.random();                     // 定時/残業/叱責
+    const idx = r < 1/3 ? 0 : (r < 2/3 ? 1 : 2);
+    return copyEnemy(ENEMIES[idx]);
+  }
+}
+
 /* ======== Input & Loop ======== */
 const keys={};
 document.addEventListener('keydown',e=>{ keys[e.code]=true; if(e.code==="Space") e.preventDefault();
@@ -576,7 +612,8 @@ function fieldUpdate(dt){
 
       reveal(state.x, state.y, 3);
 
-      if(t===0 && Math.random()<0.16) startBattle(copyEnemy(ENEMIES[Math.floor(Math.random()*ENEMIES.length)]));
+      // ★位置に応じたエンカウント抽選
+      if(t===0 && Math.random()<0.16) startBattle(pickEnemyFor(state.x, state.y));
 
       if(t===2){
         state.mode='dialog';
@@ -736,33 +773,41 @@ function enemyAct(){ const b=state.battle,h=state.hero,e=b.enemy; const def=tota
   if(h.hp<=0){ b.log.push(`${h.name}は倒れてしまった…`); setTimeout(()=>gameOver(),400); } else b.phase='inter';
 }
 
+/* ▼▼ まとめ表示つき勝利処理 ▼▼ */
 function winBattle(){
   const b=state.battle,h=state.hero,e=b.enemy;
   b.log.push(`${e.name}をたおした！`);
   seq([{f:523,ms:120,type:'sine',vol:0.5},{f:659,ms:120,type:'sine',vol:0.5},{f:784,ms:120,type:'sine',vol:0.5}]);
 
-  h.exp+=e.exp;
-  let leveled=false;
+  const gainedExp = e.exp;
+  const gotItems = [];
+
+  // 経験値処理（複数レベルUP対応）
+  h.exp += e.exp;
   while(h.exp >= h.lv*22){
     h.exp -= h.lv*22;
-    h.lv++; leveled=true;
-    h.maxhp+=6; h.maxmp+=2; h.atk+=2; h.def+=1; h.hp=h.maxhp; h.mp=h.maxmp;
+    h.lv++;
+    h.maxhp += 6; h.maxmp += 2; h.atk += 2; h.def += 1;
+    h.hp = h.maxhp; h.mp = h.maxmp;
     b.log.push(`レベルが${h.lv}になった！`);
     if(h.lv===3){ b.log.push("おまじない『おいしくなーれ』を覚えた！"); }
     if(h.lv===5){ b.log.push("おまじない『にしきぬやまー』を覚えた！"); }
   }
-  if(!leveled){
-    const needNextBefore = h.lv*22 - h.exp;
-    b.log.push(`EXP+${e.exp} / 次のレベルまで ${Math.max(0,needNextBefore)}`);
-  }
 
+  // ドロップ（通常敵のみ）
   if(!e.boss && Math.random()<0.30){
     const id = (Math.random()<0.5) ? "omurice" : "tea";
     const base = ITEMS.find(x=>x.id===id);
     const stack = h.invI.find(s=>s.id===id);
     if(stack) stack.qty += 1; else h.invI.push({id, qty:1});
     b.log.push(`「${base.name}」を手に入れた！`);
+    gotItems.push(base.name);
   }
+
+  const needNext = Math.max(0, h.lv*22 - h.exp);
+  let summary = `【戦闘結果】 EXP+${gainedExp} / 次のレベルまで ${needNext}`;
+  if(gotItems.length>0) summary += ` / 入手どうぐ：${gotItems.join("、")}`;
+  b.log.push(summary);
 
   if(e.boss){
     setTimeout(()=>showEnding(), 700);
@@ -809,7 +854,7 @@ function clampSel(){
 function equipUpdate(dt){
   const h=state.hero, list=equipList(equipState.cat,h);
 
-  // ▼ カテゴリ左右切替のデバウンス
+  // カテゴリ左右切替のデバウンス
   equipState.navCd = Math.max(0, (equipState.navCd||0) - dt);
   if((keys["ArrowLeft"]||keys["KeyQ"]) && equipState.navCd===0){
     equipState.cat=(equipState.cat+3)%4; clampSel();
@@ -820,11 +865,11 @@ function equipUpdate(dt){
     equipState.navCd = 0.20;
   }
 
-  // 上下は従来どおり
+  // 上下
   if(keys["ArrowUp"] && equipState.sel>0) equipState.sel--;
   if(keys["ArrowDown"] && equipState.sel<list.length-1) equipState.sel++;
 
-  // OKで装備（閉じずに続けて装備可能）
+  // OK=装備（閉じずに続けて装備可能）
   if((keys["Enter"]||keys["Space"])){
     const it=list[equipState.sel]; if(it){
       equipItem(h,it);
