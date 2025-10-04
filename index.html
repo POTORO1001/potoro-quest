@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>ポ・トロクエスト v22u2（フリーズ修正 / ボス即死無効 & 敵強化）</title>
+<title>ポ・トロクエスト v22v（叱責＆ボス強化 / オムライス30 / 道具ボタン / 説明書）</title>
 <style>
   :root{ --ui:#101522; --fg:#eef2ff; --acc:#ff7ad6; --pad:12px; }
   *{ box-sizing:border-box; -webkit-user-select:none; user-select:none; touch-action:manipulation; }
@@ -39,7 +39,7 @@
   }
   .btnc:active{ transform:scale(0.98); background:#0d1220; }
 
-  .actions{ display:flex; flex-direction:column; gap:8px; align-items:stretch; min-width:200px; }
+  .actions{ display:flex; flex-direction:column; gap:8px; align-items:stretch; min-width:220px; }
   .actions-row{ display:flex; gap:8px; justify-content:space-between; }
   .btnL{ flex:1 1 0; height:56px; border-radius:12px; border:1px solid #34406a;
     background:#17213a; color:#e8ecff; font-weight:800; }
@@ -49,7 +49,7 @@
     .btnc{ width:50px; height:50px; }
     .dpad{ grid-template-columns:50px 50px 50px; grid-template-rows:50px 50px 50px; gap:6px; }
     .btnL{ height:50px; font-size:14px; }
-    .actions{ min-width:180px; }
+    .actions{ min-width:190px; }
   }
   @media (min-width:560px){
     .btnc{ width:64px; height:64px; }
@@ -62,11 +62,11 @@
 <div class="app">
   <div class="topbar">
     <div>
-      <div class="title">ポ・トロクエスト v22u2</div>
-      <div class="small">フリーズ修正 / ボス即死無効 & 敵強化</div>
+      <div class="title">ポ・トロクエスト v22v</div>
+      <div class="small">叱責＆ボス強化 / オムライス30 / 道具ボタン / 説明書</div>
     </div>
     <div class="toolbar">
-      <button class="btn" id="btnEquip">装備</button>
+      <button class="btn" id="btnHelp">説明</button>
       <button class="btn" id="btnMute">効果音: ON</button>
       <button class="btn" id="btnReset">最初から</button>
       <button class="btn" id="btnStart">開始</button>
@@ -99,6 +99,7 @@
     </div>
     <div class="actions-row">
       <button class="btnL" id="btnActEquip">装備</button>
+      <button class="btnL" id="btnActItems">道具</button>
     </div>
   </div>
 </div>
@@ -121,7 +122,7 @@ const UNIFORMS=[
   {id:"body_replica6", slot:"body", name:"六代目メイド服(レプリカ)", def:7},
 ];
 const ITEMS=[
-  {id:"omurice", name:"オムライス", kind:"healHP", power:20},
+  {id:"omurice", name:"オムライス", kind:"healHP", power:30}, // ★30に変更
   {id:"tea",     name:"紅茶",       kind:"healMP", power:10},
   {id:"horse",   name:"くろれきし", kind:"insta",  power:0},
 ];
@@ -129,10 +130,10 @@ const ITEMS=[
 /* ======== Enemies（強化版） ======== */
 let ENEMIES=[
   {name:"定時のご主人様",       hp:42,  atk:10, def:6,  exp:22},
-  {name:"残業のご主人様",       hp:70,  atk:14, def:8,  exp:36}, // 強化
-  {name:"叱責を受けたご主人様", hp:88,  atk:16, def:10, exp:46}, // 強化
+  {name:"残業のご主人様",       hp:70,  atk:14, def:8,  exp:36},
+  {name:"叱責を受けたご主人様", hp:110, atk:18, def:12, exp:60}, // ★さらに強化
 ];
-let BOSS={name:"残業かつ叱責されたご主人様", hp:180, atk:22, def:14, exp:160, boss:true}; // 強化
+let BOSS={name:"残業かつ叱責されたご主人様", hp:220, atk:24, def:16, exp:200, boss:true}; // ★さらに強化
 
 /* ======== Player base ======== */
 const heroBase={name:"まろ（見習いメイド）", lv:1, hp:24, maxhp:24, mp:8, maxmp:8, atk:5, def:2, exp:0,
@@ -336,6 +337,8 @@ function draw(){
   if(state.mode==="dialog") drawDialog();
   else if(state.mode==="battle" && state.battle) drawBattle();
   else if(state.mode==="equip") drawEquip();
+  else if(state.mode==="items") drawItemsField();
+  else if(state.mode==="help") drawHelp();
 
   drawPopups();
   ctx.restore();
@@ -346,7 +349,6 @@ function drawWood(x,y,w,h){
   ctx.fillStyle="#b48a3c"; for(let k=2;k<h;k+=4) ctx.fillRect(x, y+k, w, 1);
   ctx.fillStyle="#7a5f33"; for(let k=3;k<w;k+=6) ctx.fillRect(x+k, y+1, 1, h-2);
 }
-/* ★フリーズ修正：安全な赤木目タイル描画 */
 function drawRedWood(x,y,w,h){
   ctx.fillStyle="#7a2a2a"; ctx.fillRect(x,y,w,h);
   ctx.fillStyle="#a33b3b"; for(let k=2;k<h;k+=4) ctx.fillRect(x, y+k, w, 1);
@@ -537,6 +539,7 @@ function startShake(mag=6, dur=120, decay=0.8){
 }
 
 /* 距離割合→出現テーブル */
+let DIST=null, BOSS_DOOR={x:1,y:1};
 function distPercentToBossDoor(x,y){
   if(!DIST || !inBounds(x,y)) return 0;
   const d = DIST[y]?.[x] ?? -1;
@@ -575,7 +578,7 @@ function update(dt){
   if(state.mode==='title') return titleUpdate(dt);
 
   if(prevMode!==state.mode){
-    if(state.mode==='field' || state.mode==='equip' || state.mode==='dialog'){ bgmStart('field'); }
+    if(state.mode==='field' || state.mode==='equip' || state.mode==='dialog' || state.mode==='items' || state.mode==='help'){ bgmStart('field'); }
     else if(state.mode==='battle'){ /* 切替済み */ }
     else if(state.mode==='end'){ bgmStop(); }
     else{ bgmStop(); }
@@ -594,6 +597,8 @@ function update(dt){
   }
   else if(state.mode==='battle' && state.battle) battleUpdate(dt);
   else if(state.mode==='equip') equipUpdate(dt);
+  else if(state.mode==='items') itemsUpdate(dt);
+  else if(state.mode==='help') helpUpdate(dt);
   else if(state.mode==='end'){ /* any */ }
   else fieldUpdate(dt);
 
@@ -676,6 +681,82 @@ function fieldUpdate(dt){
   if(keys["KeyE"] && actionCooldown<=0){ actionCooldown=0.2; openEquip(); }
 }
 
+/* ======== Help (説明書) ======== */
+const HELP_LINES = [
+  "【ポ・トロクエスト 説明書】",
+  "・屋敷（ランダム生成の迷路）を進み、大広間のボスを目指します。",
+  "・戦闘はターン制。コマンドは「いやす（通常攻撃）/ おまじない / ぼうぎょ / どうぐ」。",
+  "・おまじない：Lv3で「おいしくなーれ（全回復）」、Lv5で「にしきぬやまー（強力）」を習得。",
+  "・どうぐ：オムライス（HP+30）、紅茶（MP+10）、くろれきし（即撃破/ボスには大ダメージ）。",
+  "・フィールドでも「道具」ボタンから回復系が使えます（くろれきしはフィールドでは使えません）。",
+  "・装備：武器1枠、制服3枠（脚/胴/頭）。宝箱から入手できます。",
+  "・敵の出現はスタートからの距離で変化。奥に行くほど強敵が出現します。",
+  "・倒れるとマップが再生成されますが、名前は保持されます。",
+  "・iPhone：画面下のボタンで操作可能。OK=決定 / 戻る=キャンセル。",
+];
+let helpScroll=0;
+function openHelp(){ state.mode='help'; helpScroll=0; }
+function drawHelp(){
+  drawPanel(8,16,304,208);
+  drawText("《説明書》 戻るで閉じる / ↑↓でスクロール",16,20,"#fff");
+  const visible=HELP_LINES.slice(helpScroll, helpScroll+10);
+  drawParagraph(visible, 16, 36, "#ddd", "10px monospace", 288, 10, 12);
+}
+function helpUpdate(dt){
+  if(keys["ArrowDown"] && helpScroll < Math.max(0, HELP_LINES.length-10)) helpScroll++;
+  if(keys["ArrowUp"] && helpScroll > 0) helpScroll--;
+  if(keys["Escape"]||keys["KeyX"]||keys["Enter"]||keys["Space"]) state.mode='field';
+}
+
+/* ======== Field Items (道具) ======== */
+let fieldItemSel=0;
+function openItemsField(){ state.mode='items'; fieldItemSel=0; }
+function drawItemsField(){
+  const h=state.hero; const list=h.invI.filter(it=>it.qty>0);
+  drawPanel(20,40,280,152);
+  drawText("《道具（フィールド）》 ↑↓で選択 / OKで使用 / 戻るで閉じる",28,44,"#fff");
+  if(list.length===0){ drawText("何も持っていない…",28,64,"#ddd"); return; }
+  for(let i=0;i<list.length;i++){
+    const y=66+i*14, sel=(fieldItemSel||0)===i;
+    if(sel){ ctx.fillStyle="rgba(122,225,255,.22)"; ctx.fillRect(24,y-2,272,14); }
+    const base=ITEMS.find(x=>x.id===list[i].id); const label = `${base.name} ×${list[i].qty}`;
+    drawText(label,32,y, sel?"#e7faff":"#fff");
+  }
+}
+function itemsUpdate(dt){
+  const h=state.hero; const list=h.invI.filter(it=>it.qty>0);
+  if(keys["ArrowUp"] && fieldItemSel>0) fieldItemSel--;
+  if(keys["ArrowDown"] && fieldItemSel<Math.max(0,list.length-1)) fieldItemSel++;
+  if(keys["Escape"]||keys["KeyX"]) { state.mode='field'; return; }
+  if((keys["Enter"]||keys["Space"]) && actionCooldown<=0){
+    actionCooldown=0.18;
+    if(list.length===0) return;
+    const stack=list[fieldItemSel]; const base=ITEMS.find(x=>x.id===stack.id);
+    if(!base) return;
+    if(base.kind==="insta"){
+      state.mode='dialog';
+      state.dialogQueue=["ここでは使えない…（戦闘中のみ）"];
+      return;
+    }
+    if(base.kind==="healHP"){
+      const before=h.hp; h.hp=Math.min(h.maxhp, h.hp+base.power);
+      const g=h.hp-before;
+      if(g<=0){ state.mode='dialog'; state.dialogQueue=["HPは十分だ。"]; return; }
+      stack.qty--; if(stack.qty<0) stack.qty=0;
+      const inMain = h.invI.find(s=>s.id===stack.id); if(inMain) inMain.qty=stack.qty;
+      state.mode='dialog'; state.dialogQueue=[`「${base.name}」を使った。HPが${g}回復！`];
+    }else if(base.kind==="healMP"){
+      const before=h.mp; h.mp=Math.min(h.maxmp, h.mp+base.power);
+      const g=h.mp-before;
+      if(g<=0){ state.mode='dialog'; state.dialogQueue=["MPは十分だ。"]; return; }
+      stack.qty--; if(stack.qty<0) stack.qty=0;
+      const inMain = h.invI.find(s=>s.id===stack.id); if(inMain) inMain.qty=stack.qty;
+      state.mode='dialog'; state.dialogQueue=[`「${base.name}」を使った。MPが${g}回復！`];
+    }
+  }
+}
+
+/* ======== Utilities ======== */
 function copyEnemy(t){ return JSON.parse(JSON.stringify(t)); }
 function hasItem(list, id){ return list.some(i=>i.id===id); }
 function giveLoot(loot){ const h=state.hero; if(loot.type==="weapon"){ if(!hasItem(h.invW, loot.item.id)) h.invW.push(loot.item); } else { if(!hasItem(h.invU, loot.item.id)) h.invU.push(loot.item); } }
@@ -787,7 +868,6 @@ function useItem(base, stack, b, h, e){
       msg = `${base.name}を召喚した！ 強烈な一撃！ ${big}ダメージ！`;
       addPopup(200,74, String(big), "#ffffff", 12, 20, 400, 200);
       if(e.hp<=0){ stack.qty=Math.max(0, stack.qty-1); const inMain = h.invI.find(s=>s.id===stack.id); if(inMain) inMain.qty=stack.qty; return winBattle(); }
-      // 続行
     }else{
       e.hp=0; msg=`${base.name}を召喚した！ ${e.name}はみるみるうちに倒れた！`; addPopup(200,74,"撃破！","#ffd700",16,20,400,200);
       stack.qty=Math.max(0, stack.qty-1);
@@ -836,7 +916,7 @@ function winBattle(){
     }
   }
 
-  // ドロップ（通常敵のみ・シンプル版）
+  // ドロップ（通常敵のみ）
   if(!e.boss && Math.random()<0.30){
     const id = (Math.random()<0.5) ? "omurice" : "tea";
     const base = ITEMS.find(x=>x.id===id);
@@ -906,7 +986,7 @@ function clampSel(){
 function equipUpdate(dt){
   const h=state.hero, list=equipList(equipState.cat,h);
 
-  // カテゴリ左右切替のデバウンス（強すぎ対策）
+  // カテゴリ左右切替をデバウンス
   equipState.navCd = Math.max(0, (equipState.navCd||0) - dt);
   if((keys["ArrowLeft"]||keys["KeyQ"]) && equipState.navCd===0){
     equipState.cat=(equipState.cat+3)%4; clampSel();
@@ -968,11 +1048,15 @@ document.getElementById('btnReset').onclick=()=>{ if(confirm("最初からはじ
   prevMode='title';
   regenerateWorld();
 } };
-document.getElementById('btnMute').onclick=(e)=>{ mute=!mute; e.target.textContent="効果音: "+(mute?"OFF":"ON"); if(mute) bgmStop(); else{ if(state.mode==='field' || state.mode==='equip' || state.mode==='dialog') bgmStart('field'); else if(state.mode==='battle'){ const boss = state.battle?.enemy?.boss; bgmStart(boss ? 'boss' : 'battle'); } } };
+document.getElementById('btnMute').onclick=(e)=>{ mute=!mute; e.target.textContent="効果音: "+(mute?"OFF":"ON"); if(mute) bgmStop(); else{ if(state.mode==='field' || state.mode==='equip' || state.mode==='dialog' || state.mode==='items' || state.mode==='help') bgmStart('field'); else if(state.mode==='battle'){ const boss = state.battle?.enemy?.boss; bgmStart(boss ? 'boss' : 'battle'); } } };
 document.getElementById('btnFull').onclick=()=>{ const el=document.getElementById('game'); if(!document.fullscreenElement){ el.requestFullscreen && el.requestFullscreen(); } else { document.exitFullscreen && document.exitFullscreen(); } };
-document.getElementById('btnEquip').onclick=()=>openEquip(false);
+document.getElementById('btnHelp').onclick=()=>openHelp();
 document.getElementById('btnStart').onclick=()=>{ if(state.mode==='title') startNameEntry(); };
+
 document.getElementById('btnActEquip').onclick=()=>openEquip(false);
+document.getElementById('btnActItems').onclick=()=>openItemsField();
+
+const topEquip = document.getElementById('btnEquip'); if(topEquip) topEquip.remove(); // 念のため
 
 function press(code, duration=120){ keys[code]=true; setTimeout(()=>{ delete keys[code]; }, duration); }
 function bindPad(){
