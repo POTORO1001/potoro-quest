@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>ポ・トロクエスト v22n（距離ゾーン出現＆戦闘結果まとめ）</title>
+<title>ポ・トロクエスト v22o（戦闘結果が常に見えるログ拡張）</title>
 <style>
   :root{ --ui:#101522; --fg:#eef2ff; --acc:#ff7ad6; --pad:12px; }
   *{ box-sizing:border-box; -webkit-user-select:none; user-select:none; touch-action:manipulation; }
@@ -62,8 +62,8 @@
 <div class="app">
   <div class="topbar">
     <div>
-      <div class="title">ポ・トロクエスト v22n</div>
-      <div class="small">距離ゾーン出現（0–30/31–60/61–ボス前）＆戦闘結果まとめ表示</div>
+      <div class="title">ポ・トロクエスト v22o</div>
+      <div class="small">距離ゾーン出現 & 戦闘結果まとめ / ログ拡張で【戦闘結果】常時表示</div>
     </div>
     <div class="toolbar">
       <button class="btn" id="btnEquip">装備</button>
@@ -427,14 +427,18 @@ function getOmajinaiList(h){
   return list;
 }
 
+/* === 戦闘描画（★ログ拡張） === */
 function drawBattle(){
   const b=state.battle,h=state.hero,e=b.enemy; drawPanel(8,20,304,208);
   drawText("《戦闘》",16,24,"#fff");
   drawText(`${e.name}`,16,40,"#ffd37a");
   drawText(`${h.name}  HP:${h.hp}/${h.maxhp} MP:${h.mp}/${h.maxmp}`,144,40,"#7ad3ff");
 
-  const startIdx=Math.max(0,b.log.length-10);
-  drawParagraph(b.log.slice(startIdx), 16, 56, "#ddd", "10px monospace", 276, 6, 12);
+  // ★フェーズに応じて表示行数・ウィンドウ幅を増やす（finishedで【戦闘結果】が確実に見える）
+  const maxLines = (b.phase === "finished") ? 12 : 6;
+  const windowSize = (b.phase === "finished") ? 18 : 10;
+  const startIdx = Math.max(0, b.log.length - windowSize);
+  drawParagraph(b.log.slice(startIdx), 16, 56, "#ddd", "10px monospace", 276, maxLines, 12);
 
   if(b.phase==="select"){
     const menu=["いやす","おまじない","ぼうぎょ","どうぐ"]; const cols=2,w=120,hgt=18;
