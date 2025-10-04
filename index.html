@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>ポ・トロクエスト v22s（戦闘終了：LvUP/おまじないメッセージ追加）</title>
+<title>ポ・トロクエスト v22t（戦闘タップ進行/安定化）</title>
 <style>
   :root{ --ui:#101522; --fg:#eef2ff; --acc:#ff7ad6; --pad:12px; }
   *{ box-sizing:border-box; -webkit-user-select:none; user-select:none; touch-action:manipulation; }
@@ -62,8 +62,8 @@
 <div class="app">
   <div class="topbar">
     <div>
-      <div class="title">ポ・トロクエスト v22s</div>
-      <div class="small">戦闘終了にLvUP/おまじないメッセージを追加</div>
+      <div class="title">ポ・トロクエスト v22t</div>
+      <div class="small">戦闘タップ進行/安定化</div>
     </div>
     <div class="toolbar">
       <button class="btn" id="btnEquip">装備</button>
@@ -193,7 +193,7 @@ function bgmStart(kind){
 let MAP = makeFilled(1);          // 1:壁, 0:通路, 2:扉, 3:宝箱(青), 4:空箱, 6:ボス
 let hallMask = makeFilled(false); // 大広間（1マス）
 let CHEST_LOOT = {};
-let DIST = null;                  // 距離マップ
+let DIST = null;
 let BOSS_DOOR = {x:1, y:1};
 
 function makeFilled(val){ return Array.from({length:H},()=>Array(W).fill(val)); }
@@ -234,11 +234,11 @@ function regenerateWorld(){
   // 最奥＝大広間
   let hx=1, hy=1, best=-1;
   for(let y=0;y<H;y++) for(let x=0;x<W;x++){
-    if(MAP[y][x]===0 && dist[y][x]>best){ best=dist[y][x]; hx=x; hy=y; }
+    if(MAP[y][x]===0 && dist[ny= y][nx= x]>best){ best=dist[y][x]; hx=x; hy=y; }
   }
   hallMask[hy][hx]=true; MAP[hy][hx]=6;
 
-  // 扉を1枚
+  // 扉
   for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){
     const nx=hx+dx, ny=hy+dy;
     if(inBounds(nx,ny) && MAP[ny][nx]===0 && dist[ny][nx]===best-1){
@@ -283,7 +283,9 @@ let state={
 const cvs=document.getElementById('game'); const ctx=cvs.getContext('2d');
 
 /* ======== Rendering ======== */
-function draw(){ ctx.save();
+function draw(){
+  if(!ctx) return;
+  ctx.save();
   if(state.shakeT>0){
     const r = state.shakeT/state.shakeDur, s=state.shakeMag*r;
     ctx.translate((Math.random()*2-1)*s,(Math.random()*2-1)*s);
@@ -330,8 +332,9 @@ function draw(){ ctx.save();
   drawFog();
   drawHUD();
 
+  // モード描画
   if(state.mode==="dialog") drawDialog();
-  else if(state.mode==="battle") drawBattle();
+  else if(state.mode==="battle" && state.battle) drawBattle();
   else if(state.mode==="equip") drawEquip();
 
   drawPopups();
@@ -426,10 +429,11 @@ function getOmajinaiList(h){
 
 /* === 戦闘描画 === */
 function drawBattle(){
+  if(!state.battle) return;
   const b=state.battle,h=state.hero,e=b.enemy;
   drawPanel(8,20,304,208);
 
-  // 戦闘終了：勝利行＋（追加メッセージ複数）＋結果のみ
+  // 戦闘終了（結果のみ）
   if(b.phase==="finished"){
     const lines = [];
     lines.push(b.victoryLine || `${h.name}は　${e.name}を　いやした！`);
@@ -446,7 +450,7 @@ function drawBattle(){
   drawText(`${e.name}`,16,40,"#ffd37a");
   drawText(`${h.name}  HP:${h.hp}/${h.maxhp} MP:${h.mp}/${h.maxmp}`,144,40,"#7ad3ff");
 
-  // ログ（通常フェーズのみ）
+  // ログ
   const startIdx=Math.max(0,b.log.length-10);
   drawParagraph(b.log.slice(startIdx), 16, 56, "#ddd", "10px monospace", 276, 6, 12);
 
@@ -580,7 +584,7 @@ function update(dt){
       }
     }
   }
-  else if(state.mode==='battle') battleUpdate(dt);
+  else if(state.mode==='battle' && state.battle) battleUpdate(dt);
   else if(state.mode==='equip') equipUpdate(dt);
   else if(state.mode==='end'){ /* any */ }
   else fieldUpdate(dt);
@@ -675,7 +679,8 @@ function startBattle(enemy){
   state.mode='battle';
 }
 function battleUpdate(dt){
-  const b=state.battle,h=state.hero,e=b.enemy;
+  const b=state.battle; if(!b) return;
+  const h=state.hero,e=b.enemy;
   if(b.phase==='select'){
     if(keys["ArrowLeft"]&&b.sel%2===1) b.sel--;
     if(keys["ArrowRight"]&&b.sel%2===0) b.sel++;
@@ -756,7 +761,7 @@ function useItem(base, stack, b, h, e){
     const g=h.hp-before; msg=`${base.name}を食べた！ HPが${g}回復！`; if(g>0) addPopup(96,74,"+"+g,"#66e0ff",12,14,350,200);
   }else if(base.kind==="healMP"){
     const before=h.mp; h.mp=Math.min(h.maxmp, h.mp+base.power);
-    const g=h.mp-before; msg=`${base.name}を飲んだ！ MPが${g}回復！`; if(g>0) addPopup(96,90,"#5aa3ff",12,14,350,200);
+    const g=h.mp-before; msg=`${base.name}を飲んだ！ MPが${g}回復！`; if(g>0) addPopup(96,90,"+"+g,"#5aa3ff",12,14,350,200);
   }else if(base.kind==="insta"){
     e.hp=0; msg=`${base.name}を召喚した！ ${e.name}はみるみるうちに倒れた！`; addPopup(200,74,"撃破！","#ffd700",16,20,400,200);
   }
@@ -775,7 +780,7 @@ function enemyAttackMessage(name, dmg){
   return `${name}のこうげき！ ${dmg}ダメージ！`;
 }
 
-/* ▼▼ 勝利：勝利行＋追加メッセージ＋結果に整理して finished へ ▼▼ */
+/* ▼ 勝利：結果のみの finished 画面へ ▼ */
 function winBattle(){
   const b=state.battle,h=state.hero,e=b.enemy;
   b.log.push(`${e.name}をたおした！`);
@@ -783,24 +788,17 @@ function winBattle(){
 
   const gainedExp = e.exp;
   const gotItems = [];
-  const post = []; // 戦闘終了時だけに出す追加メッセージ
+  const post = [];
 
   // EXP & Level up
   h.exp += e.exp;
-  let leveledTimes = 0;
-  const beforeLv = h.lv;
-
   while(h.exp >= h.lv*22){
     h.exp -= h.lv*22;
-    h.lv++; leveledTimes++;
+    h.lv++;
     h.maxhp += 6; h.maxmp += 2; h.atk += 2; h.def += 1;
     h.hp = h.maxhp; h.mp = h.maxmp;
-
-    // 戦闘ログにも書くが、終了画面にも出す
     b.log.push(`レベルが${h.lv}になった！`);
     post.push(`${h.name}は　レベルが　あがった！`);
-
-    // 習得メッセージ（Lv3 / Lv5）
     if(h.lv===3 || h.lv===5){
       post.push(`${h.name}は　あたらしいおまじないを　おぼえた！`);
       if(h.lv===3) b.log.push("おまじない『おいしくなーれ』を覚えた！");
@@ -828,8 +826,17 @@ function winBattle(){
   if(e.boss){
     setTimeout(()=>showEnding(), 700);
   }else{
-    b.phase='finished'; // 勝利行＋追加メッセージ＋結果のみ表示
+    b.phase='finished';
   }
+}
+
+function enemyAct(){ const b=state.battle; if(!b) return; const h=state.hero,e=b.enemy; const def=totalDef(h);
+  let dmg=Math.max(1, e.atk - def + Math.floor(Math.random()*3));
+  if(b.defending){ dmg=Math.floor(dmg/2); b.defending=false; }
+  h.hp-=dmg; addPopup(96,74,"-"+dmg,"#ff5555",12,16,350,200);
+  startShake(6,120,0.8); seq([{f:180,ms:120,type:'sine',vol:0.5}]);
+  b.log.push(enemyAttackMessage(e.name, dmg));
+  if(h.hp<=0){ b.log.push(`${h.name}は倒れてしまった…`); setTimeout(()=>gameOver(),400); } else b.phase='inter';
 }
 
 function showEnding(){ bgmStop(); state.mode='end'; }
@@ -959,6 +966,11 @@ const canvasEl=document.getElementById('game');
 canvasEl.addEventListener('click',()=>{ 
   if(state.mode==='title'){ startNameEntry(); return; }
   if(state.mode==='dialog'){ press('Enter'); return; }
+  if(state.mode==='battle'){
+    // フェーズに応じて OK を送る（finished は戻るボタン専用）
+    const ph = state.battle?.phase;
+    if(ph==='select' || ph==='inter' || ph==='omajinai' || ph==='item'){ press('Enter'); return; }
+  }
   if(state.mode==='end'){ resetToTitle(); }
 });
 
