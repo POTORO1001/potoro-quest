@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>ポ・トロクエスト v22q（戦闘終了＝勝利行＋結果のみ）</title>
+<title>ポ・トロクエスト v22r（タイトル非表示バグ修正）</title>
 <style>
   :root{ --ui:#101522; --fg:#eef2ff; --acc:#ff7ad6; --pad:12px; }
   *{ box-sizing:border-box; -webkit-user-select:none; user-select:none; touch-action:manipulation; }
@@ -62,8 +62,8 @@
 <div class="app">
   <div class="topbar">
     <div>
-      <div class="title">ポ・トロクエスト v22q</div>
-      <div class="small">戦闘終了＝勝利行＋【戦闘結果】のみ表示</div>
+      <div class="title">ポ・トロクエスト v22r</div>
+      <div class="small">タイトル非表示バグ修正（重複宣言除去）</div>
     </div>
     <div class="toolbar">
       <button class="btn" id="btnEquip">装備</button>
@@ -520,7 +520,6 @@ function startShake(mag=6, dur=120, decay=0.8){
 }
 
 /* 距離割合→出現テーブル */
-let DIST=null, BOSS_DOOR={x:1,y:1};
 function distPercentToBossDoor(x,y){
   if(!DIST || !inBounds(x,y)) return 0;
   const d = DIST[y]?.[x] ?? -1;
