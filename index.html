@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>ポ・トロクエスト v22p（戦闘終了＝【戦闘結果】のみ表示）</title>
+<title>ポ・トロクエスト v22q（戦闘終了＝勝利行＋結果のみ）</title>
 <style>
   :root{ --ui:#101522; --fg:#eef2ff; --acc:#ff7ad6; --pad:12px; }
   *{ box-sizing:border-box; -webkit-user-select:none; user-select:none; touch-action:manipulation; }
@@ -62,8 +62,8 @@
 <div class="app">
   <div class="topbar">
     <div>
-      <div class="title">ポ・トロクエスト v22p</div>
-      <div class="small">戦闘終了＝【戦闘結果】のみ表示</div>
+      <div class="title">ポ・トロクエスト v22q</div>
+      <div class="small">戦闘終了＝勝利行＋【戦闘結果】のみ表示</div>
     </div>
     <div class="toolbar">
       <button class="btn" id="btnEquip">装備</button>
@@ -429,11 +429,11 @@ function drawBattle(){
   const b=state.battle,h=state.hero,e=b.enemy;
   drawPanel(8,20,304,208);
 
-  // 戦闘終了：結果のみ（1行）を表示
+  // 戦闘終了：勝利行＋結果のみ
   if(b.phase==="finished"){
-    const line = b.summary || "【戦闘結果】";
-    // 画面中央寄せに近い位置へ
-    drawParagraph([line], 16, 120, "#fff", "10px monospace", 288, 2, 12);
+    const v1 = b.victoryLine || `${h.name}は　${e.name}を　いやした！`;
+    const v2 = b.summary || "【戦闘結果】";
+    drawParagraph([v1, v2], 16, 96, "#fff", "10px monospace", 288, 3, 12);
     return;
   }
 
@@ -520,6 +520,7 @@ function startShake(mag=6, dur=120, decay=0.8){
 }
 
 /* 距離割合→出現テーブル */
+let DIST=null, BOSS_DOOR={x:1,y:1};
 function distPercentToBossDoor(x,y){
   if(!DIST || !inBounds(x,y)) return 0;
   const d = DIST[y]?.[x] ?? -1;
@@ -665,7 +666,7 @@ function giveLoot(loot){ const h=state.hero; if(loot.type==="weapon"){ if(!hasIt
 
 /* ======== Battle ======== */
 function startBattle(enemy){
-  state.battle={enemy,phase:'select',log:[`「${enemy.name}」があらわれた！`],sel:0,turn:1,itemSel:0,defending:false,omSel:0,summary:null};
+  state.battle={enemy,phase:'select',log:[`「${enemy.name}」があらわれた！`],sel:0,turn:1,itemSel:0,defending:false,omSel:0,summary:null,victoryLine:null};
   bgmStart(enemy.boss ? 'boss' : 'battle');
   state.mode='battle';
 }
@@ -738,7 +739,6 @@ function battleUpdate(dt){
   }else if(b.phase==='inter'){
     if((keys["Enter"]||keys["Space"]) && actionCooldown<=0){ actionCooldown=0.18; b.phase='select'; b.sel=0; b.turn++; }
   }else if(b.phase==='finished'){
-    // 戻るでフィールドへ（表示はしない）
     if((keys["Escape"]||keys["KeyX"]) && actionCooldown<=0){
       actionCooldown=0.18; endBattle(true);
     }
@@ -752,7 +752,7 @@ function useItem(base, stack, b, h, e){
     const g=h.hp-before; msg=`${base.name}を食べた！ HPが${g}回復！`; if(g>0) addPopup(96,74,"+"+g,"#66e0ff",12,14,350,200);
   }else if(base.kind==="healMP"){
     const before=h.mp; h.mp=Math.min(h.maxmp, h.mp+base.power);
-    const g=h.mp-before; msg=`${base.name}を飲んだ！ MPが${g}回復！`; if(g>0) addPopup(96,90,"+"+g,"#5aa3ff",12,14,350,200);
+    const g=h.mp-before; msg=`${base.name}を飲んだ！ MPが${g}回復！`; if(g>0) addPopup(96,90,"#5aa3ff",12,14,350,200);
   }else if(base.kind==="insta"){
     e.hp=0; msg=`${base.name}を召喚した！ ${e.name}はみるみるうちに倒れた！`; addPopup(200,74,"撃破！","#ffd700",16,20,400,200);
   }
@@ -780,7 +780,7 @@ function enemyAct(){ const b=state.battle,h=state.hero,e=b.enemy; const def=tota
   if(h.hp<=0){ b.log.push(`${h.name}は倒れてしまった…`); setTimeout(()=>gameOver(),400); } else b.phase='inter';
 }
 
-/* ▼▼ 勝利：結果行を作って finished へ ▼▼ */
+/* ▼▼ 勝利：勝利行＋結果行を作って finished へ ▼▼ */
 function winBattle(){
   const b=state.battle,h=state.hero,e=b.enemy;
   b.log.push(`${e.name}をたおした！`);
@@ -812,6 +812,7 @@ function winBattle(){
   }
 
   const needNext = Math.max(0, h.lv*22 - h.exp);
+  b.victoryLine = `${h.name}は　${e.name}を　いやした！`;
   let summary = `【戦闘結果】 EXP+${gainedExp} / 次のレベルまで ${needNext}`;
   if(gotItems.length>0) summary += ` / 入手どうぐ：${gotItems.join("、")}`;
   b.summary = summary;
@@ -819,7 +820,7 @@ function winBattle(){
   if(e.boss){
     setTimeout(()=>showEnding(), 700);
   }else{
-    b.phase='finished'; // ここで drawBattle が summary だけ表示
+    b.phase='finished'; // 勝利行＋結果のみ表示
   }
 }
 
