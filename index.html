@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>ポ・トロクエスト v22r（タイトル非表示バグ修正）</title>
+<title>ポ・トロクエスト v22s（戦闘終了：LvUP/おまじないメッセージ追加）</title>
 <style>
   :root{ --ui:#101522; --fg:#eef2ff; --acc:#ff7ad6; --pad:12px; }
   *{ box-sizing:border-box; -webkit-user-select:none; user-select:none; touch-action:manipulation; }
@@ -62,8 +62,8 @@
 <div class="app">
   <div class="topbar">
     <div>
-      <div class="title">ポ・トロクエスト v22r</div>
-      <div class="small">タイトル非表示バグ修正（重複宣言除去）</div>
+      <div class="title">ポ・トロクエスト v22s</div>
+      <div class="small">戦闘終了にLvUP/おまじないメッセージを追加</div>
     </div>
     <div class="toolbar">
       <button class="btn" id="btnEquip">装備</button>
@@ -429,11 +429,15 @@ function drawBattle(){
   const b=state.battle,h=state.hero,e=b.enemy;
   drawPanel(8,20,304,208);
 
-  // 戦闘終了：勝利行＋結果のみ
+  // 戦闘終了：勝利行＋（追加メッセージ複数）＋結果のみ
   if(b.phase==="finished"){
-    const v1 = b.victoryLine || `${h.name}は　${e.name}を　いやした！`;
-    const v2 = b.summary || "【戦闘結果】";
-    drawParagraph([v1, v2], 16, 96, "#fff", "10px monospace", 288, 3, 12);
+    const lines = [];
+    lines.push(b.victoryLine || `${h.name}は　${e.name}を　いやした！`);
+    if(Array.isArray(b.postMsgs) && b.postMsgs.length){
+      for(const t of b.postMsgs) lines.push(t);
+    }
+    lines.push(b.summary || "【戦闘結果】");
+    drawParagraph(lines, 16, 64, "#fff", "10px monospace", 288, 8, 12);
     return;
   }
 
@@ -520,6 +524,7 @@ function startShake(mag=6, dur=120, decay=0.8){
 }
 
 /* 距離割合→出現テーブル */
+let DIST_CACHE=null;
 function distPercentToBossDoor(x,y){
   if(!DIST || !inBounds(x,y)) return 0;
   const d = DIST[y]?.[x] ?? -1;
@@ -665,7 +670,7 @@ function giveLoot(loot){ const h=state.hero; if(loot.type==="weapon"){ if(!hasIt
 
 /* ======== Battle ======== */
 function startBattle(enemy){
-  state.battle={enemy,phase:'select',log:[`「${enemy.name}」があらわれた！`],sel:0,turn:1,itemSel:0,defending:false,omSel:0,summary:null,victoryLine:null};
+  state.battle={enemy,phase:'select',log:[`「${enemy.name}」があらわれた！`],sel:0,turn:1,itemSel:0,defending:false,omSel:0,summary:null,victoryLine:null,postMsgs:[]};
   bgmStart(enemy.boss ? 'boss' : 'battle');
   state.mode='battle';
 }
@@ -770,16 +775,7 @@ function enemyAttackMessage(name, dmg){
   return `${name}のこうげき！ ${dmg}ダメージ！`;
 }
 
-function enemyAct(){ const b=state.battle,h=state.hero,e=b.enemy; const def=totalDef(h);
-  let dmg=Math.max(1, e.atk - def + Math.floor(Math.random()*3));
-  if(b.defending){ dmg=Math.floor(dmg/2); b.defending=false; }
-  h.hp-=dmg; addPopup(96,74,"-"+dmg,"#ff5555",12,16,350,200);
-  startShake(6,120,0.8); seq([{f:180,ms:120,type:'sine',vol:0.5}]);
-  b.log.push(enemyAttackMessage(e.name, dmg));
-  if(h.hp<=0){ b.log.push(`${h.name}は倒れてしまった…`); setTimeout(()=>gameOver(),400); } else b.phase='inter';
-}
-
-/* ▼▼ 勝利：勝利行＋結果行を作って finished へ ▼▼ */
+/* ▼▼ 勝利：勝利行＋追加メッセージ＋結果に整理して finished へ ▼▼ */
 function winBattle(){
   const b=state.battle,h=state.hero,e=b.enemy;
   b.log.push(`${e.name}をたおした！`);
@@ -787,17 +783,29 @@ function winBattle(){
 
   const gainedExp = e.exp;
   const gotItems = [];
+  const post = []; // 戦闘終了時だけに出す追加メッセージ
 
   // EXP & Level up
   h.exp += e.exp;
+  let leveledTimes = 0;
+  const beforeLv = h.lv;
+
   while(h.exp >= h.lv*22){
     h.exp -= h.lv*22;
-    h.lv++;
+    h.lv++; leveledTimes++;
     h.maxhp += 6; h.maxmp += 2; h.atk += 2; h.def += 1;
     h.hp = h.maxhp; h.mp = h.maxmp;
+
+    // 戦闘ログにも書くが、終了画面にも出す
     b.log.push(`レベルが${h.lv}になった！`);
-    if(h.lv===3){ b.log.push("おまじない『おいしくなーれ』を覚えた！"); }
-    if(h.lv===5){ b.log.push("おまじない『にしきぬやまー』を覚えた！"); }
+    post.push(`${h.name}は　レベルが　あがった！`);
+
+    // 習得メッセージ（Lv3 / Lv5）
+    if(h.lv===3 || h.lv===5){
+      post.push(`${h.name}は　あたらしいおまじないを　おぼえた！`);
+      if(h.lv===3) b.log.push("おまじない『おいしくなーれ』を覚えた！");
+      if(h.lv===5) b.log.push("おまじない『にしきぬやまー』を覚えた！");
+    }
   }
 
   // ドロップ（通常敵のみ）
@@ -815,11 +823,12 @@ function winBattle(){
   let summary = `【戦闘結果】 EXP+${gainedExp} / 次のレベルまで ${needNext}`;
   if(gotItems.length>0) summary += ` / 入手どうぐ：${gotItems.join("、")}`;
   b.summary = summary;
+  b.postMsgs = post;
 
   if(e.boss){
     setTimeout(()=>showEnding(), 700);
   }else{
-    b.phase='finished'; // 勝利行＋結果のみ表示
+    b.phase='finished'; // 勝利行＋追加メッセージ＋結果のみ表示
   }
 }
 
