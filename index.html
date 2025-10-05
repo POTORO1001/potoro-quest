@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>ポ・トロクエスト v23g（レプリカDEF100／レア1/128）</title>
+<title>ポ・トロクエスト（完成版）</title>
 <style>
   :root{ --ui:#101522; --fg:#eef2ff; --acc:#ff7ad6; --pad:12px; }
   *{ box-sizing:border-box; -webkit-user-select:none; user-select:none; touch-action:manipulation; }
@@ -13,7 +13,6 @@
     padding:env(safe-area-inset-top) var(--pad) calc(110px + env(safe-area-inset-bottom)) var(--pad); }
   .topbar{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
   .title{ font-weight:800; color:var(--acc); }
-  .small{ opacity:.9; font-size:12px; }
   .screen{ display:flex; justify-content:center; }
   canvas{ image-rendering:pixelated; width:100%; max-width:100vw; height:auto; background:#000;
     border-radius:12px; outline:1px solid #2b3246; }
@@ -79,10 +78,7 @@
 <body>
 <div class="app">
   <div class="topbar">
-    <div>
-      <div class="title">ポ・トロクエスト v23g</div>
-      <div class="small">レプリカDEF100 / レア1/128</div>
-    </div>
+    <div class="title">ポ・トロクエスト</div>
     <div class="toolbar">
       <button class="btn" id="btnHelp">説明</button>
       <button class="btn" id="btnMute">効果音: ON</button>
@@ -136,7 +132,7 @@
 ・おまじない：にしきぬやまー(MP15：ボス以外の敵を即撃破。ボスには大ダメージ)。
 ・どうぐ：オムライス(+HP30)、紅茶(+MP10)、くろれきし(ボス以外の敵を即撃破。ボスには大ダメージ)。
 ・装備：武器1枠、制服3枠(頭/胴/脚)。宝箱から入手できます。
-・スタートから持っている装備品がありますが、装備品は装備しなければ効果(ステータス上昇)がありません。
+・スタートから持っている装備品がありますが、装備しなければ効果(ステータス上昇)がありません。
 ・お屋敷の奥へ進むほど、強敵が出現します。
 ・ミュートは上部「効果音」ボタンで切替できます。
 ・攻略本が現実のお屋敷にあります。
@@ -163,8 +159,7 @@ const UNIFORMS=[
   {id:"legs_stocking", slot:"legs", name:"黒のストッキング", def:2},
   {id:"body_apron", slot:"body", name:"純白エプロン", def:4},
   {id:"head_ribbon", slot:"head", name:"メイドカチューシャ", def:7},
-  /* ★変更：レプリカのDEFを100に強化 */
-  {id:"body_replica6", slot:"body", name:"六代目メイド服(レプリカ)", def:100},
+  {id:"body_replica6", slot:"body", name:"六代目メイド服(レプリカ)", def:100}, /* DEF=100 */
 ];
 const ITEMS=[
   {id:"omurice", name:"オムライス", kind:"healHP", power:30},
@@ -236,8 +231,8 @@ function bgmStart(kind){
 }
 
 /* ======== World / Map ======== */
-let MAP = makeFilled(1);          // 1:壁, 0:通路, 2:扉, 3:宝箱(青), 4:空箱, 6:ボス
-let hallMask = makeFilled(false); // 大広間（1マス）
+let MAP = makeFilled(1);
+let hallMask = makeFilled(false);
 let CHEST_LOOT = {};
 let DIST = null;
 let BOSS_DOOR = {x:1, y:1};
@@ -292,7 +287,7 @@ function regenerateWorld(){
     }
   }
 
-  // 宝箱（青）4つ（通常品）＋中身テーブル
+  // 宝箱 4つ（青）＋中身
   const candidates=[];
   for(let y=1;y<H-1;y++) for(let x=1;x<W-1;x++){
     if(MAP[y][x]===0 && !(x===1&&y===1) && MAP[y][x]!==6) candidates.push([x,y]);
@@ -437,9 +432,9 @@ function drawMaid(tx,ty,dir){
 
   // 服（通常/レプリカで差し替え）
   const isReplica = !!h.u_body && h.u_body.id==="body_replica6";
-  const dressMain = isReplica ? "#ffffff" : "#ffd6f2";   // 胴
-  const accent    = isReplica ? "#ffd700" : "#ff9ad6";   // アクセント
-  ctx.fillStyle=dressMain; ctx.fillRect(x+5,y+9,6,7);     // 胴
+  const dressMain = isReplica ? "#ffffff" : "#ffd6f2";
+  const accent    = isReplica ? "#ffd700" : "#ff9ad6";
+  ctx.fillStyle=dressMain; ctx.fillRect(x+5,y+9,6,7);
   if(h.u_body){ ctx.fillStyle=accent; ctx.fillRect(x+6,y+10,4,1); }
 
   // 脚
@@ -708,7 +703,7 @@ function fieldUpdate(dt){
           else state.openedChests[key]=true;
           state.mode='dialog'; const got = loot ? loot.item.name : "なにか"; state.dialogQueue=[`宝箱をあけた！`,`「${got}」を手に入れた！`];
           try{
-            /* ★変更：超レア抽選 1/128 */
+            /* レア抽選 1/128 */
             if(Math.random()<1/128){
               const u=state.hero.invU;
               if(!u.some(x=>x.id==="body_replica6")){
