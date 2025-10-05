@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>ポ・トロクエスト v23c（説明全文/ナビ抑制）</title>
+<title>ポ・トロクエスト v23d（タイトル修正）</title>
 <style>
   :root{ --ui:#101522; --fg:#eef2ff; --acc:#ff7ad6; --pad:12px; }
   *{ box-sizing:border-box; -webkit-user-select:none; user-select:none; touch-action:manipulation; }
@@ -20,6 +20,7 @@
   .toolbar{ display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-top:2px; }
   .btn{ background:#1a2238; color:#e8ecff; border:1px solid #34406a; border-radius:10px; padding:8px 12px; font-weight:700; }
   .btn:active{ transform:translateY(1px); }
+
   .controls{
     position:fixed; left:0; right:0; bottom:0; z-index:1000;
     padding:8px env(safe-area-inset-right) calc(10px + env(safe-area-inset-bottom)) env(safe-area-inset-left);
@@ -39,6 +40,7 @@
   .btnL{ flex:1 1 0; height:56px; border-radius:12px; border:1px solid #34406a;
     background:#17213a; color:#e8ecff; font-weight:800; }
   .btnL:active{ transform:scale(0.98); background:#121a2e; }
+
   @media (max-width:360px){
     .btnc{ width:50px; height:50px; }
     .dpad{ grid-template-columns:50px 50px 50px; grid-template-rows:50px 50px 50px; gap:6px; }
@@ -56,8 +58,8 @@
 <div class="app">
   <div class="topbar">
     <div>
-      <div class="title">ポ・トロクエスト v23c</div>
-      <div class="small">説明全文 / スクロール改善 / 上下ナビ抑制</div>
+      <div class="title">ポ・トロクエスト v23d</div>
+      <div class="small">タイトル非表示バグ修正 / そのほか従来機能</div>
     </div>
     <div class="toolbar">
       <button class="btn" id="btnHelp">説明</button>
@@ -188,7 +190,7 @@ function bgmStart(kind){
 let MAP = makeFilled(1);          // 1:壁, 0:通路, 2:扉, 3:宝箱(青), 4:空箱, 6:ボス
 let hallMask = makeFilled(false); // 大広間（1マス）
 let CHEST_LOOT = {};
-let DIST = null;
+let DIST = null;                  // ★ここだけで宣言（重複禁止）
 let BOSS_DOOR = {x:1, y:1};
 
 function makeFilled(val){ return Array.from({length:H},()=>Array(W).fill(val)); }
@@ -477,7 +479,7 @@ window.addEventListener('touchmove', (e)=>{
 }, {passive:true});
 window.addEventListener('touchend', ()=>{ touchStartY=null; }, {passive:true});
 
-/* === 戦闘描画 === */
+/* === 戦闘描画（結果表示仕様含む）=== */
 function drawBattle(){
   const b=state.battle,h=state.hero,e=b.enemy; drawPanel(8,20,304,208);
 
@@ -573,7 +575,6 @@ function startShake(mag=6, dur=120, decay=0.8){
 }
 
 /* 距離→出現帯 */
-let DIST=null, BOSS_DOOR={x:1,y:1};
 function distPercentToBossDoor(x,y){
   if(!DIST || !inBounds(x,y)) return 0;
   const d = DIST[y]?.[x] ?? -1;
@@ -607,10 +608,10 @@ document.addEventListener('keyup',e=>{ delete keys[e.code]; });
 
 let last=0,acc=0; function loop(ts){ const dt=(ts-last)/1000; last=ts; acc+=dt; while(acc>1/60){ update(1/60); acc-=1/60; } draw(); requestAnimationFrame(loop); }
 
-/* ======== クールダウン制御（上下レスポンス抑制） ======== */
+/* ======== クールダウン制御 ======== */
 let moveCooldown=0, actionCooldown=0;
-let navCD=0;                  // ナビ用（上下/左右）
-const NAV_INTERVAL=0.18;      // 抑制時間（短すぎる→速い、長すぎる→重い）
+let navCD=0;
+const NAV_INTERVAL=0.18;
 function navReady(){ return navCD<=0; }
 function navSet(){ navCD=NAV_INTERVAL; }
 function pressed(a){ return a.some(k=>keys[k]); }
@@ -1009,7 +1010,7 @@ document.getElementById('btnActItems').onclick=()=>openItemsField();
 function armAudio(){ try{ const c=(window.AudioContext||window.webkitAudioContext)?audio():null; if(c&&c.state==='suspended'&&c.resume) c.resume(); }catch(_ ){} }
 ['pointerdown','touchstart'].forEach(ev=>{ document.addEventListener(ev, ()=>armAudio(), {once:true, passive:true}); });
 
-/* === タイトル強制起動＆タップ開始 === */
+/* === タイトル起動＆タップ開始 === */
 function bootGameToTitle(){
   if(bootGameToTitle._booted) return;
   bootGameToTitle._booted = true;
@@ -1056,7 +1057,7 @@ function bindPad(){
     const start = (e)=>{
       if (e && e.cancelable) e.preventDefault();
       press(code);
-      if (!tid) tid = setInterval(()=>press(code), 170); // 長押しでリピート
+      if (!tid) tid = setInterval(()=>press(code), 170);
     };
     const end = ()=>{
       if (tid){ clearInterval(tid); tid=null; }
@@ -1081,7 +1082,7 @@ function bindPad(){
     btn.addEventListener('touchend', fire, {passive:false});
   });
 
-  // 装備/道具ボタン（touch→click 保険）
+  // 装備/道具ボタン
   const actEquip = document.getElementById('btnActEquip');
   const actItems = document.getElementById('btnActItems');
   if (actEquip) actEquip.addEventListener('touchend', (e)=>{ e.preventDefault(); actEquip.click(); }, {passive:false});
@@ -1097,6 +1098,13 @@ function getHallPos(){
 function copyEnemy(t){ return JSON.parse(JSON.stringify(t)); }
 function hasItem(list, id){ return list.some(i=>i.id===id); }
 function giveLoot(loot){ const h=state.hero; if(loot.type==="weapon"){ if(!hasItem(h.invW, loot.item.id)) h.invW.push(loot.item); } else { if(!hasItem(h.invU, loot.item.id)) h.invU.push(loot.item); } }
+
+function resetToTitle(){
+  state={ hero:JSON.parse(JSON.stringify(heroBase)), x:1,y:1,facing:2, mode:"title", dialogQueue:[], battle:null, bossAlive:true, openedChests:{}, title:{blink:0,show:true}, nameMode:false, playerName:state.playerName, popups:[], shakeT:0, visited:Array.from({length:H},()=>Array(W).fill(false)), afterDialogFn:null };
+  regenerateWorld();
+  prevMode='title';
+  bgmStop();
+}
 </script>
 </body>
 </html>
