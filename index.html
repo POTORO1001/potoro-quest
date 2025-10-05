@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>ポ・トロクエスト v23d（タイトル修正）</title>
+<title>ポ・トロクエスト v23e（説明画面・表示拡張）</title>
 <style>
   :root{ --ui:#101522; --fg:#eef2ff; --acc:#ff7ad6; --pad:12px; }
   *{ box-sizing:border-box; -webkit-user-select:none; user-select:none; touch-action:manipulation; }
@@ -58,8 +58,8 @@
 <div class="app">
   <div class="topbar">
     <div>
-      <div class="title">ポ・トロクエスト v23d</div>
-      <div class="small">タイトル非表示バグ修正 / そのほか従来機能</div>
+      <div class="title">ポ・トロクエスト v23e</div>
+      <div class="small">説明画面の見切れ改善 / そのほか従来機能</div>
     </div>
     <div class="toolbar">
       <button class="btn" id="btnHelp">説明</button>
@@ -190,7 +190,7 @@ function bgmStart(kind){
 let MAP = makeFilled(1);          // 1:壁, 0:通路, 2:扉, 3:宝箱(青), 4:空箱, 6:ボス
 let hallMask = makeFilled(false); // 大広間（1マス）
 let CHEST_LOOT = {};
-let DIST = null;                  // ★ここだけで宣言（重複禁止）
+let DIST = null;                  // ★単一宣言
 let BOSS_DOOR = {x:1, y:1};
 
 function makeFilled(val){ return Array.from({length:H},()=>Array(W).fill(val)); }
@@ -339,7 +339,7 @@ function draw(){ ctx.save();
 }
 
 function drawWood(x,y,w,h){ ctx.fillStyle="#8a6b3a"; ctx.fillRect(x,y,w,h); ctx.fillStyle="#b48a3c"; for(let k=2;k<h;k+=4) ctx.fillRect(x, y+k, w, 1); ctx.fillStyle="#7a5f33"; for(let k=3;k<w;k+=6) ctx.fillRect(x+k, y+1, 1, h-2); }
-function drawRedWood(x,y,w,h){ ctx.fillStyle="#7a2a2a"; ctx.fillRect(x,y,w,h); ctx.fillStyle="#a33b3b"; for(let k=2;k<h;k+=4) ctx.fillRect(x, y+k, w, 1); ctx.fillStyle="#6a2323"; for(let k=3;k<w;k+=6) ctx.fillRect(x+k, y+1, 1, h-2); }
+function drawRedWood(x,y,w,h){ ctx.fillStyle="#7a2a2a"; ctx.fillRect(x,y,w,h); ctx.fillStyle="#a33b3b"; for(let k=2;k<h;k+=4) ctx.fillRect(x, y+k, w, 1); ctx.fillStyle="#6a2323"; for(let k=3;k>w?k:0;k+=6){} /* no-op */ ctx.fillStyle="#6a2323"; for(let k=3;k<w;k+=6) ctx.fillRect(x+k, y+1, 1, h-2); }
 
 function drawTitle(){
   ctx.fillStyle="#0b0f18"; ctx.fillRect(0,0,VIEW_W,VIEW_H);
@@ -433,14 +433,15 @@ const HELP_LINES = [
   "・攻略本が現実のお屋敷にあります。",
   "・超低確率で宝箱から幻の装備品「六代目メイド服(レプリカ)」を入手できます。入手したらスクリーンショットを撮って、現実のお屋敷までお越しください。先代衣装の「六代目メイド服一式(試作品)」をプレゼントいたします。先着1名様です。"
 ];
-let helpScroll=0, helpMaxVisible=12;
+let helpScroll=0, helpMaxVisible=16;  // ★表示行数拡張
 function openHelp(){ state.mode='help'; helpScroll=0; }
 function drawHelp(){
   drawPanel(8,16,304,208);
   drawText("《説明書》 ↑↓/ホイール/スワイプでスクロール / 戻るで閉じる",16,20,"#fff");
   const end = Math.min(HELP_LINES.length, helpScroll + helpMaxVisible);
   const visible=HELP_LINES.slice(helpScroll, end);
-  drawParagraph(visible, 16, 36, "#ddd", "10px monospace", 288, helpMaxVisible, 12);
+  // フォント/行間をタイトに（見切れ防止）
+  drawParagraph(visible, 16, 36, "#ddd", "9px monospace", 288, helpMaxVisible, 11);
   const ratio = HELP_LINES.length - helpMaxVisible;
   if(ratio>0){
     const barH = 120, trackX=304, trackY=36;
@@ -450,16 +451,17 @@ function drawHelp(){
   }
 }
 function helpUpdate(dt){
-  if(navReady() && keys["ArrowDown"] && helpScroll < Math.max(0, HELP_LINES.length-helpMaxVisible)){ helpScroll++; navSet(); }
-  if(navReady() && keys["ArrowUp"] && helpScroll > 0){ helpScroll--; navSet(); }
+  const maxScroll = Math.max(0, HELP_LINES.length-helpMaxVisible);
+  if(navReady() && keys["ArrowDown"] && helpScroll < maxScroll){ helpScroll = Math.min(maxScroll, helpScroll+2); navSet(); }
+  if(navReady() && keys["ArrowUp"]   && helpScroll > 0){        helpScroll = Math.max(0, helpScroll-2);         navSet(); }
   if(keys["Escape"]||keys["KeyX"]) state.mode='field';
 }
 window.addEventListener('wheel', (e)=>{
   if(state.mode!=='help') return;
   e.preventDefault();
   const maxScroll = Math.max(0, HELP_LINES.length-helpMaxVisible);
-  if(e.deltaY>0) helpScroll = Math.min(maxScroll, helpScroll+1);
-  else helpScroll = Math.max(0, helpScroll-1);
+  if(e.deltaY>0) helpScroll = Math.min(maxScroll, helpScroll+2);
+  else           helpScroll = Math.max(0, helpScroll-2);
 }, {passive:false});
 let touchStartY=null;
 window.addEventListener('touchstart', (e)=>{
@@ -472,14 +474,14 @@ window.addEventListener('touchmove', (e)=>{
   const dy = y - touchStartY;
   if(Math.abs(dy) > 12){
     const maxScroll = Math.max(0, HELP_LINES.length-helpMaxVisible);
-    if(dy<0) helpScroll = Math.min(maxScroll, helpScroll+1);
-    else helpScroll = Math.max(0, helpScroll-1);
+    if(dy<0) helpScroll = Math.min(maxScroll, helpScroll+2);
+    else     helpScroll = Math.max(0, helpScroll-2);
     touchStartY = y;
   }
 }, {passive:true});
 window.addEventListener('touchend', ()=>{ touchStartY=null; }, {passive:true});
 
-/* === 戦闘描画（結果表示仕様含む）=== */
+/* === 戦闘描画（結果表示仕様）=== */
 function drawBattle(){
   const b=state.battle,h=state.hero,e=b.enemy; drawPanel(8,20,304,208);
 
