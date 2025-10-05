@@ -12,15 +12,14 @@
   .app{ min-height:100%; display:flex; flex-direction:column; gap:8px;
     padding:env(safe-area-inset-top) var(--pad) calc(110px + env(safe-area-inset-bottom)) var(--pad); }
   .topbar{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
-  .title{ font-weight:800; color:var(--acc); line-height:1.05; white-space:normal; }
-  .toolbar{ display:flex; gap:8px; margin-left:auto; }
-  .btn{ background:#1a2238; color:#e8ecff; border:1px solid #34406a; border-radius:10px; padding:8px 12px; font-weight:700; }
-  .btn:active{ transform:translateY(1px); }
+  .title{ font-weight:800; color:var(--acc); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .screen{ display:flex; justify-content:center; }
   canvas{ image-rendering:pixelated; width:100%; max-width:100vw; height:auto; background:#000;
     border-radius:12px; outline:1px solid #2b3246; }
+  .toolbar{ display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-top:2px; }
+  .btn{ background:#1a2238; color:#e8ecff; border:1px solid #34406a; border-radius:10px; padding:8px 12px; font-weight:700; }
+  .btn:active{ transform:translateY(1px); }
 
-  /* 下部コントローラ */
   .controls{
     position:fixed; left:0; right:0; bottom:0; z-index:1000;
     padding:8px env(safe-area-inset-right) calc(10px + env(safe-area-inset-bottom)) env(safe-area-inset-left);
@@ -40,6 +39,9 @@
   .btnL{ flex:1 1 0; height:56px; border-radius:12px; border:1px solid #34406a;
     background:#17213a; color:#e8ecff; font-weight:800; }
   .btnL:active{ transform:scale(0.98); background:#121a2e; }
+  /* 戦闘中に見た目で無効化 */
+  .btnL.disabled { opacity:.5; pointer-events:none; }
+
   @media (max-width:360px){
     .btnc{ width:50px; height:50px; }
     .dpad{ grid-template-columns:50px 50px 50px; grid-template-rows:50px 50px 50px; gap:6px; }
@@ -61,7 +63,7 @@
     display:flex; flex-direction:column; overflow:hidden;
   }
   .help-head{ padding:10px 12px; border-bottom:1px solid #2b3246; font-weight:800; }
-  .help-body{ flex:1 1 auto; overflow:auto; padding:12px; line-height:1.5; -webkit-overflow-scrolling:touch; }
+  .help-body{ flex:1 1 auto; overflow:auto; padding:12px; line-height:1.45; -webkit-overflow-scrolling:touch; }
   .help-body p{ margin:0 0 .6em; white-space:pre-wrap; font-size:14px; }
   .help-foot{ padding:10px 12px; border-top:1px solid #2b3246; display:flex; gap:8px; justify-content:flex-end; }
   .help-close{ background:#17213a; color:#e8ecff; border:1px solid #34406a; border-radius:10px; padding:8px 12px; font-weight:700; }
@@ -70,13 +72,14 @@
 <body>
 <div class="app">
   <div class="topbar">
-    <!-- 左上のゲーム名を2行で表示可能に -->
     <div class="title">ポ・トロクエスト</div>
-    <!-- 右詰め・3ボタンのみ -->
     <div class="toolbar">
+      <!-- 完成版のまま（説明/効果音/最初から/開始/全画面） -->
       <button class="btn" id="btnHelp">説明</button>
       <button class="btn" id="btnMute">効果音: ON</button>
       <button class="btn" id="btnReset">最初から</button>
+      <button class="btn" id="btnStart">開始</button>
+      <button class="btn" id="btnFull">全画面</button>
     </div>
   </div>
 
@@ -122,7 +125,7 @@
 ・お屋敷の奥へ進むほど、強敵が出現します。
 ・ミュートは上部「効果音」ボタンで切替できます。
 ・攻略本が現実のお屋敷にあります。
-・超低確率で宝箱から幻の装備品「六代目メイド服(レプリカ)」を入手できます。入手したらスクリーンショットを撮って、現実のお屋敷までお越しください。先代衣装の「六代目メイド服一式(試作品)」をプレゼントいたします。先着1名様です。</p>
+・超低確率で宝箱から幻の装備品「六代目メイド服(レプリカ)」を入手できます。入手したらスクリーンショットを撮って、現実のお屋敷までお越しください。先代衣装の「六代目メイド服(試作品)」をプレゼントいたします。先着1名様です。</p>
     </div>
     <div class="help-foot">
       <button class="help-close" id="helpClose">閉じる</button>
@@ -217,15 +220,16 @@ function bgmStart(kind){
 }
 
 /* ======== World / Map ======== */
-function makeFilled(val){ return Array.from({length:H},()=>Array(W).fill(val)); }
-function inBounds(x,y){ return x>=0 && y>=0 && x<W && y<H; }
-
 let MAP = makeFilled(1);
 let hallMask = makeFilled(false);
 let CHEST_LOOT = {};
 let DIST = null;
 let BOSS_DOOR = {x:1, y:1};
 
+function makeFilled(val){ return Array.from({length:H},()=>Array(W).fill(val)); }
+function inBounds(x,y){ return x>=0 && y>=0 && x<W && y<H; }
+
+/* 迷路＋大広間・扉・宝箱生成 */
 function regenerateWorld(){
   MAP = makeFilled(1);
   hallMask = makeFilled(false);
@@ -382,10 +386,13 @@ function drawEnd(){
   centerText(line, VIEW_W/2, VIEW_H/2 - 10, "bold 14px sans-serif", "#ffe9f7");
   drawText("end", VIEW_W-36, VIEW_H-18, "#d0d4ff", "bold 12px monospace");
 }
-function centerText(t,cx,y,font="12px monospace",color="#fff"){ ctx.font=font; ctx.fillStyle=color; const w=ctx.measureText(t).width; ctx.fillText(t,cx-w/2,y); }
+function centerText(t,cx,y,font="12px monospace",color="#fff"){
+  ctx.font=font; ctx.fillStyle=color;
+  const w=ctx.measureText(t).width; ctx.fillText(t,cx-w/2,y);
+}
 function drawText(t,x,y,c="#fff",font="10px monospace"){ ctx.fillStyle=c; ctx.font=font; ctx.textBaseline="top"; ctx.fillText(t,x,y); }
 
-/* 折返し/段落/メイド/HUD/ダイアログ */
+/* 折返し 等 */
 function wrapLines(text, maxW, font="10px monospace"){
   ctx.font = font; const lines=[]; for(const raw of (""+text).split("\n")){
     let line=""; for(const ch of raw){ const test=line+ch;
@@ -437,14 +444,16 @@ function getOmajinaiList(h){
   return list;
 }
 
-/* === 戦闘描画（結果のみ表示仕様に対応）=== */
+/* === 戦闘描画（結果表示仕様）=== */
 function drawBattle(){
   const b=state.battle,h=state.hero,e=b.enemy; drawPanel(8,20,304,208);
 
   if(b.phase==="finished"){
     const lines = [];
     lines.push(b.victoryLine || `${h.name}は　${e.name}を　いやした！`);
-    if(Array.isArray(b.postMsgs) && b.postMsgs.length){ for(const t of b.postMsgs) lines.push(t); }
+    if(Array.isArray(b.postMsgs) && b.postMsgs.length){
+      for(const t of b.postMsgs) lines.push(t);
+    }
     lines.push(b.summary || "【戦闘結果】");
     drawParagraph(lines, 16, 64, "#fff", "10px monospace", 288, 8, 12);
     return;
@@ -477,6 +486,7 @@ function drawBattle(){
   } else if(b.phase==="item") drawItemMenu();
   else if(b.phase==="inter") drawText("ターン終了。次のターンへ（OK）",16,212,"#a4b0ff");
 }
+
 function drawItemMenu(){ const h=state.hero; const list=h.invI.filter(it=>it.qty>0);
   drawPanel(20,56,280,120);
   drawText("《どうぐ》 ↑↓で選択 / OKで使用 / 戻るで戻る",28,60,"#fff");
@@ -489,7 +499,7 @@ function drawItemMenu(){ const h=state.hero; const list=h.invI.filter(it=>it.qty
   }
 }
 
-/* Fog */
+/* 霧 */
 function reveal(x,y,r=3){ for(let j=-r;j<=r;j++){ for(let i=-r;i<=r;i++){
   const nx=x+i, ny=y+j; if(!inBounds(nx,ny)) continue; const d=Math.abs(i)+Math.abs(j);
   if(d<=r) state.visited[ny][nx]=true; } } }
@@ -540,15 +550,13 @@ document.addEventListener('keydown',e=>{ keys[e.code]=true; if(e.code==="Space")
   if(state.mode==="end" && (e.code==="Enter"||e.code==="Space")) resetToTitle();
 });
 document.addEventListener('keyup',e=>{ delete keys[e.code]; });
-
 let last=0,acc=0; function loop(ts){ const dt=(ts-last)/1000; last=ts; acc+=dt; while(acc>1/60){ update(1/60); acc-=1/60; } draw(); requestAnimationFrame(loop); }
 let moveCooldown=0, actionCooldown=0, navCD=0; const NAV_INTERVAL=0.18;
 function navReady(){ return navCD<=0; } function navSet(){ navCD=NAV_INTERVAL; }
 function pressed(a){ return a.some(k=>keys[k]); }
 let prevMode="title";
-
 function update(dt){
-  if(state.mode==='title') return titleUpdate(dt);
+  if(state.mode==='title') { syncControlsDisabled(); return titleUpdate(dt); }
 
   if(prevMode!==state.mode){
     if(state.mode==='field' || state.mode==='equip' || state.mode==='dialog' || state.mode==='items'){ bgmStart('field'); }
@@ -578,6 +586,9 @@ function update(dt){
   actionCooldown=Math.max(0,actionCooldown-dt);
   navCD=Math.max(0,navCD-dt);
   if(state.shakeT>0){ state.shakeT -= dt*1000; if(state.shakeT<0) state.shakeT=0; }
+
+  // ★ 戦闘中は下部の装備/道具ボタンを無効化
+  syncControlsDisabled();
 }
 function titleUpdate(dt){ state.title.blink+=dt; if(state.title.blink>=0.6){ state.title.blink=0; state.title.show=!state.title.show; } }
 
@@ -585,7 +596,7 @@ function titleUpdate(dt){ state.title.blink+=dt; if(state.title.blink>=0.6){ sta
 function startNameEntry(){
   armAudio();
   const ask=() => {
-    const v = prompt("推しのお名前を入力してください（12文字まで）","");
+    const v = prompt("推しのお名前を入力してください（12文字まで）",""); /* ← 文言修正 */
     if(v===null) return false;
     const name=(v||"").trim().slice(0,12);
     if(!name){ alert("名前を入力してください"); return ask(); }
@@ -609,17 +620,9 @@ function fieldUpdate(dt){
     if(t!==1){
       state.x=nx; state.y=ny; moveCooldown=0.12;
       if(dx>0) state.facing=1; else if(dx<0) state.facing=3; else if(dy<0) state.facing=0; else if(dy>0) state.facing=2;
-
       reveal(state.x, state.y, 3);
-
       if(t===0 && Math.random()<0.16) startBattle(pickEnemyFor(state.x, state.y));
-
-      if(t===2){
-        state.mode='dialog';
-        state.dialogQueue=["重厚な扉がきしんだ…","大広間から気配を感じる。"];
-        state.afterDialogFn=null;
-      }
-
+      if(t===2){ state.mode='dialog'; state.dialogQueue=["重厚な扉がきしんだ…","大広間から気配を感じる。"]; state.afterDialogFn=null; }
       if(t===6 && state.bossAlive){
         state.mode='dialog';
         const n = state.hero.name || "あなた";
@@ -627,7 +630,6 @@ function fieldUpdate(dt){
         state.dialogQueue=[speech,"—— 戦闘開始 ——"];
         state.afterDialogFn = ()=> startBattle(copyEnemy(BOSS));
       }
-
       if(t===3){
         const key=nx+","+ny;
         if(!state.openedChests[key]){
@@ -649,8 +651,6 @@ function fieldUpdate(dt){
       }
     }
   }
-  // フィールドのクイックボタン
-  if(keys["KeyE"]) openEquip(false);
 }
 
 /* === フィールド道具 === */
@@ -693,7 +693,7 @@ function itemsUpdate(dt){
   }
 }
 
-/* ======== Battle ======== */
+/* === 戦闘 === */
 function copyEnemy(t){ return JSON.parse(JSON.stringify(t)); }
 function hasItem(list, id){ return list.some(i=>i.id===id); }
 function giveLoot(loot){ const h=state.hero; if(loot.type==="weapon"){ if(!hasItem(h.invW, loot.item.id)) h.invW.push(loot.item); } else { if(!hasItem(h.invU, loot.item.id)) h.invU.push(loot.item); } }
@@ -701,13 +701,6 @@ function giveLoot(loot){ const h=state.hero; if(loot.type==="weapon"){ if(!hasIt
 function startBattle(enemy){
   state.battle={enemy,phase:'select',log:[`「${enemy.name}」があらわれた！`],sel:0,turn:1,itemSel:0,defending:false,omSel:0, postMsgs:[], summary:""};
   bgmStart(enemy.boss ? 'boss' : 'battle'); state.mode='battle';
-}
-function enemyAttackMessage(name, dmg){
-  if(name==="残業かつ叱責されたご主人様") return `ご主人様から叱責されつつ残業と言われた時の気持ちが伝わる！！${dmg}ダメージをうけた！`;
-  if(name==="定時のご主人様") return `ご主人様から明日も仕事かの気持ちが伝わる！！${dmg}ダメージをうけた！`;
-  if(name==="残業のご主人様") return `ご主人様から残業と言われた時の気持ちが伝わる！！${dmg}ダメージをうけた！`;
-  if(name==="叱責を受けたご主人様" || name==="叱責されたご主人様") return `ご主人様から叱責された時の気持ちが伝わる！！${dmg}ダメージをうけた！`;
-  return `${name}のこうげき！ ${dmg}ダメージ！`;
 }
 function useItem(base, stack, b, h, e){
   let msg="";
@@ -732,6 +725,13 @@ function useItem(base, stack, b, h, e){
   b.log.push(msg);
   if(e.hp<=0){ return winBattle(); }
   enemyAct();
+}
+function enemyAttackMessage(name, dmg){
+  if(name==="残業かつ叱責されたご主人様") return `ご主人様から叱責されつつ残業と言われた時の気持ちが伝わる！！${dmg}ダメージをうけた！`;
+  if(name==="定時のご主人様") return `ご主人様から明日も仕事かの気持ちが伝わる！！${dmg}ダメージをうけた！`;
+  if(name==="残業のご主人様") return `ご主人様から残業と言われた時の気持ちが伝わる！！${dmg}ダメージをうけた！`;
+  if(name==="叱責を受けたご主人様" || name==="叱責されたご主人様") return `ご主人様から叱責された時の気持ちが伝わる！！${dmg}ダメージをうけた！`;
+  return `${name}のこうげき！ ${dmg}ダメージ！`;
 }
 function enemyAct(){ const b=state.battle,h=state.hero,e=b.enemy; const def=totalDef(h);
   let dmg=Math.max(1, e.atk - def + Math.floor(Math.random()*3));
@@ -793,7 +793,7 @@ function battleUpdate(dt){
     const list=getOmajinaiList(h);
     if(navReady() && keys["ArrowUp"] && b.omSel>0){ b.omSel--; navSet(); }
     if(navReady() && keys["ArrowDown"] && b.omSel<Math.max(0,list.length-1)){ b.omSel++; navSet(); }
-    if(keys["Escape"]||keys["KeyX"]) b.phase='select';  // ← 戦闘強制終了しない
+    if(keys["Escape"]||keys["KeyX"]) b.phase='select';
     if((keys["Enter"]||keys["Space"]) && actionCooldown<=0){
       actionCooldown=0.18;
       if(list.length===0){ b.log.push("まだ何も覚えていない…"); b.phase='select'; return; }
@@ -829,7 +829,7 @@ function battleUpdate(dt){
     const list=h.invI.filter(it=>it.qty>0);
     if(navReady() && keys["ArrowUp"] && b.itemSel>0){ b.itemSel--; navSet(); }
     if(navReady() && keys["ArrowDown"] && b.itemSel<Math.max(0,list.length-1)){ b.itemSel++; navSet(); }
-    if(keys["Escape"]||keys["KeyX"]) b.phase='select'; // ← 戦闘強制終了しない
+    if(keys["Escape"]||keys["KeyX"]) b.phase='select';
     if((keys["Enter"]||keys["Space"]) && actionCooldown<=0){
       actionCooldown=0.18;
       if(list.length===0){ b.log.push("まだ何も持っていない…"); b.phase='select'; return; }
@@ -888,34 +888,28 @@ function drawEquip(){
 }
 function closeEquip(){ state.mode='field'; }
 
-/* ======== Buttons / Touch・クリック ======== */
+/* ======== Buttons / Header Clicks ======== */
 document.getElementById('btnReset').onclick=()=>{ if(confirm("最初からはじめますか？")){
   bgmStop();
   state={ hero:JSON.parse(JSON.stringify(heroBase)), x:1,y:1,facing:2, mode:"title", dialogQueue:[], battle:null, bossAlive:true, openedChests:{}, title:{blink:0,show:true}, nameMode:false, playerName:state.playerName, popups:[], shakeT:0, visited:Array.from({length:H},()=>Array(W).fill(false)), afterDialogFn:null };
   prevMode='title'; regenerateWorld();
 } };
 document.getElementById('btnMute').onclick=(e)=>{ mute=!mute; e.target.textContent="効果音: "+(mute?"OFF":"ON"); if(mute) bgmStop(); else{ if(state.mode==='field' || state.mode==='equip' || state.mode==='dialog' || state.mode==='items') bgmStart('field'); else if(state.mode==='battle'){ const boss = state.battle?.enemy?.boss; bgmStart(boss ? 'boss' : 'battle'); } } };
-document.getElementById('btnActEquip').onclick=()=>openEquip(false);
-document.getElementById('btnActItems').onclick=()=>openItemsField();
+document.getElementById('btnFull').onclick=()=>{ const el=document.getElementById('game'); if(!document.fullscreenElement){ el.requestFullscreen && el.requestFullscreen(); } else { document.exitFullscreen && document.exitFullscreen(); } };
+document.getElementById('btnStart').onclick=()=>{ if(state.mode==='title') startNameEntry(); };
 
-/* 下部コントローラ入力（連打しすぎ防止＆押しっぱ対応） */
-function press(code, duration=120){ keys[code]=true; setTimeout(()=>{ delete keys[code]; }, duration); }
-function bindPad(){
-  document.querySelectorAll('.btnc').forEach(b=>{
-    const code=b.getAttribute('data-k');
-    let tid=null;
-    const start=()=>{ press(code); tid=setInterval(()=>press(code), 150); };
-    const end=()=>{ if(tid){ clearInterval(tid); tid=null; delete keys[code]; } };
-    b.addEventListener('touchstart', e=>{ e.preventDefault(); start(); }, {passive:false});
-    b.addEventListener('mousedown', e=>{ e.preventDefault(); start(); });
-    ['touchend','touchcancel','mouseup','mouseleave'].forEach(ev=> b.addEventListener(ev, end, {passive:true}));
-  });
-  document.querySelectorAll('.btnL').forEach(b=>{
-    let main=b.getAttribute('data-k'); let alt=b.getAttribute('data-alt');
-    b.addEventListener('click', e=>{ e.preventDefault(); press(main); if(alt) setTimeout(()=>press(alt), 10); });
-  });
+/* ▼▼▼ ここが今回の変更：戦闘中は無反応 ▼▼▼ */
+document.getElementById('btnActEquip').onclick=()=>{ if(state.mode==='battle') return; openEquip(false); };
+document.getElementById('btnActItems').onclick=()=>{ if(state.mode==='battle') return; openItemsField(); };
+/* ▲▲▲ */
+
+function syncControlsDisabled(){
+  const equipBtn = document.getElementById('btnActEquip');
+  const itemsBtn = document.getElementById('btnActItems');
+  const disabled = (state.mode === 'battle');
+  if(equipBtn) equipBtn.classList.toggle('disabled', disabled);
+  if(itemsBtn) itemsBtn.classList.toggle('disabled', disabled);
 }
-bindPad();
 
 /* === 説明（DOMモーダル制御） === */
 const helpMask  = document.getElementById('helpMask');
@@ -931,32 +925,43 @@ function armAudio(){ try{ const c=(window.AudioContext||window.webkitAudioContex
 
 /* === タイトル起動＆タップ開始 === */
 function bootGameToTitle(){
-  try{
-    regenerateWorld();
-    state.mode = 'title';
-    prevMode   = 'title';
-    state.title.show = true;
-    bgmStop();
-    if(!bootGameToTitle._loop){
-      bootGameToTitle._loop = true;
-      requestAnimationFrame(loop);
-    }
-  }catch(err){ console.error(err); }
+  if(bootGameToTitle._booted) return; bootGameToTitle._booted = true;
+  regenerateWorld(); prevMode = 'title'; state.mode = 'title'; state.title.show = true; bgmStop(); requestAnimationFrame(loop);
+  function handleTapToStart(e){ if(e && e.cancelable) e.preventDefault(); if(state.mode==='title') startNameEntry(); }
+  ['click','touchend'].forEach(ev=>{ cvs.addEventListener(ev, handleTapToStart, {passive:false}); });
 }
-window.addEventListener('load', bootGameToTitle);
-cvs.addEventListener('click', (e)=>{ if(state.mode==='title') startNameEntry(); });
-cvs.addEventListener('touchend', (e)=>{ if(state.mode==='title'){ e.preventDefault(); startNameEntry(); }}, {passive:false});
+bootGameToTitle();
 
-/* Util */
-function getHallPos(){
-  for(let y=0;y<H;y++) for(let x=0;x<W;x++){ if(hallMask[y][x]) return {x,y}; }
-  return {x:W-2,y:H-2};
-}
 function resetToTitle(){
   state={ hero:JSON.parse(JSON.stringify(heroBase)), x:1,y:1,facing:2, mode:"title", dialogQueue:[], battle:null, bossAlive:true, openedChests:{}, title:{blink:0,show:true}, nameMode:false, playerName:state.playerName, popups:[], shakeT:0, visited:Array.from({length:H},()=>Array(W).fill(false)), afterDialogFn:null };
   regenerateWorld();
   prevMode='title';
   bgmStop();
+}
+
+/* タッチD-Pad/OK/戻る */
+function press(code, duration=120){ keys[code]=true; setTimeout(()=>{ delete keys[code]; }, duration); }
+function bindPad(){
+  document.querySelectorAll('.btnc').forEach(b=>{
+    const code=b.getAttribute('data-k');
+    let tid=null;
+    const start=()=>{ press(code); tid=setInterval(()=>press(code), 150); };
+    const end=()=>{ if(tid){ clearInterval(tid); tid=null; delete keys[code]; } };
+    b.addEventListener('touchstart', e=>{ e.preventDefault(); start(); }, {passive:false});
+    b.addEventListener('mousedown', e=>{ e.preventDefault(); start(); });
+    ['touchend','touchcancel','mouseup','mouseleave'].forEach(ev=> b.addEventListener(ev, end, {passive:true}));
+  });
+  document.querySelectorAll('.btnL').forEach(b=>{
+    let main=b.getAttribute('data-k'); let alt=b.getAttribute('data-alt');
+    if(main){ b.addEventListener('click', e=>{ e.preventDefault(); press(main); if(alt) setTimeout(()=>press(alt), 10); }); }
+  });
+}
+bindPad();
+
+/* ユーティリティ */
+function getHallPos(){
+  for(let y=0;y<H;y++) for(let x=0;x<W;x++){ if(hallMask[y][x]) return {x,y}; }
+  return {x:W-2,y:H-2};
 }
 </script>
 </body>
