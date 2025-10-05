@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>ポ・トロクエスト（完成版・タイトル2行）</title>
+<title>ポ・トロクエスト（完成版・ヘッダー整理）</title>
 <style>
   :root{ --ui:#101522; --fg:#eef2ff; --acc:#ff7ad6; --pad:12px; }
   *{ box-sizing:border-box; -webkit-user-select:none; user-select:none; touch-action:manipulation; }
@@ -11,8 +11,7 @@
     font-family:ui-sans-serif,system-ui,"Hiragino Kaku Gothic ProN",Meiryo,sans-serif; }
   .app{ min-height:100%; display:flex; flex-direction:column; gap:8px;
     padding:env(safe-area-inset-top) var(--pad) calc(110px + env(safe-area-inset-bottom)) var(--pad); }
-  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
-  /* ← タイトルを2行強制＆見切れないように */
+  .topbar{ display:flex; align-items:center; gap:8px; }
   .title{
     font-weight:800;
     color:var(--acc);
@@ -21,13 +20,19 @@
     text-overflow:clip;
     line-height:1.1;
   }
-  .screen{ display:flex; justify-content:center; }
-  canvas{ image-rendering:pixelated; width:100%; max-width:100vw; height:auto; background:#000;
-    border-radius:12px; outline:1px solid #2b3246; }
-  .toolbar{ display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-top:2px; }
+  /* ツールバーは右詰・3ボタンのみ */
+  .toolbar{
+    margin-left:auto;
+    display:flex; gap:8px; flex-wrap:nowrap; justify-content:flex-end; align-items:center;
+  }
   .btn{ background:#1a2238; color:#e8ecff; border:1px solid #34406a; border-radius:10px; padding:8px 12px; font-weight:700; }
   .btn:active{ transform:translateY(1px); }
 
+  .screen{ display:flex; justify-content:center; }
+  canvas{ image-rendering:pixelated; width:100%; max-width:100vw; height:auto; background:#000;
+    border-radius:12px; outline:1px solid #2b3246; }
+
+  /* 下部コントローラー */
   .controls{
     position:fixed; left:0; right:0; bottom:0; z-index:1000;
     padding:8px env(safe-area-inset-right) calc(10px + env(safe-area-inset-bottom)) env(safe-area-inset-left);
@@ -78,14 +83,13 @@
 <body>
 <div class="app">
   <div class="topbar">
-    <!-- ← 2行強制 -->
+    <!-- タイトルは2行表示 -->
     <div class="title">ポ・トロ<br>クエスト</div>
     <div class="toolbar">
+      <!-- 右詰・左から「説明」「効果音」「最初から」 -->
       <button class="btn" id="btnHelp">説明</button>
       <button class="btn" id="btnMute">効果音: ON</button>
       <button class="btn" id="btnReset">最初から</button>
-      <button class="btn" id="btnStart">開始</button>
-      <button class="btn" id="btnFull">全画面</button>
     </div>
   </div>
 
@@ -267,10 +271,14 @@ function regenerateWorld(){
   }
   DIST = dist;
 
-  // 大広間（最奥）
+  // 大広間（最奥）— ★バグ修正：不要な代入を除去
   let hx=1, hy=1, best=-1;
-  for(let y=0;y<H;y++) for(let x=0;x<W;x++){
-    if(MAP[y][x]===0 && dist[ny=y]?.[nx=x] !== undefined && dist[y][x]>best){ best=dist[y][x]; hx=x; hy=y; }
+  for(let y=0;y<H;y++){
+    for(let x=0;x<W;x++){
+      if(MAP[y][x]===0 && dist[y][x] > best){
+        best = dist[y][x]; hx=x; hy=y;
+      }
+    }
   }
   hallMask[hy][hx]=true; MAP[hy][hx]=6;
 
@@ -820,8 +828,6 @@ document.getElementById('btnReset').onclick=()=>{ if(confirm("最初からはじ
   prevMode='title'; regenerateWorld();
 } };
 document.getElementById('btnMute').onclick=(e)=>{ mute=!mute; e.target.textContent="効果音: "+(mute?"OFF":"ON"); if(mute) bgmStop(); else{ if(state.mode==='field' || state.mode==='equip' || state.mode==='dialog' || state.mode==='items') bgmStart('field'); else if(state.mode==='battle'){ const boss = state.battle?.enemy?.boss; bgmStart(boss ? 'boss' : 'battle'); } } };
-document.getElementById('btnFull').onclick=()=>{ const el=document.getElementById('game'); if(!document.fullscreenElement){ el.requestFullscreen && el.requestFullscreen(); } else { document.exitFullscreen && document.exitFullscreen(); } };
-document.getElementById('btnStart').onclick=()=>{ if(state.mode==='title') startNameEntry(); };
 document.getElementById('btnActEquip').onclick=()=>openEquip(false);
 document.getElementById('btnActItems').onclick=()=>openItemsField();
 
