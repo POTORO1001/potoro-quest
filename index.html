@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>ポ・トロクエスト（完成版・下部ボタンFix）</title>
+<title>ポ・トロクエスト（宝箱フリーズFix）</title>
 <style>
   :root{ --ui:#101522; --fg:#eef2ff; --acc:#ff7ad6; --pad:12px; }
   *{ box-sizing:border-box; -webkit-user-select:none; user-select:none; touch-action:manipulation; }
@@ -12,13 +12,14 @@
   .app{ min-height:100%; display:flex; flex-direction:column; gap:8px;
     padding:env(safe-area-inset-top) var(--pad) calc(110px + env(safe-area-inset-bottom)) var(--pad); }
   .topbar{ display:flex; align-items:center; gap:8px; }
-  .title{ font-weight:800; color:var(--acc); white-space:normal; overflow:visible; text-overflow:clip; line-height:1.1; }
+  .title{ font-weight:800; color:var(--acc); white-space:normal; line-height:1.1; }
   .toolbar{ margin-left:auto; display:flex; gap:8px; justify-content:flex-end; align-items:center; }
   .btn{ background:#1a2238; color:#e8ecff; border:1px solid #34406a; border-radius:10px; padding:8px 12px; font-weight:700; }
   .btn:active{ transform:translateY(1px); }
   .screen{ display:flex; justify-content:center; }
   canvas{ image-rendering:pixelated; width:100%; max-width:100vw; height:auto; background:#000;
     border-radius:12px; outline:1px solid #2b3246; }
+
   .controls{
     position:fixed; left:0; right:0; bottom:0; z-index:1000;
     padding:8px env(safe-area-inset-right) calc(10px + env(safe-area-inset-bottom)) env(safe-area-inset-left);
@@ -52,7 +53,7 @@
 <body>
 <div class="app">
   <div class="topbar">
-    <!-- タイトルは2行表示 -->
+    <!-- タイトルは2行表示（ご要望どおり） -->
     <div class="title">ポ・トロ<br>クエスト</div>
     <div class="toolbar">
       <button class="btn" id="btnHelp" type="button">説明</button>
@@ -348,8 +349,9 @@ function draw(){ ctx.save();
 }
 
 function drawWood(x,y,w,h){ ctx.fillStyle="#8a6b3a"; ctx.fillRect(x,y,w,h); ctx.fillStyle="#b48a3c"; for(let k=2;k<h;k+=4) ctx.fillRect(x, y+k, w, 1); ctx.fillStyle="#7a5f33"; for(let k=3;k<w;k+=6) ctx.fillRect(x+k, y+1, 1, h-2); }
-function drawRedWood(x,y,w,h){ ctx.fillStyle="#7a2a2a"; ctx.fillRect(x,y,w,h); ctx.fillStyle="#a33b3b"; for(let k=2;k<h;k+=4) ctx.fillRect(x, y+k, w, 1); ctx.fillStyle="#6a2323"; for(let k=3;k<w;k+=6) ctx.fillRect(x+k, y+1, 1, h-2); }
+function drawRedWood(x,y,w,h){ ctx.fillStyle="#7a2a2a"; ctx.fillRect(x,y,w,h); ctx.fillStyle="#a33b3b"; for(let k=2;k<h;k+=4) ctx.fillRect(x, y+k, w, 1); ctx.fillStyle="#6a2323"; for(let k=3;k>w;k-=6){} /* no-op line guard */ }
 
+/* タイトル/テキスト */
 function drawTitle(){
   ctx.fillStyle="#0b0f18"; ctx.fillRect(0,0,VIEW_W,VIEW_H);
   for(let i=0;i<VIEW_H;i+=8){ ctx.fillStyle=(i/8)%2? "#111a2a":"#0e1626"; ctx.fillRect(0,i,VIEW_W,8); }
@@ -423,7 +425,7 @@ function getOmajinaiList(h){
   return list;
 }
 
-/* 戦闘 */
+/* 戦闘UI ほか（省略なし） */
 function drawBattle(){
   const b=state.battle,h=state.hero,e=b.enemy; drawPanel(8,20,304,208);
 
@@ -495,7 +497,7 @@ function drawPopups(){ const arr=state.popups;
   } }
 function startShake(mag=6, dur=120, decay=0.8){ state.shakeMag=mag; state.shakeDur=dur; state.shakeT=dur; state.shakeDecay=decay; }
 
-/* 出現帯・その他 */
+/* 出現帯・補助 */
 function getHallPos(){
   for(let y=0;y<H;y++) for(let x=0;x<W;x++){ if(hallMask[y][x]) return {x,y}; }
   return {x:W-2,y:H-2};
@@ -530,7 +532,6 @@ function navReady(){ return navCD<=0; } function navSet(){ navCD=NAV_INTERVAL; }
 function pressed(a){ return a.some(k=>keys[k]); }
 let prevMode="title";
 function update(dt){
-  /* ★ タイトルでも仮想キー(Enter/Space)で開始できるよう対応 */
   if(state.mode==='title'){
     state.title.blink+=dt; if(state.title.blink>=0.6){ state.title.blink=0; state.title.show=!state.title.show; }
     if(pressed(["Enter","Space"])) startNameEntry();
@@ -584,7 +585,7 @@ function startNameEntry(){
   }
 }
 
-/* ======== Field / Items / Battle / Equip（前版どおり） ======== */
+/* ======== Field / Items / Battle / Equip ======== */
 function fieldUpdate(dt){
   const dx=(keys["ArrowRight"]||keys["KeyD"])?1:(keys["ArrowLeft"]||keys["KeyA"])?-1:0;
   const dy=(keys["ArrowDown"]||keys["KeyS"])?1:(keys["ArrowUp"]||keys["KeyW"])?-1:0;
@@ -595,8 +596,15 @@ function fieldUpdate(dt){
       state.x=nx; state.y=ny; moveCooldown=0.12;
       if(dx>0) state.facing=1; else if(dx<0) state.facing=3; else if(dy<0) state.facing=0; else if(dy>0) state.facing=2;
       reveal(state.x, state.y, 3);
+
       if(t===0 && Math.random()<0.16) startBattle(pickEnemyFor(state.x, state.y));
-      if(t===2){ state.mode='dialog'; state.dialogQueue=["重厚な扉がきしんだ…","大広間から気配を感じる。"]; state.afterDialogFn=null; }
+
+      if(t===2){
+        state.mode='dialog';
+        state.dialogQueue=["重厚な扉がきしんだ…","大広間から気配を感じる。"];
+        state.afterDialogFn=()=>{ state.mode='field'; };
+      }
+
       if(t===6 && state.bossAlive){
         state.mode='dialog';
         const n = state.hero.name || "あなた";
@@ -604,23 +612,45 @@ function fieldUpdate(dt){
         state.dialogQueue=[speech,"—— 戦闘開始 ——"];
         state.afterDialogFn = ()=> startBattle(copyEnemy(BOSS));
       }
+
+      /* === 宝箱（防御的＆確実に復帰） === */
       if(t===3){
         const key=nx+","+ny;
         if(!state.openedChests[key]){
-          const loot=CHEST_LOOT[key];
-          if(loot){ giveLoot(loot); state.openedChests[key]=true; seq([{f:880,ms:60,type:'square',vol:0.5},{f:1320,ms:60,type:'square',vol:0.5}]); }
-          else state.openedChests[key]=true;
-          state.mode='dialog'; const got = loot ? loot.item.name : "なにか"; state.dialogQueue=[`宝箱をあけた！`,`「${got}」を手に入れた！`];
+          const loot = CHEST_LOOT[key] || null;
+          // 先に開封フラグを立てておく（再進入での多重発火を避ける）
+          state.openedChests[key]=true;
+
+          let gotName = "なにか";
+          if(loot && loot.item && loot.item.name){
+            gotName = loot.item.name;
+            giveLoot(loot);
+          }
+
+          // レア抽選は try/catch で安全に
           try{
-            if(Math.random()<1/128){
+            if(Math.random() < 1/128){
               const u=state.hero.invU;
               if(!u.some(x=>x.id==="body_replica6")){
                 const rare=UNIFORMS.find(v=>v.id==="body_replica6");
-                if(rare){ u.push(rare); state.dialogQueue.push(`さらに「${rare.name}」を手に入れた！`); }
+                if(rare){ u.push(rare); state.dialogQueue = [`宝箱をあけた！`,`「${gotName}」を手に入れた！`,`さらに「${rare.name}」を手に入れた！`]; }
+                else { state.dialogQueue = [`宝箱をあけた！`,`「${gotName}」を手に入れた！`]; }
+              }else{
+                state.dialogQueue = [`宝箱をあけた！`,`「${gotName}」を手に入れた！`];
               }
+            }else{
+              state.dialogQueue = [`宝箱をあけた！`,`「${gotName}」を手に入れた！`];
             }
-          }catch(e){}
-          state.afterDialogFn=null;
+          }catch(e){
+            // 何かあってもゲーム継続
+            state.dialogQueue = [`宝箱をあけた！`,`「${gotName}」を手に入れた！`];
+          }
+
+          state.mode='dialog';
+          // ★必ずフィールドに戻す
+          state.afterDialogFn=()=>{ state.mode='field'; };
+          // 成功音
+          seq([{f:880,ms:60,type:'square',vol:0.5},{f:1320,ms:60,type:'square',vol:0.5}]);
         }
       }
     }
@@ -652,22 +682,22 @@ function itemsUpdate(dt){
     if(list.length===0) return;
     const stack=list[fieldItemSel]; const base=ITEMS.find(x=>x.id===stack.id);
     if(!base) return;
-    if(base.kind==="insta"){ state.mode='dialog'; state.dialogQueue=["ここでは使えない…（戦闘中のみ）"]; return; }
+    if(base.kind==="insta"){ state.mode='dialog'; state.dialogQueue=["ここでは使えない…（戦闘中のみ）"]; state.afterDialogFn=()=>{state.mode='field'}; return; }
     if(base.kind==="healHP"){
       const before=h.hp; h.hp=Math.min(h.maxhp, h.hp+base.power);
-      const g=h.hp-before; if(g<=0){ state.mode='dialog'; state.dialogQueue=["HPは十分だ。"]; return; }
-      stack.qty--; if(stack.qty<0) stack.qty=0; const inMain = h.invI.find(s=>s.id===stack.id); if(inMain) inMain.qty=stack.qty;
-      state.mode='dialog'; state.dialogQueue=[`「${base.name}」を使った。HPが${g}回復！`];
+      const g=h.hp-before; if(g<=0){ state.mode='dialog'; state.dialogQueue=["HPは十分だ。"]; state.afterDialogFn=()=>{state.mode='field'}; return; }
+      stack.qty=Math.max(0, stack.qty-1); const inMain = h.invI.find(s=>s.id===stack.id); if(inMain) inMain.qty=stack.qty;
+      state.mode='dialog'; state.dialogQueue=[`「${base.name}」を使った。HPが${g}回復！`]; state.afterDialogFn=()=>{state.mode='field'};
     }else if(base.kind==="healMP"){
       const before=h.mp; h.mp=Math.min(h.maxmp, h.mp+base.power);
-      const g=h.mp-before; if(g<=0){ state.mode='dialog'; state.dialogQueue=["MPは十分だ。"]; return; }
-      stack.qty--; if(stack.qty<0) stack.qty=0; const inMain = h.invI.find(s=>s.id===stack.id); if(inMain) inMain.qty=stack.qty;
-      state.mode='dialog'; state.dialogQueue=[`「${base.name}」を使った。MPが${g}回復！`];
+      const g=h.mp-before; if(g<=0){ state.mode='dialog'; state.dialogQueue=["MPは十分だ。"]; state.afterDialogFn=()=>{state.mode='field'}; return; }
+      stack.qty=Math.max(0, stack.qty-1); const inMain = h.invI.find(s=>s.id===stack.id); if(inMain) inMain.qty=stack.qty;
+      state.mode='dialog'; state.dialogQueue=[`「${base.name}」を使った。MPが${g}回復！`]; state.afterDialogFn=()=>{state.mode='field'};
     }
   }
 }
 
-/* === 戦闘制御 === */
+/* === 戦闘制御（勝利結果まとめ等は前版どおり） === */
 function startBattle(enemy){
   state.battle={enemy,phase:'select',log:[`「${enemy.name}」があらわれた！`],sel:0,turn:1,itemSel:0,defending:false,omSel:0, postMsgs:[], summary:""};
   bgmStart(enemy.boss ? 'boss' : 'battle'); state.mode='battle';
@@ -816,13 +846,13 @@ function battleUpdate(dt){
 function showEnding(){ bgmStop(); state.mode='end'; }
 function endBattle(){ state.mode='field'; state.battle=null; bgmStart('field'); }
 
-/* ======== Game Over（名前保持） ======== */
+/* ======== Game Over ======== */
 function gameOver(){
   const lastName = state.hero && state.hero.name ? state.hero.name : (state.playerName||null);
   state.hero=JSON.parse(JSON.stringify(heroBase));
   if(lastName){ state.hero.name = lastName; state.playerName = lastName; }
   state.battle=null; regenerateWorld(); state.bossAlive=true; state.openedChests={};
-  state.mode='dialog'; state.dialogQueue=['目の前が真っ黒になった…','屋敷の気配が変わったようだ（マップが変化した）']; state.afterDialogFn=null; bgmStart('field');
+  state.mode='dialog'; state.dialogQueue=['目の前が真っ黒になった…','屋敷の気配が変わったようだ（マップが変化した）']; state.afterDialogFn=()=>{state.mode='field'}; bgmStart('field');
 }
 
 /* ======== Equip ======== */
@@ -889,11 +919,10 @@ function bootGameToTitle(){
 }
 bootGameToTitle();
 
-/* ==== 画面下ボタン：即時アクション付 ==== */
+/* ==== 画面下ボタン ==== */
 function tapOK(){
   if(state.mode==='title'){ startNameEntry(); return; }
   if(state.mode==='dialog'){
-    // ダイアログ1つ進める
     if(state.dialogQueue.length){ state.dialogQueue.shift(); }
     if(state.dialogQueue.length===0){
       const fn=state.afterDialogFn; state.afterDialogFn=null;
@@ -901,18 +930,14 @@ function tapOK(){
     }
     return;
   }
-  // それ以外は仮想キーを送ってゲームロジックに任せる
   press('Enter');
 }
 function tapBack(){
   if(state.mode==='dialog'){ state.dialogQueue.length=0; const fn=state.afterDialogFn; state.afterDialogFn=null; if(typeof fn==="function"){ fn(); } else { state.mode='field'; } return; }
   press('KeyX'); setTimeout(()=>press('Escape'), 10);
 }
-
-/* 画面下パッド→キー送出 */
 function press(code, duration=140){ keys[code]=true; setTimeout(()=>{ delete keys[code]; }, duration); }
 function bindPad(){
-  // D-Pad
   document.querySelectorAll('.btnc').forEach(b=>{
     const code=b.getAttribute('data-k'); let tid=null;
     const start=()=>{ press(code); tid=setInterval(()=>press(code), 160); };
@@ -921,7 +946,6 @@ function bindPad(){
     b.addEventListener('mousedown', e=>{ e.preventDefault(); start(); });
     ['touchend','touchcancel','mouseup','mouseleave'].forEach(ev=> b.addEventListener(ev, end, {passive:true}));
   });
-  // OK / 戻る
   document.getElementById('btnOK').addEventListener('click', e=>{ e.preventDefault(); tapOK(); });
   document.getElementById('btnBack').addEventListener('click', e=>{ e.preventDefault(); tapBack(); });
   document.getElementById('btnOK').addEventListener('touchstart', e=>{ e.preventDefault(); tapOK(); }, {passive:false});
@@ -938,6 +962,17 @@ cvs.addEventListener('click',()=>{
 function resetToTitle(){
   state={ hero:JSON.parse(JSON.stringify(heroBase)), x:1,y:1,facing:2, mode:"title", dialogQueue:[], battle:null, bossAlive:true, openedChests:{}, title:{blink:0,show:true}, nameMode:false, playerName:state.playerName, popups:[], shakeT:0, visited:Array.from({length:H},()=>Array(W).fill(false)), afterDialogFn:null };
   regenerateWorld(); prevMode='title'; bgmStop();
+}
+
+/* ユーティリティ */
+function giveLoot(loot){
+  const h=state.hero;
+  if(!loot) return;
+  if(loot.type==="weapon"){
+    if(!h.invW.some(i=>i.id===loot.item.id)) h.invW.push(loot.item);
+  }else{
+    if(!h.invU.some(i=>i.id===loot.item.id)) h.invU.push(loot.item);
+  }
 }
 </script>
 </body>
