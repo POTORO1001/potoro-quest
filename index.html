@@ -12,27 +12,13 @@
   .app{ min-height:100%; display:flex; flex-direction:column; gap:8px;
     padding:env(safe-area-inset-top) var(--pad) calc(110px + env(safe-area-inset-bottom)) var(--pad); }
   .topbar{ display:flex; align-items:center; gap:8px; }
-  .title{
-    font-weight:800;
-    color:var(--acc);
-    white-space:normal;
-    overflow:visible;
-    text-overflow:clip;
-    line-height:1.1;
-  }
-  /* ツールバーは右詰・3ボタンのみ */
-  .toolbar{
-    margin-left:auto;
-    display:flex; gap:8px; flex-wrap:nowrap; justify-content:flex-end; align-items:center;
-  }
+  .title{ font-weight:800; color:var(--acc); white-space:normal; overflow:visible; text-overflow:clip; line-height:1.1; }
+  .toolbar{ margin-left:auto; display:flex; gap:8px; justify-content:flex-end; align-items:center; }
   .btn{ background:#1a2238; color:#e8ecff; border:1px solid #34406a; border-radius:10px; padding:8px 12px; font-weight:700; }
   .btn:active{ transform:translateY(1px); }
-
   .screen{ display:flex; justify-content:center; }
   canvas{ image-rendering:pixelated; width:100%; max-width:100vw; height:auto; background:#000;
     border-radius:12px; outline:1px solid #2b3246; }
-
-  /* 下部コントローラー */
   .controls{
     position:fixed; left:0; right:0; bottom:0; z-index:1000;
     padding:8px env(safe-area-inset-right) calc(10px + env(safe-area-inset-bottom)) env(safe-area-inset-left);
@@ -41,38 +27,20 @@
   }
   .dpad{ display:grid; grid-template-columns:56px 56px 56px; grid-template-rows:56px 56px 56px; gap:6px; flex:0 0 auto; }
   .dpad .sp{ visibility:hidden; }
-  .btnc{
-    width:56px; height:56px; border-radius:12px; border:1px solid #34406a;
-    background:#111729; color:#e8ecff; font-weight:900; font-size:16px;
-    display:flex; align-items:center; justify-content:center;
-  }
+  .btnc{ width:56px; height:56px; border-radius:12px; border:1px solid #34406a; background:#111729; color:#e8ecff; font-weight:900; font-size:16px; display:flex; align-items:center; justify-content:center; }
   .btnc:active{ transform:scale(0.98); background:#0d1220; }
   .actions{ display:flex; flex-direction:column; gap:8px; align-items:stretch; min-width:220px; }
   .actions-row{ display:flex; gap:8px; justify-content:space-between; }
-  .btnL{ flex:1 1 0; height:56px; border-radius:12px; border:1px solid #34406a;
-    background:#17213a; color:#e8ecff; font-weight:800; }
+  .btnL{ flex:1 1 0; height:56px; border-radius:12px; border:1px solid #34406a; background:#17213a; color:#e8ecff; font-weight:800; }
   .btnL:active{ transform:scale(0.98); background:#121a2e; }
+  @media (max-width:360px){ .btnc{ width:50px; height:50px; } .dpad{ grid-template-columns:50px 50px 50px; grid-template-rows:50px 50px 50px; gap:6px; } .btnL{ height:50px; font-size:14px; } .actions{ min-width:190px; } }
+  @media (min-width:560px){ .btnc{ width:64px; height:64px; } .dpad{ grid-template-columns:64px 64px 64px; grid-template-rows:64px 64px 64px; } .btnL{ height:64px; } }
 
-  @media (max-width:360px){
-    .btnc{ width:50px; height:50px; }
-    .dpad{ grid-template-columns:50px 50px 50px; grid-template-rows:50px 50px 50px; gap:6px; }
-    .btnL{ height:50px; font-size:14px; }
-    .actions{ min-width:190px; }
-  }
-  @media (min-width:560px){
-    .btnc{ width:64px; height:64px; }
-    .dpad{ grid-template-columns:64px 64px 64px; grid-template-rows:64px 64px 64px; }
-    .btnL{ height:64px; }
-  }
-
-  /* === 説明（DOMモーダル） === */
+  /* 説明モーダル */
   .help-mask{ position:fixed; inset:0; z-index:1500; display:none; background:rgba(0,0,0,.55); }
-  .help-wrap{
-    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
-    width: min(680px, calc(100vw - 24px)); height: min(520px, calc(100vh - 180px));
-    background:rgba(16,21,34,.98); border:1px solid #2b3246; border-radius:12px;
-    display:flex; flex-direction:column; overflow:hidden;
-  }
+  .help-wrap{ position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    width:min(680px, calc(100vw - 24px)); height:min(520px, calc(100vh - 180px));
+    background:rgba(16,21,34,.98); border:1px solid #2b3246; border-radius:12px; display:flex; flex-direction:column; overflow:hidden; }
   .help-head{ padding:10px 12px; border-bottom:1px solid #2b3246; font-weight:800; }
   .help-body{ flex:1 1 auto; overflow:auto; padding:12px; line-height:1.45; -webkit-overflow-scrolling:touch; }
   .help-body p{ margin:0 0 .6em; white-space:pre-wrap; font-size:14px; }
@@ -86,7 +54,7 @@
     <!-- タイトルは2行表示 -->
     <div class="title">ポ・トロ<br>クエスト</div>
     <div class="toolbar">
-      <!-- 右詰・左から「説明」「効果音」「最初から」 -->
+      <!-- 右詰：説明 / 効果音 / 最初から -->
       <button class="btn" id="btnHelp">説明</button>
       <button class="btn" id="btnMute">効果音: ON</button>
       <button class="btn" id="btnReset">最初から</button>
@@ -98,7 +66,7 @@
   </div>
 </div>
 
-<!-- On-screen controls -->
+<!-- 画面下コントローラ -->
 <div class="controls">
   <div class="dpad">
     <div class="sp"></div><button class="btnc" data-k="ArrowUp">▲</button><div class="sp"></div>
@@ -117,7 +85,7 @@
   </div>
 </div>
 
-<!-- 説明（DOMモーダル） -->
+<!-- 説明モーダル -->
 <div class="help-mask" id="helpMask" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
   <div class="help-wrap">
     <div class="help-head" id="helpTitle">《説明書》</div>
@@ -233,8 +201,8 @@ function bgmStart(kind){
 let MAP = makeFilled(1);
 let hallMask = makeFilled(false);
 let CHEST_LOOT = {};
-let DIST = null;
-let BOSS_DOOR = {x:1, y:1};
+let DIST = null;             /* ← 重複宣言をここだけに統一 */
+let BOSS_DOOR = {x:1, y:1};  /* ← 重複宣言をここだけに統一 */
 
 function makeFilled(val){ return Array.from({length:H},()=>Array(W).fill(val)); }
 function inBounds(x,y){ return x>=0 && y>=0 && x<W && y<H; }
@@ -271,14 +239,10 @@ function regenerateWorld(){
   }
   DIST = dist;
 
-  // 大広間（最奥）— ★バグ修正：不要な代入を除去
+  // 大広間（最奥）
   let hx=1, hy=1, best=-1;
-  for(let y=0;y<H;y++){
-    for(let x=0;x<W;x++){
-      if(MAP[y][x]===0 && dist[y][x] > best){
-        best = dist[y][x]; hx=x; hy=y;
-      }
-    }
+  for(let y=0;y<H;y++) for(let x=0;x<W;x++){
+    if(MAP[y][x]===0 && dist[y][x]>best){ best=dist[y][x]; hx=x; hy=y; }
   }
   hallMask[hy][hx]=true; MAP[hy][hx]=6;
 
@@ -290,7 +254,7 @@ function regenerateWorld(){
     }
   }
 
-  // 宝箱 4つ（青）＋中身
+  // 宝箱 4つ（青）
   const candidates=[];
   for(let y=1;y<H-1;y++) for(let x=1;x<W-1;x++){
     if(MAP[y][x]===0 && !(x===1&&y===1) && MAP[y][x]!==6) candidates.push([x,y]);
@@ -405,7 +369,6 @@ function centerText(t,cx,y,font="12px monospace",color="#fff"){
 }
 function drawText(t,x,y,c="#fff",font="10px monospace"){ ctx.fillStyle=c; ctx.font=font; ctx.textBaseline="top"; ctx.fillText(t,x,y); }
 
-/* 折返し等 */
 function wrapLines(text, maxW, font="10px monospace"){
   ctx.font = font; const lines=[]; for(const raw of (""+text).split("\n")){
     let line=""; for(const ch of raw){ const test=line+ch;
@@ -529,8 +492,7 @@ function drawPopups(){ const arr=state.popups;
   } }
 function startShake(mag=6, dur=120, decay=0.8){ state.shakeMag=mag; state.shakeDur=dur; state.shakeT=dur; state.shakeDecay=decay; }
 
-/* 距離→出現帯 */
-let DIST=null, BOSS_DOOR={x:1,y:1};
+/* 出現帯・その他 */
 function getHallPos(){
   for(let y=0;y<H;y++) for(let x=0;x<W;x++){ if(hallMask[y][x]) return {x,y}; }
   return {x:W-2,y:H-2};
@@ -547,16 +509,9 @@ function distPercentToBossDoor(x,y){
 function copyEnemy(t){ return JSON.parse(JSON.stringify(t)); }
 function pickEnemyFor(x,y){
   const p = distPercentToBossDoor(x,y);
-  if(p <= 30){
-    return copyEnemy(ENEMIES[0]);
-  }else if(p <= 60){
-    const idx = Math.random()<0.5 ? 0 : 1;
-    return copyEnemy(ENEMIES[idx]);
-  }else{
-    const r = Math.random();
-    const idx = r < 1/3 ? 0 : (r < 2/3 ? 1 : 2);
-    return copyEnemy(ENEMIES[idx]);
-  }
+  if(p <= 30){ return copyEnemy(ENEMIES[0]); }
+  else if(p <= 60){ const idx = Math.random()<0.5 ? 0 : 1; return copyEnemy(ENEMIES[idx]); }
+  else{ const r = Math.random(); const idx = r < 1/3 ? 0 : (r < 2/3 ? 1 : 2); return copyEnemy(ENEMIES[idx]); }
 }
 
 /* ======== Input & Loop ======== */
@@ -603,11 +558,11 @@ function update(dt){
 }
 function titleUpdate(dt){ state.title.blink+=dt; if(state.title.blink>=0.6){ state.title.blink=0; state.title.show=!state.title.show; } }
 
-/* 名前入力（文言変更） */
+/* 名前入力（文言：推し） */
 function startNameEntry(){
   armAudio();
   const ask=() => {
-    const v = prompt("推しのお名前を入力してください（12文字まで）",""); /* ← 文言修正 */
+    const v = prompt("推しのお名前を入力してください（12文字まで）","");
     if(v===null) return false;
     const name=(v||"").trim().slice(0,12);
     if(!name){ alert("名前を入力してください"); return ask(); }
@@ -754,9 +709,9 @@ function winBattle(){
   seq([{f:523,ms:120,type:'sine',vol:0.5},{f:659,ms:120,type:'sine',vol:0.5},{f:784,ms:120,type:'sine',vol:0.5}]);
 
   let gainedExp = e.exp; h.exp+=gainedExp;
-  let leveled=false; const post=[];
+  const post=[];
   while(h.exp >= h.lv*22){
-    h.exp -= h.lv*22; h.lv++; leveled=true;
+    h.exp -= h.lv*22; h.lv++;
     h.maxhp+=6; h.maxmp+=2; h.atk+=2; h.def+=1; h.hp=h.maxhp; h.mp=h.maxmp;
     post.push(`${h.name}は　レベルが　あがった！`);
     if(h.lv===3){ post.push(`${h.name}は　あたらしいおまじないを　おぼえた！`); }
@@ -831,7 +786,7 @@ document.getElementById('btnMute').onclick=(e)=>{ mute=!mute; e.target.textConte
 document.getElementById('btnActEquip').onclick=()=>openEquip(false);
 document.getElementById('btnActItems').onclick=()=>openItemsField();
 
-/* === 説明（DOMモーダル制御） === */
+/* 説明モーダル制御 */
 const helpMask  = document.getElementById('helpMask');
 const helpBody  = document.getElementById('helpBody');
 const helpClose = document.getElementById('helpClose');
@@ -839,11 +794,11 @@ document.getElementById('btnHelp').onclick=()=>{ helpMask.style.display='block';
 helpClose.onclick=()=>{ helpMask.style.display='none'; };
 helpMask.addEventListener('click', (e)=>{ if(e.target===helpMask) helpMask.style.display='none'; });
 
-/* === iOS audio unlock === */
+/* iOS audio unlock */
 function armAudio(){ try{ const c=(window.AudioContext||window.webkitAudioContext)?audio():null; if(c&&c.state==='suspended'&&c.resume) c.resume(); }catch(_ ){} }
 ['pointerdown','touchstart'].forEach(ev=>{ document.addEventListener(ev, ()=>armAudio(), {once:true, passive:true}); });
 
-/* === タイトル起動＆タップ開始 === */
+/* タイトル起動＆タップ開始 */
 function bootGameToTitle(){
   if(bootGameToTitle._booted) return; bootGameToTitle._booted = true;
   regenerateWorld(); prevMode = 'title'; state.mode = 'title'; state.title.show = true; bgmStop(); requestAnimationFrame(loop);
@@ -852,27 +807,22 @@ function bootGameToTitle(){
 }
 bootGameToTitle();
 
-/* クリック補助（キャンバス） */
+/* キャンバスのクリック補助 */
 cvs.addEventListener('click',()=>{ 
   if(state.mode==='title'){ startNameEntry(); return; }
   if(state.mode==='dialog'){ press('Enter'); return; }
   if(state.mode==='end'){ resetToTitle(); }
 });
-
-/* util: reset */
 function resetToTitle(){
   state={ hero:JSON.parse(JSON.stringify(heroBase)), x:1,y:1,facing:2, mode:"title", dialogQueue:[], battle:null, bossAlive:true, openedChests:{}, title:{blink:0,show:true}, nameMode:false, playerName:state.playerName, popups:[], shakeT:0, visited:Array.from({length:H},()=>Array(W).fill(false)), afterDialogFn:null };
-  regenerateWorld();
-  prevMode='title';
-  bgmStop();
+  regenerateWorld(); prevMode='title'; bgmStop();
 }
 
-/* ボタン→キー送出 */
+/* 画面下パッド→キー送出 */
 function press(code, duration=120){ keys[code]=true; setTimeout(()=>{ delete keys[code]; }, duration); }
 function bindPad(){
   document.querySelectorAll('.btnc').forEach(b=>{
-    const code=b.getAttribute('data-k');
-    let tid=null;
+    const code=b.getAttribute('data-k'); let tid=null;
     const start=()=>{ press(code); tid=setInterval(()=>press(code), 150); };
     const end=()=>{ if(tid){ clearInterval(tid); tid=null; delete keys[code]; } };
     b.addEventListener('touchstart', e=>{ e.preventDefault(); start(); }, {passive:false});
