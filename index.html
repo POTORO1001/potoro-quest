@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>ポ・トロクエスト v23-titlefix（説明全文 / タップ開始修正）</title>
+<title>ポ・トロクエスト v23b-padfix（説明全文 / タップ開始 / 画面パッド対応）</title>
 <style>
   :root{ --ui:#101522; --fg:#eef2ff; --acc:#ff7ad6; --pad:12px; }
   *{ box-sizing:border-box; -webkit-user-select:none; user-select:none; touch-action:manipulation; }
@@ -17,6 +17,7 @@
   .screen{ display:flex; justify-content:center; }
   canvas{ image-rendering:pixelated; width:100%; max-width:100vw; height:auto; background:#000;
     border-radius:12px; outline:1px solid #2b3246; }
+
   .toolbar{ display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-top:2px; }
   .btn{ background:#1a2238; color:#e8ecff; border:1px solid #34406a; border-radius:10px; padding:8px 12px; font-weight:700; }
   .btn:active{ transform:translateY(1px); }
@@ -62,8 +63,8 @@
 <div class="app">
   <div class="topbar">
     <div>
-      <div class="title">ポ・トロクエスト v23-titlefix</div>
-      <div class="small">説明全文 / iPhone向けUI / 霧・BGM・装備3枠 / 出現帯・戦闘結果</div>
+      <div class="title">ポ・トロクエスト v23b-padfix</div>
+      <div class="small">説明全文 / iPhone向けUI / 霧・BGM・装備3枠 / 出現帯・戦闘結果 / 画面パッド</div>
     </div>
     <div class="toolbar">
       <button class="btn" id="btnHelp">説明</button>
@@ -218,7 +219,7 @@ function regenerateWorld(){
   }
   carve(1,1);
 
-  // BFSで距離
+  // BFS距離
   const q=[[1,1]], dist=makeFilled(-1); dist[1][1]=0;
   const dirs=[[1,0],[-1,0],[0,1],[0,-1]];
   while(q.length){
@@ -232,7 +233,7 @@ function regenerateWorld(){
   }
   DIST = dist;
 
-  // 大広間（最奥1マス）
+  // 大広間（最奥）
   let hx=1, hy=1, best=-1;
   for(let y=0;y<H;y++) for(let x=0;x<W;x++){
     if(MAP[y][x]===0 && dist[y][x]>best){ best=dist[y][x]; hx=x; hy=y; }
@@ -294,7 +295,7 @@ function draw(){ ctx.save();
   if(state.mode==="title"){ drawTitle(); ctx.restore(); return; }
   if(state.mode==="end"){ drawEnd(); ctx.restore(); return; }
 
-  // タイル
+  // タイル / 背景
   for(let j=0;j<H;j++){ for(let i=0;i<W;i++){
     let t=MAP[j][i]; if(t===3 && state.openedChests[i+","+j]) t=4;
     if(t===0 || t===3 || t===4 || t===6 || t===2){
@@ -349,7 +350,7 @@ function drawRedWood(x,y,w,h){ ctx.fillStyle="#7a2a2a"; ctx.fillRect(x,y,w,h); c
 function drawTitle(){
   ctx.fillStyle="#0b0f18"; ctx.fillRect(0,0,VIEW_W,VIEW_H);
   for(let i=0;i<VIEW_H;i+=8){ ctx.fillStyle=(i/8)%2? "#111a2a":"#0e1626"; ctx.fillRect(0,i,VIEW_W,8); }
-  drawTitleText("ポ・トロクエスト",160,80);
+  centerText("ポ・トロクエスト", VIEW_W/2, 80, "bold 18px sans-serif", "#ff7ad6");
   if(state.title.show) drawText("PRESS START",104,140,"#e8ecff","bold 14px sans-serif");
 }
 function drawEnd(){
@@ -363,7 +364,6 @@ function centerText(t,cx,y,font="12px monospace",color="#fff"){
   ctx.font=font; ctx.fillStyle=color;
   const w=ctx.measureText(t).width; ctx.fillText(t,cx-w/2,y);
 }
-function drawTitleText(t,cx,y){ ctx.fillStyle="#ff7ad6"; ctx.font="bold 18px sans-serif"; const w=ctx.measureText(t).width; ctx.fillText(t,cx-w/2,y); }
 function drawText(t,x,y,c="#fff",font="10px monospace"){ ctx.fillStyle=c; ctx.font=font; ctx.textBaseline="top"; ctx.fillText(t,x,y); }
 
 /* 折返し */
@@ -605,7 +605,7 @@ function pickEnemyFor(x,y){
 }
 
 /* ======== Input & Loop ======== */
-const keys={};
+const keys={}; // ← これを画面ボタンからも共有して使います
 document.addEventListener('keydown',e=>{ keys[e.code]=true; if(e.code==="Space") e.preventDefault();
   if(state.mode==="title" && (e.code==="Enter"||e.code==="Space")) startNameEntry();
   if(state.mode==="end" && (e.code==="Enter"||e.code==="Space")) resetToTitle();
@@ -721,7 +721,6 @@ function fieldUpdate(dt){
       }
     }
   }
-  if(keys["KeyE"] && actionCooldown<=0){ actionCooldown=0.2; openEquip(); }
 }
 
 /* ======== Field Items（道具：フィールド） ======== */
@@ -789,7 +788,6 @@ function useItem(base, stack, b, h, e){
     const g=h.mp-before; msg=`${base.name}を飲んだ！ MPが${g}回復！`; if(g>0) addPopup(96,90,"+"+g,"#5aa3ff",12,14,350,200);
   }else if(base.kind==="insta"){
     if(e.boss){
-      // ボスは即撃破無効 → 大ダメージ
       const dd = Math.max(30, Math.floor(e.hp*0.7));
       e.hp = Math.max(1, e.hp - dd);
       msg=`${base.name}を召喚！ 強烈な一撃！ ${dd}ダメージ！（ボスは耐えた）`;
@@ -827,7 +825,6 @@ function winBattle(){
   b.log.push(`${e.name}をたおした！`);
   seq([{f:523,ms:120,type:'sine',vol:0.5},{f:659,ms:120,type:'sine',vol:0.5},{f:784,ms:120,type:'sine',vol:0.5}]);
 
-  // 戦闘結果まとめ
   let gainedExp = e.exp;
   h.exp+=gainedExp;
 
@@ -842,7 +839,6 @@ function winBattle(){
     if(h.lv===5){ post.push(`${h.name}は　あたらしいおまじないを　おぼえた！`); }
   }
 
-  // ドロップ
   let dropNote="";
   if(!e.boss && Math.random()<0.30){
     const id = (Math.random()<0.5) ? "omurice" : "tea";
@@ -998,7 +994,7 @@ function drawEquip(){
 }
 function closeEquip(){ state.mode='field'; }
 
-/* ======== Buttons / Touch ======== */
+/* ======== Buttons / Header Clicks ======== */
 document.getElementById('btnReset').onclick=()=>{ if(confirm("最初からはじめますか？")){
   bgmStop();
   state={ hero:JSON.parse(JSON.stringify(heroBase)), x:1,y:1,facing:2, mode:"title", dialogQueue:[], battle:null, bossAlive:true, openedChests:{}, title:{blink:0,show:true}, nameMode:false, playerName:state.playerName, popups:[], shakeT:0, visited:Array.from({length:H},()=>Array(W).fill(false)), afterDialogFn:null };
@@ -1017,7 +1013,7 @@ document.getElementById('btnActItems').onclick=()=>openItemsField();
 function armAudio(){ try{ const c=(window.AudioContext||window.webkitAudioContext)?audio():null; if(c&&c.state==='suspended'&&c.resume) c.resume(); }catch(_ ){} }
 ['pointerdown','touchstart'].forEach(ev=>{ document.addEventListener(ev, ()=>armAudio(), {once:true, passive:true}); });
 
-/* === タイトル強制起動＆タップ開始（重複なし） === */
+/* === タイトル強制起動＆タップ開始 === */
 function bootGameToTitle(){
   if(bootGameToTitle._booted) return;
   bootGameToTitle._booted = true;
@@ -1029,12 +1025,12 @@ function bootGameToTitle(){
   state.title.show = true;
   bgmStop();
 
-  // 点滅
+  // PRESS START 点滅
   bootGameToTitle._blinkTimer = setInterval(()=>{
     if(state.mode==='title') state.title.show = !state.title.show;
   }, 600);
 
-  // ループ開始
+  // メインループ開始
   requestAnimationFrame(loop);
 
   // タイトルでタップ/クリック → 名前入力
@@ -1045,7 +1041,6 @@ function bootGameToTitle(){
   ['click','touchend'].forEach(ev=>{
     cvs.addEventListener(ev, handleTapToStart, {passive:false});
   });
-  // 画面空白タップでも開始（ヘッダー/下部UI除外）
   document.addEventListener('click', (e)=>{
     if(state.mode!=='title') return;
     const t=e.target;
@@ -1055,13 +1050,57 @@ function bootGameToTitle(){
 }
 document.addEventListener('DOMContentLoaded', bootGameToTitle);
 
+/* === 画面下パッド：キーバインド === */
+function press(code, duration=140){
+  keys[code] = true;
+  setTimeout(()=>{ delete keys[code]; }, duration);
+}
+function bindPad(){
+  // 十字キー
+  document.querySelectorAll('.btnc').forEach(btn=>{
+    const code = btn.getAttribute('data-k');
+    let tid = null;
+    const start = (e)=>{
+      if (e && e.cancelable) e.preventDefault();
+      press(code);
+      if (!tid) tid = setInterval(()=>press(code), 170); // 長押しでリピート
+    };
+    const end = ()=>{
+      if (tid){ clearInterval(tid); tid=null; }
+      delete keys[code];
+    };
+    btn.addEventListener('touchstart', start, {passive:false});
+    btn.addEventListener('mousedown',   start);
+    ['touchend','touchcancel','mouseup','mouseleave']
+      .forEach(ev=> btn.addEventListener(ev, end, {passive:true}));
+  });
+
+  // OK/戻る
+  document.querySelectorAll('.btnL').forEach(btn=>{
+    const main = btn.getAttribute('data-k');
+    const alt  = btn.getAttribute('data-alt');
+    const fire = (e)=>{
+      if (e && e.cancelable) e.preventDefault();
+      press(main);
+      if (alt) setTimeout(()=>press(alt), 10);
+    };
+    btn.addEventListener('click', fire);
+    btn.addEventListener('touchend', fire, {passive:false});
+  });
+
+  // 装備/道具ボタンは touchend→click の保険
+  const actEquip = document.getElementById('btnActEquip');
+  const actItems = document.getElementById('btnActItems');
+  if (actEquip) actEquip.addEventListener('touchend', (e)=>{ e.preventDefault(); actEquip.click(); }, {passive:false});
+  if (actItems) actItems.addEventListener('touchend', (e)=>{ e.preventDefault(); actItems.click(); }, {passive:false});
+}
+document.addEventListener('DOMContentLoaded', bindPad);
+
 /* Util */
 function getHallPos(){
   for(let y=0;y<H;y++) for(let x=0;x<W;x++){ if(hallMask[y][x]) return {x,y}; }
   return {x:W-2,y:H-2};
 }
-
-/* Util: small helpers */
 function copyEnemy(t){ return JSON.parse(JSON.stringify(t)); }
 function hasItem(list, id){ return list.some(i=>i.id===id); }
 function giveLoot(loot){ const h=state.hero; if(loot.type==="weapon"){ if(!hasItem(h.invW, loot.item.id)) h.invW.push(loot.item); } else { if(!hasItem(h.invU, loot.item.id)) h.invU.push(loot.item); } }
