@@ -16,6 +16,7 @@
       color: #ffe81f;
       letter-spacing: 0.08em;
     }
+    /* 冒頭の一文：0〜3秒表示、3〜4秒で消える */
     .intro {
       position: absolute;
       top: 35%;
@@ -38,6 +39,7 @@
       perspective: 400px;
       perspective-origin: 50% 100%;
     }
+    /* オープニングロール本体（最初は見えない） */
     .crawl {
       position: absolute;
       bottom: -100vh;
@@ -51,9 +53,11 @@
       text-shadow: 0 0 8px rgba(0,0,0,0.8);
       opacity: 0;
     }
+    /* 流すときに付けるクラス */
     .crawl.play {
       animation: crawl var(--crawl-duration) linear forwards;
     }
+    /* 画面下→中央よりやや上に吸い込まれる感じ */
     @keyframes crawl {
       0% {
         opacity: 1;
@@ -91,22 +95,6 @@
       to { transform: translateY(300px); }
     }
 
-    .tap-to-start {
-      position: absolute;
-      bottom: 1.5rem;
-      width: 100%;
-      text-align: center;
-      font-size: 0.9rem;
-      color: rgba(255, 232, 31, 0.6);
-      animation: blink 1.2s ease-in-out infinite;
-      pointer-events: none;
-    }
-    @keyframes blink {
-      0%, 100% { opacity: 0.2; }
-      50% { opacity: 1; }
-    }
-    .hidden { display: none; }
-
     /* ★ SKIPボタン */
     #skip-opening {
       position: absolute;
@@ -127,6 +115,9 @@
       background: rgba(0,0,0,0.6);
     }
 
+    /* 「クリック/タップでスタート」はもう使わないので非表示でOK */
+    .tap-to-start { display: none; }
+
     @media (max-width: 600px) {
       .crawl { font-size: 1.2rem; width: 90%; }
       .intro { font-size: 1rem; }
@@ -138,7 +129,7 @@
 <body>
   <div class="stars"></div>
 
-  <!-- ★ スキップボタン -->
+  <!-- SKIPボタン -->
   <button id="skip-opening" type="button">SKIP</button>
 
   <div class="intro">
@@ -166,47 +157,36 @@
     </div>
   </div>
 
-  <div class="tap-to-start" id="hint">▶ クリック / タップでスタート</div>
-
   <script>
-    const hint = document.getElementById('hint');
     const crawl = document.getElementById('crawl');
     const skipBtn = document.getElementById('skip-opening');
-    let started = false;
     let finishTimer = null;
 
     function notifyFinish() {
-      // 親に終了を伝える
       window.parent.postMessage({ type: "opening-finished" }, "*");
     }
 
     function startOpening() {
-      if (started) return;
-      started = true;
-      if (hint) hint.classList.add('hidden');
-
-      // 5秒後にオープニングロール開始
+      // ① 冒頭の一文が4秒なので、1秒余白をとって5秒後にロール開始
       setTimeout(() => {
         crawl.classList.add('play');
       }, 5000);
 
-      // 45秒後に自動で終了通知（お好みで時間を変える）
+      // ② 自動終了（今は45秒後）※お好みで
       finishTimer = setTimeout(() => {
         notifyFinish();
       }, 45000);
     }
 
-    // クリックでスタート
-    document.addEventListener('click', startOpening);
-    document.addEventListener('touchstart', startOpening);
-
-    // ★ SKIPボタンを押したら即終了
+    // ★ SKIPボタン：即終了
     skipBtn.addEventListener('click', (e) => {
-      e.stopPropagation(); // クリックがstartOpeningに飛ばないように
-      // もし自動終了タイマーがあれば消す
+      e.stopPropagation();
       if (finishTimer) clearTimeout(finishTimer);
       notifyFinish();
     });
+
+    // ★ ページ表示と同時にスタート
+    startOpening();
   </script>
 </body>
 </html>
