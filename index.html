@@ -1,4 +1,44 @@
+<!-- game.html -->
 <!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>ポ・トロクエスト（ゲーム本体）</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: #000;
+    }
+    /* オープニングを全面にかぶせる */
+    #opening-frame {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+      z-index: 9999;
+      background: #000;
+    }
+    /* ゲームは最初は非表示 */
+    #game-root {
+      display: none;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+  <!-- ① オープニングを読み込む -->
+  <iframe
+    id="opening-frame"
+    src="opening.html"
+    title="ポ・トロクエスト オープニング"
+  ></iframe>
+
+  <!-- ② あなたの「ポ・トロクエスト（完成版）」をここに -->
+  <div id="game-root">
+ <!DOCTYPE html>
 <html lang="ja">
 <head>
 <meta charset="utf-8" />
@@ -964,5 +1004,28 @@ function getHallPos(){
  return {x:W-2,y:H-2};
 }
 </script>
+</body>
+</html>
+    <h1 style="color:#fff;background:#333;margin:0;padding:1rem;">
+      ここにゲーム本体を表示（テスト表示）
+    </h1>
+  </div>
+
+  <script>
+    const openingFrame = document.getElementById('opening-frame');
+    const gameRoot = document.getElementById('game-root');
+
+    // opening.html からのメッセージを受け取る
+    window.addEventListener('message', (event) => {
+      if (!event.data || !event.data.type) return;
+
+      if (event.data.type === 'opening-finished') {
+        // オープニングを隠す
+        openingFrame.style.display = 'none';
+        // ゲームを表示
+        gameRoot.style.display = 'block';
+      }
+    });
+  </script>
 </body>
 </html>
