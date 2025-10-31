@@ -63,7 +63,7 @@
     @keyframes crawl {
       0% {
         opacity: 1;  /* ここで初めて表示 */
-        transform: translate(-50%, 40vh) rotateX(20deg);
+        transform: translate(-50%, 20vh) rotateX(20deg);
       }
       100% {
         opacity: 1;
@@ -172,7 +172,7 @@
       // 4000ms（消えるまで） + 1200ms（余白） = 5200ms
       setTimeout(() => {
         crawl.classList.add('play');
-      }, 5200);
+      }, 5000);
 
       // ★ 自動でオープニング終了通知（お好みで変えてOK）
       finishTimer = setTimeout(() => {
