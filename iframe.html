@@ -2,16 +2,11 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>ポ・トロクエスト オープニングクロール風</title>
+  <title>ポ・トロクエスト オープニング</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    :root {
-      /* スクロール速度：大きいほどゆっくり */
-      --crawl-duration: 88s;
-    }
-    * {
-      box-sizing: border-box;
-    }
+    :root { --crawl-duration: 88s; }
+    * { box-sizing: border-box; }
     body {
       margin: 0;
       background: radial-gradient(circle at top, #111 0%, #000 55%, #000 100%);
@@ -21,8 +16,6 @@
       color: #ffe81f;
       letter-spacing: 0.08em;
     }
-
-    /* ① 冒頭の一文だけを先に表示（0〜3秒表示、3〜4秒で消える） */
     .intro {
       position: absolute;
       top: 35%;
@@ -39,68 +32,48 @@
       75%  { opacity: 1; }
       100% { opacity: 0; }
     }
-
-    /* 3D空間 */
     .star-wars {
       position: relative;
       height: 100vh;
       perspective: 400px;
       perspective-origin: 50% 100%;
     }
-
-    /* ② オープニングクロール本体 */
     .crawl {
       position: absolute;
-      bottom: -100vh;             /* 画面のかなり下からスタート */
+      bottom: -100vh;
       width: 80%;
       max-width: 720px;
       left: 50%;
       transform-origin: 50% 100%;
-      font-size: 1.5rem;          /* 大きめ文字を維持 */
+      font-size: 1.5rem;
       text-align: justify;
       line-height: 1.5;
       text-shadow: 0 0 8px rgba(0,0,0,0.8);
-      opacity: 0;                 /* 最初は見えない */
-      /* ★ 5秒後に表示&流れる＝冒頭が消えた1秒後 */
-      animation: crawl var(--crawl-duration) linear 5s forwards;
+      opacity: 0;
     }
-
-    /* ★ 画面真ん中よりちょい上で吸い込まれるようにした版 */
+    .crawl.play {
+      animation: crawl var(--crawl-duration) linear forwards;
+    }
     @keyframes crawl {
       0% {
         opacity: 1;
-        /* 画面の下からにゅっと出てきて、手前に見える位置 */
-        /* 40vh → 画面の中央より少し下寄りで出る */
         transform: translate(-50%, 40vh) rotateX(20deg);
       }
       100% {
         opacity: 1;
-        /*
-          -160vh：前回より短めにして「上に行き切りすぎない」ようにする。
-          これで画面中央よりちょい上あたりのラインに吸い込まれていく感じになる。
-        */
         transform: translate(-50%, -160vh) rotateX(28deg);
       }
     }
 
-    /* タイトルブロック */
-    .title-block {
-      text-align: center;
-      margin-bottom: 2.5rem;
-    }
+    .title-block { text-align: center; margin-bottom: 2.5rem; }
     .title-block .episode {
       font-size: 1rem;
       letter-spacing: 0.25em;
       text-transform: uppercase;
       margin-bottom: 1rem;
     }
-    .title-block h1 {
-      font-size: 2.2rem;
-      margin: 0;
-      text-transform: none;
-    }
+    .title-block h1 { font-size: 2.2rem; margin: 0; }
 
-    /* 星空っぽい背景 */
     .stars {
       position: fixed;
       inset: 0;
@@ -118,80 +91,122 @@
       to { transform: translateY(300px); }
     }
 
-    /* スマホ用 */
+    .tap-to-start {
+      position: absolute;
+      bottom: 1.5rem;
+      width: 100%;
+      text-align: center;
+      font-size: 0.9rem;
+      color: rgba(255, 232, 31, 0.6);
+      animation: blink 1.2s ease-in-out infinite;
+      pointer-events: none;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 0.2; }
+      50% { opacity: 1; }
+    }
+    .hidden { display: none; }
+
+    /* ★ SKIPボタン */
+    #skip-opening {
+      position: absolute;
+      top: 1.2rem;
+      right: 1.2rem;
+      background: rgba(0,0,0,0.35);
+      border: 1px solid rgba(255,232,31,0.7);
+      color: #ffe81f;
+      padding: 0.4rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      z-index: 10;
+      backdrop-filter: blur(2px);
+      transition: background .2s;
+    }
+    #skip-opening:hover {
+      background: rgba(0,0,0,0.6);
+    }
+
     @media (max-width: 600px) {
-      .crawl {
-        font-size: 1.2rem;
-        width: 90%;
-      }
-      .intro {
-        font-size: 1rem;
-      }
-      .title-block h1 {
-        font-size: 1.8rem;
-      }
+      .crawl { font-size: 1.2rem; width: 90%; }
+      .intro { font-size: 1rem; }
+      .title-block h1 { font-size: 1.8rem; }
+      #skip-opening { font-size: 0.7rem; top: .75rem; right: .75rem; }
     }
   </style>
 </head>
 <body>
   <div class="stars"></div>
 
-  <!-- 冒頭の一文（先に3秒見せる） -->
+  <!-- ★ スキップボタン -->
+  <button id="skip-opening" type="button">SKIP</button>
+
   <div class="intro">
     遥か未来、そしてどこにでもありそうな社会で――<br>
     人々は、残業と叱責に疲れ果てていた…。
   </div>
 
-  <!-- スターウォーズ風クロール -->
   <div class="star-wars" aria-label="オープニングストーリー">
-    <div class="crawl">
+    <div class="crawl" id="crawl">
       <div class="title-block">
         <div class="episode">EPISODE 1</div>
         <h1>ポ・トロクエスト</h1>
       </div>
 
-      <p>
-        時は20XX年。長らく封印されていた
-        <strong>「社会の闇」</strong>が解き放たれ、
-        世界は再び仕事の支配に飲み込まれた。
-      </p>
-      <p>
-        終わりのない残業。届かない評価。
-        叱責だけが空気のように漂い、
-        人々は笑顔すら記憶の彼方へ失おうとしていた。
-      </p>
-      <p>
-        希望は語られなくなり、
-        終電はいつしか「日常」と呼ばれ、
-        誰も「楽しさ」を口にしなくなった。
-      </p>
-      <p>
-        だが、その混沌の只中――
-        闇の裂け目から、ひとすじの光が生まれる。
-      </p>
-      <p>
-        それは、古き良き「お給仕」の精神を受け継ぎ、
-        ご主人様を笑顔に導くことを自らの使命とした
-        一人の<strong>メイド</strong>であった。
-      </p>
-      <p>
-        彼女は知っていた。  
-        叱責には癒やしを、  
-        残業にはご褒美を、  
-        荒んだ心にはときめきを――
-        それが世界をもう一度あたたかくする
-        ただ一つの道であることを。
-      </p>
-      <p>
-        こうして、社会の闇に立ち向かう
-        小さくも眩しい反逆が始まる。  
-        その物語こそ――
-      </p>
+      <p>時は20XX年。長らく封印されていた<strong>「社会の闇」</strong>が解き放たれ、世界は再び仕事の支配に飲み込まれた。</p>
+      <p>終わりのない残業。届かない評価。叱責だけが空気のように漂い、人々は笑顔すら記憶の彼方へ失おうとしていた。</p>
+      <p>希望は語られなくなり、終電はいつしか「日常」と呼ばれ、誰も「楽しさ」を口にしなくなった。</p>
+      <p>だが、その混沌の只中――闇の裂け目から、ひとすじの光が生まれる。</p>
+      <p>それは、古き良き「お給仕」の精神を受け継ぎ、ご主人様を笑顔に導くことを自らの使命とした一人の<strong>メイド</strong>であった。</p>
+      <p>彼女は知っていた。叱責には癒やしを、残業にはご褒美を、荒んだ心にはときめきを――それが世界をもう一度あたたかくするただ一つの道であることを。</p>
+      <p>こうして、社会の闇に立ち向かう小さくも眩しい反逆が始まる。その物語こそ――</p>
       <p style="text-align:center; margin-top:2.5rem; font-size:1.2em;">
-        <strong>「ポ・トロクエスト」</strong><br>
-        である。
+        <strong>「ポ・トロクエスト」</strong><br>である。
       </p>
     </div>
   </div>
+
+  <div class="tap-to-start" id="hint">▶ クリック / タップでスタート</div>
+
+  <script>
+    const hint = document.getElementById('hint');
+    const crawl = document.getElementById('crawl');
+    const skipBtn = document.getElementById('skip-opening');
+    let started = false;
+    let finishTimer = null;
+
+    function notifyFinish() {
+      // 親に終了を伝える
+      window.parent.postMessage({ type: "opening-finished" }, "*");
+    }
+
+    function startOpening() {
+      if (started) return;
+      started = true;
+      if (hint) hint.classList.add('hidden');
+
+      // 5秒後にオープニングロール開始
+      setTimeout(() => {
+        crawl.classList.add('play');
+      }, 5000);
+
+      // 45秒後に自動で終了通知（お好みで時間を変える）
+      finishTimer = setTimeout(() => {
+        notifyFinish();
+      }, 45000);
+    }
+
+    // クリックでスタート
+    document.addEventListener('click', startOpening);
+    document.addEventListener('touchstart', startOpening);
+
+    // ★ SKIPボタンを押したら即終了
+    skipBtn.addEventListener('click', (e) => {
+      e.stopPropagation(); // クリックがstartOpeningに飛ばないように
+      // もし自動終了タイマーがあれば消す
+      if (finishTimer) clearTimeout(finishTimer);
+      notifyFinish();
+    });
+  </script>
 </body>
 </html>
