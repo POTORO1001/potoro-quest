@@ -31,15 +31,17 @@
       0%   { opacity: 0; }
       5%   { opacity: 1; }
       75%  { opacity: 1; }
-      100% { opacity: 0; }
+      100% { opacity: 0; } /* ここでちょうど4秒 */
     }
+
     .star-wars {
       position: relative;
       height: 100vh;
       perspective: 400px;
       perspective-origin: 50% 100%;
     }
-    /* オープニングロール本体（最初は見えない） */
+
+    /* ロール：初期は完全に見えない＆下にある */
     .crawl {
       position: absolute;
       bottom: -100vh;
@@ -51,16 +53,16 @@
       text-align: justify;
       line-height: 1.5;
       text-shadow: 0 0 8px rgba(0,0,0,0.8);
-      opacity: 0;
+      opacity: 0; /* ←絶対に表示させない */
+      pointer-events: none;
     }
-    /* 流すときに付けるクラス */
+    /* 再生するときだけアニメする */
     .crawl.play {
       animation: crawl var(--crawl-duration) linear forwards;
     }
-    /* 画面下→中央よりやや上に吸い込まれる感じ */
     @keyframes crawl {
       0% {
-        opacity: 1;
+        opacity: 1;  /* ここで初めて表示 */
         transform: translate(-50%, 40vh) rotateX(20deg);
       }
       100% {
@@ -95,7 +97,7 @@
       to { transform: translateY(300px); }
     }
 
-    /* ★ SKIPボタン */
+    /* SKIPボタン */
     #skip-opening {
       position: absolute;
       top: 1.2rem;
@@ -115,7 +117,7 @@
       background: rgba(0,0,0,0.6);
     }
 
-    /* 「クリック/タップでスタート」はもう使わないので非表示でOK */
+    /* クリック案内はもう使わない */
     .tap-to-start { display: none; }
 
     @media (max-width: 600px) {
@@ -129,7 +131,6 @@
 <body>
   <div class="stars"></div>
 
-  <!-- SKIPボタン -->
   <button id="skip-opening" type="button">SKIP</button>
 
   <div class="intro">
@@ -167,25 +168,26 @@
     }
 
     function startOpening() {
-      // ① 冒頭の一文が4秒なので、1秒余白をとって5秒後にロール開始
+      // ★ ここが「冒頭が消えてからの待ち時間」
+      // 4000ms（消えるまで） + 1200ms（余白） = 5200ms
       setTimeout(() => {
         crawl.classList.add('play');
-      }, 1000);
+      }, 5200);
 
-      // ② 自動終了（今は45秒後）※お好みで
+      // ★ 自動でオープニング終了通知（お好みで変えてOK）
       finishTimer = setTimeout(() => {
         notifyFinish();
       }, 45000);
     }
 
-    // ★ SKIPボタン：即終了
+    // SKIPで即終了
     skipBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       if (finishTimer) clearTimeout(finishTimer);
       notifyFinish();
     });
 
-    // ★ ページ表示と同時にスタート
+    // ページ表示と同時に開始
     startOpening();
   </script>
 </body>
