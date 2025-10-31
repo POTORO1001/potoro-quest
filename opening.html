@@ -67,7 +67,7 @@
       }
       100% {
         opacity: 1;
-        transform: translate(-50%, -160vh) rotateX(28deg);
+        transform: translate(-50%, -110vh) rotateX(28deg);
       }
     }
 
@@ -169,10 +169,10 @@
 
     function startOpening() {
       // ★ ここが「冒頭が消えてからの待ち時間」
-      // 4000ms（消えるまで）
+      // 1000ms（消えるまで）
       setTimeout(() => {
         crawl.classList.add('play');
-      }, 2000);
+      }, 1000);
 
       // ★ 自動でオープニング終了通知（お好みで変えてOK）
       finishTimer = setTimeout(() => {
