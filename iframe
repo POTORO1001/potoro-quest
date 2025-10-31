@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>ポ・トロクエスト オープニングクロール風</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      /* スクロール速度：大きいほどゆっくり */
+      --crawl-duration: 88s;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      background: radial-gradient(circle at top, #111 0%, #000 55%, #000 100%);
+      height: 100vh;
+      overflow: hidden;
+      font-family: "Yu Gothic", "Hiragino Sans", sans-serif;
+      color: #ffe81f;
+      letter-spacing: 0.08em;
+    }
+
+    /* ① 冒頭の一文だけを先に表示（0〜3秒表示、3〜4秒で消える） */
+    .intro {
+      position: absolute;
+      top: 35%;
+      width: 100%;
+      text-align: center;
+      font-size: 1.1rem;
+      opacity: 0;
+      animation: introFade 4s ease-out 0s forwards;
+      z-index: 5;
+    }
+    @keyframes introFade {
+      0%   { opacity: 0; }
+      5%   { opacity: 1; }
+      75%  { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    /* 3D空間 */
+    .star-wars {
+      position: relative;
+      height: 100vh;
+      perspective: 400px;
+      perspective-origin: 50% 100%;
+    }
+
+    /* ② オープニングクロール本体 */
+    .crawl {
+      position: absolute;
+      bottom: -100vh;             /* 画面のかなり下からスタート */
+      width: 80%;
+      max-width: 720px;
+      left: 50%;
+      transform-origin: 50% 100%;
+      font-size: 1.5rem;          /* 大きめ文字を維持 */
+      text-align: justify;
+      line-height: 1.5;
+      text-shadow: 0 0 8px rgba(0,0,0,0.8);
+      opacity: 0;                 /* 最初は見えない */
+      /* ★ 5秒後に表示&流れる＝冒頭が消えた1秒後 */
+      animation: crawl var(--crawl-duration) linear 5s forwards;
+    }
+
+    /* ★ 画面真ん中よりちょい上で吸い込まれるようにした版 */
+    @keyframes crawl {
+      0% {
+        opacity: 1;
+        /* 画面の下からにゅっと出てきて、手前に見える位置 */
+        /* 40vh → 画面の中央より少し下寄りで出る */
+        transform: translate(-50%, 40vh) rotateX(20deg);
+      }
+      100% {
+        opacity: 1;
+        /*
+          -160vh：前回より短めにして「上に行き切りすぎない」ようにする。
+          これで画面中央よりちょい上あたりのラインに吸い込まれていく感じになる。
+        */
+        transform: translate(-50%, -160vh) rotateX(28deg);
+      }
+    }
+
+    /* タイトルブロック */
+    .title-block {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+    .title-block .episode {
+      font-size: 1rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+    .title-block h1 {
+      font-size: 2.2rem;
+      margin: 0;
+      text-transform: none;
+    }
+
+    /* 星空っぽい背景 */
+    .stars {
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(#fff 1px, transparent 1px),
+        radial-gradient(#fff 1px, transparent 1px);
+      background-size: 250px 250px, 320px 320px;
+      background-position: 0 0, 80px 120px;
+      opacity: 0.18;
+      pointer-events: none;
+      animation: starMove 45s linear infinite;
+    }
+    @keyframes starMove {
+      from { transform: translateY(0); }
+      to { transform: translateY(300px); }
+    }
+
+    /* スマホ用 */
+    @media (max-width: 600px) {
+      .crawl {
+        font-size: 1.2rem;
+        width: 90%;
+      }
+      .intro {
+        font-size: 1rem;
+      }
+      .title-block h1 {
+        font-size: 1.8rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="stars"></div>
+
+  <!-- 冒頭の一文（先に3秒見せる） -->
+  <div class="intro">
+    遥か未来、そしてどこにでもありそうな社会で――<br>
+    人々は、残業と叱責に疲れ果てていた…。
+  </div>
+
+  <!-- スターウォーズ風クロール -->
+  <div class="star-wars" aria-label="オープニングストーリー">
+    <div class="crawl">
+      <div class="title-block">
+        <div class="episode">EPISODE 1</div>
+        <h1>ポ・トロクエスト</h1>
+      </div>
+
+      <p>
+        時は20XX年。長らく封印されていた
+        <strong>「社会の闇」</strong>が解き放たれ、
+        世界は再び仕事の支配に飲み込まれた。
+      </p>
+      <p>
+        終わりのない残業。届かない評価。
+        叱責だけが空気のように漂い、
+        人々は笑顔すら記憶の彼方へ失おうとしていた。
+      </p>
+      <p>
+        希望は語られなくなり、
+        終電はいつしか「日常」と呼ばれ、
+        誰も「楽しさ」を口にしなくなった。
+      </p>
+      <p>
+        だが、その混沌の只中――
+        闇の裂け目から、ひとすじの光が生まれる。
+      </p>
+      <p>
+        それは、古き良き「お給仕」の精神を受け継ぎ、
+        ご主人様を笑顔に導くことを自らの使命とした
+        一人の<strong>メイド</strong>であった。
+      </p>
+      <p>
+        彼女は知っていた。  
+        叱責には癒やしを、  
+        残業にはご褒美を、  
+        荒んだ心にはときめきを――
+        それが世界をもう一度あたたかくする
+        ただ一つの道であることを。
+      </p>
+      <p>
+        こうして、社会の闇に立ち向かう
+        小さくも眩しい反逆が始まる。  
+        その物語こそ――
+      </p>
+      <p style="text-align:center; margin-top:2.5rem; font-size:1.2em;">
+        <strong>「ポ・トロクエスト」</strong><br>
+        である。
+      </p>
+    </div>
+  </div>
+</body>
+</html>
