@@ -1173,11 +1173,6 @@
       if (!event.data || event.data.type !== 'opening-finished') return;
       showGame();
     });
-
-    // フォールバック：5秒たっても何も来なければゲームを表示
-  setTimeout(() => {
-    showGame();
-  }, 80000);
   </script>
 </body>
 </html>
