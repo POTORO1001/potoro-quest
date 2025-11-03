@@ -762,11 +762,19 @@
 
   /* ======== Input & Loop ======== */
   const keys={};
-  document.addEventListener('keydown',e=>{ keys[e.code]=true; if(e.code==="Space") e.preventDefault();
-   if(state.mode==="title" && (e.code==="Enter"||e.code==="Space")) startNameEntry();
-   if(state.mode==="end" && (e.code==="Enter"||e.code==="Space")) resetToTitle();
+  document.addEventListener('keydown', e => {
+    const tag = (e.target && e.target.tagName) || "";
+    const typing = /INPUT|TEXTAREA|SELECT/.test(tag) || (e.target && e.target.isContentEditable);
+
+    keys[e.code] = true;
+    // 入力中は Space の既定動作を妨げない
+    if (e.code === "Space" && !typing) e.preventDefault();
+
+    if (state.mode === "title" && (e.code === "Enter" || e.code === "Space")) startNameEntry();
+    if (state.mode === "end"   && (e.code === "Enter" || e.code === "Space")) resetToTitle();
   });
-  document.addEventListener('keyup',e=>{ delete keys[e.code]; });
+  document.addEventListener('keyup', e => { delete keys[e.code]; });
+
   let last=0,acc=0; function loop(ts){ const dt=(ts-last)/1000; last=ts; acc+=dt; while(acc>1/60){ update(1/60); acc-=1/60; } draw(); requestAnimationFrame(loop); }
   let moveCooldown=0, actionCooldown=0, navCD=0; const NAV_INTERVAL=0.18;
   function navReady(){ return navCD<=0; } function navSet(){ navCD=NAV_INTERVAL; }
