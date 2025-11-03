@@ -1139,25 +1139,33 @@ function titleUpdate(dt){
 
   /* タッチD-Pad/OK/戻る */
   function press(code, duration=120){ keys[code]=true; setTimeout(()=>{ delete keys[code]; }, duration); }
-  function bindPad(){
-   document.querySelectorAll('.btnc').forEach(b=>{
-   const code=b.getAttribute('data-k');
-   let tid=null;
-   const start=()=>{ press(code); tid=setInterval(()=>press(code), 150); };
-   const end=()=>{ if(tid){ clearInterval(tid); tid=null; delete keys[code]; } };
-   b.addEventListener('touchstart', e=>{ e.preventDefault(); start(); }, {passive:false});
-   b.addEventListener('mousedown', e=>{ e.preventDefault(); start(); });
-   ['touchend','touchcancel','mouseup','mouseleave'].forEach(ev=> b.addEventListener(ev, end, {passive:true}));
-   });
-   document.querySelectorAll('.btnL').forEach(b=>{
-  let main=b.getAttribute('data-k'); let alt=b.getAttribute('data-alt');
-- if(main){ b.addEventListener('click', e=>{ e.preventDefault(); press(main); if(alt) setTimeout(()=>press(alt), 10); }); }
-+ if(main){ b.addEventListener('click', e=>{ e.preventDefault(); press(main); if(alt) setTimeout(()=>press(alt), 10);
-+   // タイトル中なら即開始（擬似キーに頼らず直呼び）
-+   if(state.mode==='title' && (main==='Enter' || main==='Space')) startNameEntry();
-+ }); }
-});
-  }
+ function bindPad(){
+  document.querySelectorAll('.btnc').forEach(b=>{
+    const code = b.getAttribute('data-k');
+    let tid = null;
+    const start = ()=>{ press(code); tid = setInterval(()=>press(code), 150); };
+    const end   = ()=>{ if(tid){ clearInterval(tid); tid=null; delete keys[code]; } };
+    b.addEventListener('touchstart', e=>{ e.preventDefault(); start(); }, {passive:false});
+    b.addEventListener('mousedown',  e=>{ e.preventDefault(); start(); });
+    ['touchend','touchcancel','mouseup','mouseleave'].forEach(ev=> b.addEventListener(ev, end, {passive:true}));
+  });
+
+  document.querySelectorAll('.btnL').forEach(b=>{
+    let main = b.getAttribute('data-k');
+    let alt  = b.getAttribute('data-alt');
+    if (main){
+      b.addEventListener('click', e=>{
+        e.preventDefault();
+        press(main);
+        if (alt) setTimeout(()=>press(alt), 10);
+        // タイトル中なら直呼びで開始
+        if (state.mode === 'title' && (main === 'Enter' || main === 'Space')) {
+          startNameEntry();
+        }
+      });
+    }
+  });
+}
   bindPad();
 
   /* ユーティリティ */
