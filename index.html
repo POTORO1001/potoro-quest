@@ -1176,9 +1176,9 @@ function startNameEntry(){
         press(main);
         if (alt) setTimeout(()=>press(alt), 10);
         // タイトル中なら直呼びで開始
-        if (state.mode === 'title' && (main === 'Enter' || main === 'Space')) {
-          startNameEntry();
-        }
+       if (state.mode === 'title' && !state.nameMode && (main === 'Enter' || main === 'Space')) {
+  startNameEntry();
+}
       });
     }
   });
