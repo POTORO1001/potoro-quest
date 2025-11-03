@@ -1202,11 +1202,17 @@ function startNameEntry(){
     let shown = false;
 
     function showGame() {
-      if (shown) return;
-      shown = true;
-      openingFrame.style.display = 'none';
-      gameRoot.style.display = 'block';
-    }
+  if (shown) return;
+  shown = true;
+  openingFrame.style.display = 'none';
+  gameRoot.style.display = 'block';
+
+  // ★ キャンバスにフォーカスして、すぐ操作できるように
+  try { cvs.setAttribute('tabindex', '0'); cvs.focus(); } catch(_) {}
+
+  // ★ 念のためタイトル起動済みか確認して、未起動なら起動
+  if (!bootGameToTitle._booted) bootGameToTitle();
+}
 
    // opening.html からのメッセージを受け取る
 window.addEventListener('message', (event) => {
