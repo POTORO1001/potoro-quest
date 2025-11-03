@@ -1294,8 +1294,10 @@ function openNameModal(onOK, onCancel){
     // ★ 直付け（iOS古機種の保険）
 ['click','touchstart','touchend','pointerdown','pointerup'].forEach(ev=>{
   cvs.addEventListener(ev, (e)=>{
-    if (e && e.cancelable) e.preventDefault();
-    if (state.mode === 'title' && !state.nameMode) startNameEntry();
+    if (state.mode === 'title' && !state.nameMode) {
+      if (e && e.cancelable) e.preventDefault();
+      startNameEntry();
+    }
   }, {passive:false});
 });
 
