@@ -828,6 +828,43 @@ function startNameEntry(){
   }
   state.nameMode = false; // ★最後に解除
 }
+// ===== 名前モーダル制御（promptフォールバック用） =====
+const nameMask   = document.getElementById('nameMask');
+const nameInput  = document.getElementById('nameInput');
+const nameOk     = document.getElementById('nameOk');
+const nameCancel = document.getElementById('nameCancel');
+
+function openNameModal(onOK, onCancel){
+  if(!nameMask) { onCancel && onCancel(); return; } // 念のため
+  nameMask.style.display='block';
+  setTimeout(()=>{ try{ nameInput && nameInput.focus(); }catch(_){} }, 0);
+
+  const ok = ()=> {
+    const v = (nameInput?.value||"").trim().slice(0,12);
+    if(!v){ alert("名前を入力してください"); nameInput?.focus(); return; }
+    cleanup(); onOK(v);
+  };
+  const cancel = ()=> { cleanup(); onCancel && onCancel(); };
+
+  function onKey(e){
+    if(e.key==='Enter'){ e.preventDefault(); ok(); }
+    if(e.key==='Escape'){ e.preventDefault(); cancel(); }
+  }
+  function onClickMask(e){ if(e.target===nameMask) cancel(); }
+
+  function cleanup(){
+    nameMask.style.display='none';
+    nameOk?.removeEventListener('click', ok);
+    nameCancel?.removeEventListener('click', cancel);
+    document.removeEventListener('keydown', onKey);
+    nameMask.removeEventListener('click', onClickMask);
+  }
+
+  nameOk?.addEventListener('click', ok);
+  nameCancel?.addEventListener('click', cancel);
+  document.addEventListener('keydown', onKey);
+  nameMask.addEventListener('click', onClickMask);
+}
 
   /* ======== Field ======== */
   function fieldUpdate(dt){
