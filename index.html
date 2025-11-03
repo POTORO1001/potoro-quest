@@ -791,22 +791,25 @@ function titleUpdate(dt){
 }
 
   /* 名前入力（文言変更） */
-  function startNameEntry(){
-   armAudio();
-   const ask=() => {
-   const v = prompt("推しのお名前を入力してください（12文字まで）",""); /* ← 文言修正 */
-   if(v===null) return false;
-   const name=(v||"").trim().slice(0,12);
-   if(!name){ alert("名前を入力してください"); return ask(); }
-   state.hero.name=name; state.playerName=name; return true;
-   };
-   if(ask()){
-   reveal(state.x, state.y, 3);
-   prevMode='title';
-   state.mode='field';
-   bgmStart('field');
-   }
+function startNameEntry(){
+  if (state.nameMode || state.mode !== 'title') return; // ★ガード
+  state.nameMode = true; // ★ロック
+  armAudio();
+  const ask = () => {
+    const v = prompt("推しのお名前を入力してください（12文字まで）","");
+    if (v===null) { state.nameMode = false; return false; } // ★解除して中断
+    const name=(v||"").trim().slice(0,12);
+    if(!name){ alert("名前を入力してください"); return ask(); }
+    state.hero.name=name; state.playerName=name; return true;
+  };
+  if(ask()){
+    reveal(state.x, state.y, 3);
+    prevMode='title';
+    state.mode='field';
+    bgmStart('field');
   }
+  state.nameMode = false; // ★最後に解除
+}
 
   /* ======== Field ======== */
   function fieldUpdate(dt){
