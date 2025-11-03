@@ -1139,11 +1139,13 @@ function startNameEntry(){
 
   function handleTapToStart(e){
     if (e && e.cancelable) e.preventDefault();
-    if (state.mode === 'title') startNameEntry();
+    if (state.mode === 'title' && !state.nameMode) startNameEntry();
   }
-  ['click','touchend'].forEach(ev=>{
+
+  // ★ pointerup を追加し、document でも拾う
+  ['click','touchend','pointerup'].forEach(ev=>{
     cvs.addEventListener(ev, handleTapToStart, {passive:false});
-    document.body.addEventListener(ev, handleTapToStart, {passive:false}); // 追加
+    document.addEventListener(ev, handleTapToStart, {passive:false});
   });
 }
   bootGameToTitle();
