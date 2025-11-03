@@ -1182,7 +1182,10 @@ function openNameModal(onOK, onCancel){
   } };
   document.getElementById('btnMute').onclick=(e)=>{ mute=!mute; e.target.textContent="効果音: "+(mute?"OFF":"ON"); if(mute) bgmStop(); else{ if(state.mode==='field' || state.mode==='equip' || state.mode==='dialog' || state.mode==='items') bgmStart('field'); else if(state.mode==='battle'){ const boss = state.battle?.enemy?.boss; bgmStart(boss ? 'boss' : 'battle'); } } };
   document.getElementById('btnFull').onclick=()=>{ const el=document.getElementById('game'); if(!document.fullscreenElement){ el.requestFullscreen && el.requestFullscreen(); } else { document.exitFullscreen && document.exitFullscreen(); } };
-  document.getElementById('btnStart').onclick=()=>{ if(state.mode==='title') startNameEntry(); };
+  document.getElementById('btnStart').onclick=(e)=>{
+  e.preventDefault();
+  if (state.mode === 'title' && !state.nameMode) startNameEntry();
+};
 
   /* ▼▼▼ ここが今回の変更：戦闘中は無反応 ▼▼▼ */
   document.getElementById('btnActEquip').onclick=()=>{ if(state.mode==='battle') return; openEquip(false); };
