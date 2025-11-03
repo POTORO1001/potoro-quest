@@ -1122,12 +1122,26 @@ function titleUpdate(dt){
   ['pointerdown','touchstart'].forEach(ev=>{ document.addEventListener(ev, ()=>armAudio(), {once:true, passive:true}); });
 
   /* === タイトル起動＆タップ開始 === */
-  function bootGameToTitle(){
-   if(bootGameToTitle._booted) return; bootGameToTitle._booted = true;
-   regenerateWorld(); prevMode = 'title'; state.mode = 'title'; state.title.show = true; bgmStop(); requestAnimationFrame(loop);
-   function handleTapToStart(e){ if(e && e.cancelable) e.preventDefault(); if(state.mode==='title') startNameEntry(); }
-   ['click','touchend'].forEach(ev=>{ cvs.addEventListener(ev, handleTapToStart, {passive:false}); });
+ function bootGameToTitle(){
+  if (bootGameToTitle._booted) return; 
+  bootGameToTitle._booted = true;
+
+  regenerateWorld(); 
+  prevMode = 'title'; 
+  state.mode = 'title'; 
+  state.title.show = true; 
+  bgmStop(); 
+  requestAnimationFrame(loop);
+
+  function handleTapToStart(e){
+    if (e && e.cancelable) e.preventDefault();
+    if (state.mode === 'title') startNameEntry();
   }
+  ['click','touchend'].forEach(ev=>{
+    cvs.addEventListener(ev, handleTapToStart, {passive:false});
+    document.body.addEventListener(ev, handleTapToStart, {passive:false}); // 追加
+  });
+}
   bootGameToTitle();
 
   function resetToTitle(){
