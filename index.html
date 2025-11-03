@@ -319,6 +319,23 @@
         </div>
       </div>
     </div>
+        <!-- ▼▼▼ ① 名前入力モーダル（新規追加） ▼▼▼ -->
+    <div class="help-mask" id="nameMask" role="dialog" aria-modal="true" aria-labelledby="nameTitle" style="display:none">
+      <div class="help-wrap" style="max-width:520px;height:auto">
+        <div class="help-head" id="nameTitle">お名前を入力してください（12文字まで）</div>
+        <div class="help-body" style="height:auto">
+          <input id="nameInput" type="text" maxlength="12"
+                 placeholder="推しのお名前"
+                 style="width:100%;padding:10px;border-radius:8px;border:1px solid #34406a;background:#0f1628;color:#e8ecff;font-size:16px" />
+          <p style="margin-top:.6em;color:#9fb4ff;font-size:12px">※空欄は不可／あとで変更不可</p>
+        </div>
+        <div class="help-foot">
+          <button class="help-close" id="nameCancel">キャンセル</button>
+          <button class="help-close" id="nameOk" style="background:#1f2b4a">OK</button>
+        </div>
+      </div>
+    </div>
+    <!-- ▲▲▲ ① ここまで ▲▲▲ -->
   </div>
 
   <!-- ③ ゲーム本体のJS（元のまま。構造だけ変えた版） -->
