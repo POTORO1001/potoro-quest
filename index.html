@@ -1225,9 +1225,11 @@ function openNameModal(onOK, onCancel){
   requestAnimationFrame(loop);
 
   function handleTapToStart(e){
+  if (state.mode === 'title' && !state.nameMode) {
     if (e && e.cancelable) e.preventDefault();
-    if (state.mode === 'title' && !state.nameMode) startNameEntry();
+    startNameEntry();
   }
+}
 
   // ★ pointerup を追加し、document でも拾う
    ['click','touchend','pointerup'].forEach(ev=>{
