@@ -785,9 +785,9 @@ function titleUpdate(dt){
     state.title.show = !state.title.show;
   }
   // 擬似キー（OK/Space/Enter）でも開始
-  if (state.mode === 'title' && (keys["Enter"] || keys["Space"])) {
-    startNameEntry();
-  }
+  if (state.mode === 'title' && !state.nameMode && (keys["Enter"] || keys["Space"])) {
+  startNameEntry();
+}
 }
 
   /* 名前入力（文言変更） */
