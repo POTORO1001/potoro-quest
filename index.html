@@ -1150,9 +1150,13 @@ function titleUpdate(dt){
    ['touchend','touchcancel','mouseup','mouseleave'].forEach(ev=> b.addEventListener(ev, end, {passive:true}));
    });
    document.querySelectorAll('.btnL').forEach(b=>{
-   let main=b.getAttribute('data-k'); let alt=b.getAttribute('data-alt');
-   if(main){ b.addEventListener('click', e=>{ e.preventDefault(); press(main); if(alt) setTimeout(()=>press(alt), 10); }); }
-   });
+  let main=b.getAttribute('data-k'); let alt=b.getAttribute('data-alt');
+- if(main){ b.addEventListener('click', e=>{ e.preventDefault(); press(main); if(alt) setTimeout(()=>press(alt), 10); }); }
++ if(main){ b.addEventListener('click', e=>{ e.preventDefault(); press(main); if(alt) setTimeout(()=>press(alt), 10);
++   // タイトル中なら即開始（擬似キーに頼らず直呼び）
++   if(state.mode==='title' && (main==='Enter' || main==='Space')) startNameEntry();
++ }); }
+});
   }
   bindPad();
 
