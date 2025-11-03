@@ -779,16 +779,16 @@
    syncControlsDisabled();
   }
 function titleUpdate(dt){
--  state.title.blink+=dt;
--  if(state.title.blink>=0.6){ state.title.blink=0; state.title.show=!state.title.show; }
-+  state.title.blink+=dt;
-+  if(state.title.blink>=0.6){ state.title.blink=0; state.title.show=!state.title.show; }
-+  // ▼ 追加：擬似キー（OK/Space/Enter）でも開始できるよう監視
-+  if(state.mode==='title' && (keys["Enter"] || keys["Space"])){
-+    startNameEntry();
-+  }
+  state.title.blink += dt;
+  if (state.title.blink >= 0.6) {
+    state.title.blink = 0;
+    state.title.show = !state.title.show;
+  }
+  // 擬似キー（OK/Space/Enter）でも開始
+  if (state.mode === 'title' && (keys["Enter"] || keys["Space"])) {
+    startNameEntry();
+  }
 }
-
 
   /* 名前入力（文言変更） */
   function startNameEntry(){
