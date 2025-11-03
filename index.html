@@ -817,6 +817,10 @@ function titleUpdate(dt){
   if (state.mode === 'title' && !state.nameMode && (keys["Enter"] || keys["Space"])) {
   startNameEntry();
 }
+  
+ // タイトル時だけ全面ヒットエリアを表示
+  const _hit = document.getElementById('titleStartHit');
+  if (_hit) _hit.style.display = (state.mode === 'title' && !state.nameMode) ? 'block' : 'none';
 }
 
   /* 名前入力（文言変更） */
