@@ -1223,10 +1223,24 @@ function openNameModal(onOK, onCancel){
   }
 
   // ★ pointerup を追加し、document でも拾う
-  ['click','touchend','pointerup'].forEach(ev=>{
+   ['click','touchend','pointerup'].forEach(ev=>{
     cvs.addEventListener(ev, handleTapToStart, {passive:false});
     document.addEventListener(ev, handleTapToStart, {passive:false});
   });
+
+  // ★ iOS対策：touchstart/pointerdown も拾う
+  ['touchstart','pointerdown'].forEach(ev=>{
+    cvs.addEventListener(ev, handleTapToStart, {passive:false});
+    document.addEventListener(ev, handleTapToStart, {passive:false});
+  });
+
+  // ★ タイトル全面ヒットエリアでも開始
+  const hit = document.getElementById('titleStartHit');
+  if (hit) {
+    ['click','touchstart','touchend','pointerdown','pointerup'].forEach(ev=>{
+      hit.addEventListener(ev, handleTapToStart, {passive:false});
+    });
+  }
 }
   bootGameToTitle();
 
