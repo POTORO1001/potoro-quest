@@ -321,7 +321,22 @@
     title="ポ・トロクエスト オープニング"
     allow="autoplay; fullscreen"
   ></iframe>
-
+  <!-- ★ Xアプリ内ブラウザ向け：外部ブラウザ推奨バナー -->
+  <div id="inapp-banner" class="inapp-banner" role="region" aria-label="外部ブラウザ推奨">
+    <div class="row">
+      <div class="msg">
+        <span class="dot" aria-hidden="true"></span>
+        <span id="inapp-banner-text">
+          アプリ内ブラウザで開いているため、ゲームの開始がブロックされることがあります。
+        </span>
+      </div>
+      <div class="actions">
+        <!-- 外部ブラウザで開く（できる範囲で _blank を試みる） -->
+        <a id="inapp-open-external" class="primary" href="" target="_blank" rel="noopener">外部ブラウザで開く</a>
+        <button id="inapp-close" class="close" type="button">閉じる</button>
+      </div>
+    </div>
+  </div>
   <!-- ② ゲーム本体（完成版） -->
   <div id="game-root">
     <div class="app">
