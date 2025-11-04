@@ -1317,7 +1317,7 @@ function openNameModal(onOK, onCancel){
   }
   </script>
 
-  <!-- ④ オープニングのメッセージを受けて表示を切り替える + フォールバック -->
+    <!-- ④ オープニングのメッセージを受けて表示を切り替える + フォールバック -->
   <script>
     const openingFrame = document.getElementById('opening-frame');
     const gameRoot = document.getElementById('game-root');
@@ -1346,5 +1346,6 @@ window.addEventListener('message', (event) => {
 // 7秒で強制定時（オープニングが返事しない端末対策）
 setTimeout(()=>{ try{ showGame(); }catch(_){} }, 7000);
   </script>
+
 </body>
 </html>
