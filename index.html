@@ -1418,6 +1418,49 @@ function openNameModal(onOK, onCancel){
       );
     }
 
+        // === Xアプリ内ブラウザ用バナー：自動表示＆操作 ===
+    (function setupInAppBanner(){
+      const banner   = document.getElementById('inapp-banner');
+      const openBtn  = document.getElementById('inapp-open-external');
+      const closeBtn = document.getElementById('inapp-close');
+      if (!banner || !openBtn || !closeBtn) return;
+
+      const KEY = 'inappBannerClosed';
+      const closed = sessionStorage.getItem(KEY) === '1';
+
+      // Xアプリ内で、かつ未クローズなら表示
+      if (isInAppX() && !closed) {
+        banner.style.display = 'block';
+        document.body.classList.add('with-inapp-banner');
+
+        // 外部ブラウザで開く（まずは素直に同URLを_blank）
+        try {
+          const url = location.href;
+          openBtn.href = url;
+
+          // Androidは明示的に window.open を試す（失敗したら通常遷移）
+          if (/Android/i.test(navigator.userAgent)) {
+            openBtn.addEventListener('click', (e)=>{
+              try {
+                e.preventDefault();
+                window.open(url, '_blank', 'noopener');
+              } catch(_) {
+                // フォールバック
+                location.assign(url);
+              }
+            });
+          }
+        } catch(_) {}
+      }
+
+      // 閉じる（次回以降は当面出さない）
+      closeBtn.addEventListener('click', ()=>{
+        banner.style.display = 'none';
+        document.body.classList.remove('with-inapp-banner');
+        sessionStorage.setItem(KEY, '1');
+      }, { passive: true });
+    })();
+
     // --- opening.html からのメッセージ（通常ルート） ---
     window.addEventListener('message', (event) => {
       // 必要ならオリジン制限を戻す:
