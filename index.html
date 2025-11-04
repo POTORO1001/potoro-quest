@@ -1317,34 +1317,72 @@ function openNameModal(onOK, onCancel){
   }
   </script>
 
-    <!-- ④ オープニングのメッセージを受けて表示を切り替える + フォールバック -->
+     <!-- ④ オープニングのメッセージを受けて表示を切り替える + フォールバック -->
   <script>
     const openingFrame = document.getElementById('opening-frame');
-    const gameRoot = document.getElementById('game-root');
+    const gameRoot     = document.getElementById('game-root');
     let shown = false;
 
     function showGame() {
-  if (shown) return;
-  shown = true;
-  openingFrame.style.display = 'none';
-  gameRoot.style.display = 'block';
+      if (shown) return;
+      shown = true;
+      openingFrame.style.display = 'none';
+      gameRoot.style.display = 'block';
+      // ★ キャンバスにフォーカスして、すぐ操作できるように
+      try { cvs.setAttribute('tabindex', '0'); cvs.focus(); } catch(_) {}
+      // ★ 念のためタイトル起動済みか確認して、未起動なら起動
+      if (!bootGameToTitle._booted) bootGameToTitle();
+    }
 
-  // ★ キャンバスにフォーカスして、すぐ操作できるように
-  try { cvs.setAttribute('tabindex', '0'); cvs.focus(); } catch(_) {}
+    // --- X（旧Twitter）アプリ内ブラウザをゆるく検出 ---
+    function isInAppX() {
+      const ua  = navigator.userAgent || "";
+      const ref = document.referrer || "";
+      return (
+        /Twitter|XAndroidApp|X-iOS/i.test(ua) ||
+        /t\.co|x\.com|mobile\.twitter\.com/i.test(ref)
+      );
+    }
 
-  // ★ 念のためタイトル起動済みか確認して、未起動なら起動
-  if (!bootGameToTitle._booted) bootGameToTitle();
-}
+    // --- opening.html からのメッセージ（通常ルート） ---
+    window.addEventListener('message', (event) => {
+      // 必要ならオリジン制限を戻す:
+      // if (event.origin !== 'https://potoro1001.github.io') return;
+      if (!event.data || event.data.type !== 'opening-finished') return;
+      showGame();
+    });
 
-   // opening.html からのメッセージを受け取る
-window.addEventListener('message', (event) => {
-  // if (event.origin !== 'https://potoro1001.github.io') return; // 必要なら
-  if (!event.data || event.data.type !== 'opening-finished') return;
-  showGame();
-});
+    // --- 追加: iframe の onload でも保険（postMessageが来ない環境向け） ---
+    openingFrame.addEventListener('load', () => {
+      // 読み込めているのに進まないケースは 4 秒で切り替え
+      setTimeout(() => { if (!shown) showGame(); }, 4000);
+    });
 
-// 7秒で強制定時（オープニングが返事しない端末対策）
-setTimeout(()=>{ try{ showGame(); }catch(_){} }, 7000);
+    // --- 追加: 初回ユーザー操作で即表示（X対策の決め手） ---
+    const userKick = () => { if (!shown) showGame(); cleanupUserKick(); };
+    function cleanupUserKick() {
+      const opts = { passive: true };
+      ['pointerdown','pointerup','touchstart','touchend','click','keydown','wheel','scroll']
+        .forEach(ev => document.removeEventListener(ev, userKick, opts));
+    }
+    ['pointerdown','pointerup','touchstart','touchend','click','keydown','wheel','scroll']
+      .forEach(ev => document.addEventListener(ev, userKick, { passive: true }));
+
+    // --- ページが可視化されたタイミングでも保険（バックから復帰等） ---
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && !shown) {
+        setTimeout(() => { if (!shown) showGame(); }, 1000);
+      }
+    });
+
+    // --- タイマー保険（段階的）。Xでは setTimeout が寝ることがあるため複数回撃つ ---
+    setTimeout(() => { try { if (!shown) showGame(); } catch(_){} }, 7000);
+    setTimeout(() => { try { if (!shown) showGame(); } catch(_){} }, 12000);
+
+    // --- X アプリ内っぽいなら、さらに早めに強制表示 ---
+    if (isInAppX()) {
+      setTimeout(() => { if (!shown) showGame(); }, 800);
+    }
   </script>
 
 </body>
