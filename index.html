@@ -252,6 +252,65 @@
       padding: 8px 12px;
       font-weight: 700;
     }
+    
+/* === Xアプリ内ブラウザ向け：外部ブラウザ推奨バナー === */
+    .inapp-banner {
+      position: fixed;
+      left: 0; right: 0; top: 0;
+      z-index: 10000; /* opening-frame(9999)より上 */
+      display: none;  /* JSで必要時のみ表示 */
+      padding: calc(10px + env(safe-area-inset-top)) 12px 10px 12px;
+      background: linear-gradient(180deg, rgba(20,24,36,.98), rgba(20,24,36,.92));
+      color: #eaf0ff;
+      border-bottom: 1px solid #2b3246;
+      font-size: 14px;
+      line-height: 1.35;
+    }
+    .inapp-banner .row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      justify-content: space-between;
+      max-width: 980px;
+      margin: 0 auto;
+    }
+    .inapp-banner .msg {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+    }
+    .inapp-banner .msg .dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #ff7ad6;
+      flex: 0 0 auto;
+    }
+    .inapp-banner .actions {
+      display: flex; gap: 8px; flex-wrap: wrap;
+    }
+    .inapp-banner button, .inapp-banner a {
+      appearance: none; -webkit-appearance: none;
+      border: 1px solid #34406a;
+      background: #17213a;
+      color: #e8ecff;
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-weight: 800;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .inapp-banner .primary {
+      background: #1f2b4a;
+    }
+    .inapp-banner .close {
+      opacity: .85;
+    }
+    /* バナーがあるとき、下のコンテンツが少しだけ隠れにくいよう余白（モバイル） */
+    @media (max-width: 560px) {
+      body.with-inapp-banner #game-root .app {
+        padding-top: calc(20px + env(safe-area-inset-top));
+      }
+    }
   </style>
 </head>
 <body>
