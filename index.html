@@ -70,11 +70,11 @@
       outline: 1px solid #2b3246;
     }
     /* iOS Safari タップ安定化 */
-#game {
-  -webkit-user-select: none;
-  -webkit-touch-callout: none;
-  touch-action: manipulation; /* ダブルタップ拡大等を抑止 */
-}
+    #game {
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      touch-action: manipulation;
+    }
 
     .toolbar {
       display: flex;
@@ -115,212 +115,89 @@
       gap: 6px;
       flex: 0 0 auto;
     }
-    .dpad .sp {
-      visibility: hidden;
-    }
+    .dpad .sp { visibility: hidden; }
     .btnc {
-      width: 56px;
-      height: 56px;
+      width: 56px; height: 56px;
       border-radius: 12px;
       border: 1px solid #34406a;
       background: #111729;
       color: #e8ecff;
-      font-weight: 900;
-      font-size: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      font-weight: 900; font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
     }
-    .btnc:active {
-      transform: scale(0.98);
-      background: #0d1220;
-    }
-    .actions {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      align-items: stretch;
-      min-width: 220px;
-    }
-    .actions-row {
-      display: flex;
-      gap: 8px;
-      justify-content: space-between;
-    }
+    .btnc:active { transform: scale(0.98); background: #0d1220; }
+
+    .actions { display: flex; flex-direction: column; gap: 8px; align-items: stretch; min-width: 220px; }
+    .actions-row { display: flex; gap: 8px; justify-content: space-between; }
     .btnL {
-      flex: 1 1 0;
-      height: 56px;
-      border-radius: 12px;
-      border: 1px solid #34406a;
-      background: #17213a;
-      color: #e8ecff;
-      font-weight: 800;
+      flex: 1 1 0; height: 56px; border-radius: 12px;
+      border: 1px solid #34406a; background: #17213a; color: #e8ecff; font-weight: 800;
     }
-    .btnL:active {
-      transform: scale(0.98);
-      background: #121a2e;
-    }
-    /* 戦闘中に見た目で無効化 */
-    .btnL.disabled {
-      opacity: .5;
-      pointer-events: none;
-    }
+    .btnL:active { transform: scale(0.98); background: #121a2e; }
+    .btnL.disabled { opacity: .5; pointer-events: none; }
 
     @media (max-width: 360px) {
-      .btnc {
-        width: 50px;
-        height: 50px;
-      }
-      .dpad {
-        grid-template-columns: 50px 50px 50px;
-        grid-template-rows: 50px 50px 50px;
-        gap: 6px;
-      }
-      .btnL {
-        height: 50px;
-        font-size: 14px;
-      }
-      .actions {
-        min-width: 190px;
-      }
+      .btnc { width: 50px; height: 50px; }
+      .dpad { grid-template-columns: 50px 50px 50px; grid-template-rows: 50px 50px 50px; gap: 6px; }
+      .btnL { height: 50px; font-size: 14px; }
+      .actions { min-width: 190px; }
     }
     @media (min-width: 560px) {
-      .btnc {
-        width: 64px;
-        height: 64px;
-      }
-      .dpad {
-        grid-template-columns: 64px 64px 64px;
-        grid-template-rows: 64px 64px 64px;
-      }
-      .btnL {
-        height: 64px;
-      }
+      .btnc { width: 64px; height: 64px; }
+      .dpad { grid-template-columns: 64px 64px 64px; grid-template-rows: 64px 64px 64px; }
+      .btnL { height: 64px; }
     }
 
     /* === 説明（DOMモーダル） === */
     .help-mask {
-      position: fixed;
-      inset: 0;
-      z-index: 1500;
-      display: none;
-      background: rgba(0,0,0,.55);
+      position: fixed; inset: 0; z-index: 1500;
+      display: none; background: rgba(0,0,0,.55);
     }
     .help-wrap {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      width: min(680px, calc(100vw - 24px));
-      height: min(520px, calc(100vh - 180px));
-      background: rgba(16,21,34,.98);
-      border: 1px solid #2b3246;
-      border-radius: 12px;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
+      position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+      width: min(680px, calc(100vw - 24px)); height: min(520px, calc(100vh - 180px));
+      background: rgba(16,21,34,.98); border: 1px solid #2b3246; border-radius: 12px;
+      display: flex; flex-direction: column; overflow: hidden;
     }
-    .help-head {
-      padding: 10px 12px;
-      border-bottom: 1px solid #2b3246;
-      font-weight: 800;
-    }
-    .help-body {
-      flex: 1 1 auto;
-      overflow: auto;
-      padding: 12px;
-      line-height: 1.45;
-      -webkit-overflow-scrolling: touch;
-    }
-    .help-body p {
-      margin: 0 0 .6em;
-      white-space: pre-wrap;
-      font-size: 14px;
-    }
-    .help-foot {
-      padding: 10px 12px;
-      border-top: 1px solid #2b3246;
-      display: flex;
-      gap: 8px;
-      justify-content: flex-end;
-    }
-    .help-close {
-      background: #17213a;
-      color: #e8ecff;
-      border: 1px solid #34406a;
-      border-radius: 10px;
-      padding: 8px 12px;
-      font-weight: 700;
-    }
+    .help-head { padding: 10px 12px; border-bottom: 1px solid #2b3246; font-weight: 800; }
+    .help-body { flex: 1 1 auto; overflow: auto; padding: 12px; line-height: 1.45; -webkit-overflow-scrolling: touch; }
+    .help-body p { margin: 0 0 .6em; white-space: pre-wrap; font-size: 14px; }
+    .help-foot { padding: 10px 12px; border-top: 1px solid #2b3246; display: flex; gap: 8px; justify-content: flex-end; }
+    .help-close { background: #17213a; color: #e8ecff; border: 1px solid #34406a; border-radius: 10px; padding: 8px 12px; font-weight: 700; }
     
-/* === Xアプリ内ブラウザ向け：外部ブラウザ推奨バナー === */
+    /* === Xアプリ内ブラウザ向け：外部ブラウザ推奨バナー === */
     .inapp-banner {
-      position: fixed;
-      left: 0; right: 0; top: 0;
-      z-index: 10000; /* opening-frame(9999)より上 */
-      display: none;  /* JSで必要時のみ表示 */
-      padding: calc(10px + env(safe-area-inset-top)) 12px 10px 12px;
+      position: fixed; left: 0; right: 0; top: 0; z-index: 10000;
+      display: none; padding: calc(10px + env(safe-area-inset-top)) 12px 10px 12px;
       background: linear-gradient(180deg, rgba(20,24,36,.98), rgba(20,24,36,.92));
-      color: #eaf0ff;
-      border-bottom: 1px solid #2b3246;
-      font-size: 14px;
-      line-height: 1.35;
+      color: #eaf0ff; border-bottom: 1px solid #2b3246; font-size: 14px; line-height: 1.35;
     }
-    .inapp-banner .row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      justify-content: space-between;
-      max-width: 980px;
-      margin: 0 auto;
-    }
-    .inapp-banner .msg {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-weight: 700;
-    }
-    .inapp-banner .msg .dot {
-      width: 8px; height: 8px; border-radius: 50%;
-      background: #ff7ad6;
-      flex: 0 0 auto;
-    }
-    .inapp-banner .actions {
-      display: flex; gap: 8px; flex-wrap: wrap;
-    }
+    .inapp-banner .row { display: flex; align-items: center; gap: 8px; justify-content: space-between; max-width: 980px; margin: 0 auto; }
+    .inapp-banner .msg { display: flex; align-items: center; gap: 8px; font-weight: 700; }
+    .inapp-banner .msg .dot { width: 8px; height: 8px; border-radius: 50%; background: #ff7ad6; flex: 0 0 auto; }
+    .inapp-banner .actions { display: flex; gap: 8px; flex-wrap: wrap; }
     .inapp-banner button, .inapp-banner a {
       appearance: none; -webkit-appearance: none;
-      border: 1px solid #34406a;
-      background: #17213a;
-      color: #e8ecff;
-      padding: 8px 12px;
-      border-radius: 10px;
-      font-weight: 800;
-      text-decoration: none;
-      cursor: pointer;
+      border: 1px solid #34406a; background: #17213a; color: #e8ecff;
+      padding: 8px 12px; border-radius: 10px; font-weight: 800; text-decoration: none; cursor: pointer;
     }
-    .inapp-banner .primary {
-      background: #1f2b4a;
-    }
-    .inapp-banner .close {
-      opacity: .85;
-    }
-    /* バナーがあるとき、下のコンテンツが少しだけ隠れにくいよう余白（モバイル） */
+    .inapp-banner .primary { background: #1f2b4a; }
+    .inapp-banner .close { opacity: .85; }
+
     @media (max-width: 560px) {
-      body.with-inapp-banner #game-root .app {
-        padding-top: calc(20px + env(safe-area-inset-top));
-      }
+      body.with-inapp-banner #game-root .app { padding-top: calc(20px + env(safe-area-inset-top)); }
     }
   </style>
 </head>
 <body>
-    <!-- ① オープニングを読み込む -->
+  <!-- ① オープニングを読み込む -->
   <iframe
     id="opening-frame"
     src="opening.html"
     title="ポ・トロクエスト オープニング"
     allow="autoplay; fullscreen"
   ></iframe>
+
   <!-- ★ Xアプリ内ブラウザ向け：外部ブラウザ推奨バナー -->
   <div id="inapp-banner" class="inapp-banner" role="region" aria-label="外部ブラウザ推奨">
     <div class="row">
@@ -331,13 +208,13 @@
         </span>
       </div>
       <div class="actions">
-        <!-- 外部ブラウザで開く（できる範囲で _blank を試みる） -->
         <a id="inapp-open-external" class="primary" href="" target="_blank" rel="noopener">外部ブラウザで開く</a>
         <button id="inapp-close" class="close" type="button">閉じる</button>
       </div>
     </div>
   </div>
-  <!-- ② ゲーム本体（完成版） -->
+
+  <!-- ② ゲーム本体 -->
   <div id="game-root">
     <div class="app">
       <div class="topbar">
@@ -356,16 +233,15 @@
       </div>
     </div>
 
-    <!-- ▼▼ タイトル専用の全面ヒットエリア ▼▼ -->
+    <!-- タイトル専用の全面ヒットエリア -->
     <div id="titleStartHit" style="display:none; position:fixed; inset:0; z-index:1200;"></div>
-    <!-- ▲▲ タイトル専用の全面ヒットエリア ▲▲ -->
 
     <!-- On-screen controls -->
     <div class="controls">
       <div class="dpad">
         <div class="sp"></div><button class="btnc" data-k="ArrowUp">▲</button><div class="sp"></div>
-       <button class="btnc" data-k="ArrowLeft"  aria-label="左">◀</button><div class="sp"></div>
-       <button class="btnc" data-k="ArrowRight" aria-label="右">▶</button><div class="sp"></div>
+        <button class="btnc" data-k="ArrowLeft" aria-label="左">◀</button><div class="sp"></div>
+        <button class="btnc" data-k="ArrowRight" aria-label="右">▶</button><div class="sp"></div>
         <button class="btnc" data-k="ArrowDown">▼</button><div class="sp"></div>
       </div>
       <div class="actions">
@@ -405,7 +281,8 @@
         </div>
       </div>
     </div>
-        <!-- ▼▼▼ ① 名前入力モーダル（新規追加） ▼▼▼ -->
+
+    <!-- 名前入力モーダル -->
     <div class="help-mask" id="nameMask" role="dialog" aria-modal="true" aria-labelledby="nameTitle" style="display:none">
       <div class="help-wrap" style="max-width:520px;height:auto">
         <div class="help-head" id="nameTitle">お名前を入力してください（12文字まで）</div>
@@ -421,10 +298,9 @@
         </div>
       </div>
     </div>
-    <!-- ▲▲▲ ① ここまで ▲▲▲ -->
   </div>
 
-  <!-- ③ ゲーム本体のJS（元のまま。構造だけ変えた版） -->
+  <!-- ③ ゲーム本体のJS -->
   <script>
   /* ======== Core constants ======== */
   const VIEW_W=320, VIEW_H=240, TILE=16;
@@ -448,7 +324,7 @@
    {id:"horse", name:"くろれきし", kind:"insta", power:0},
   ];
 
-  /* ======== Enemies（強化＋出現帯） ======== */
+  /* ======== Enemies ======== */
   let ENEMIES=[
    {name:"定時のご主人様", hp:42, atk:10, def:6, exp:22},
    {name:"残業のご主人様", hp:70, atk:14, def:8, exp:36},
@@ -521,7 +397,6 @@
   function makeFilled(val){ return Array.from({length:H},()=>Array(W).fill(val)); }
   function inBounds(x,y){ return x>=0 && y>=0 && x<W && y<H; }
 
-  /* 迷路＋大広間・扉・宝箱生成 */
   function regenerateWorld(){
    MAP = makeFilled(1);
    hallMask = makeFilled(false);
@@ -529,14 +404,14 @@
 
    function neighbors(x,y){ return [[x+2,y],[x-2,y],[x,y+2],[x,y-2]].filter(([nx,ny])=> nx>0 && ny>0 && nx<W-1 && ny<H-1); }
    function carve(x,y){
-   MAP[y][x]=0;
-   const ns=neighbors(x,y).sort(()=>Math.random()-0.5);
-   for(const [nx,ny] of ns){
-   if(MAP[ny][nx]===1){
-   MAP[(y+ny)/2][(x+nx)/2]=0;
-   carve(nx,ny);
-   }
-   }
+     MAP[y][x]=0;
+     const ns=neighbors(x,y).sort(()=>Math.random()-0.5);
+     for(const [nx,ny] of ns){
+       if(MAP[ny][nx]===1){
+         MAP[(y+ny)/2][(x+nx)/2]=0;
+         carve(nx,ny);
+       }
+     }
    }
    carve(1,1);
 
@@ -544,46 +419,46 @@
    const q=[[1,1]], dist=makeFilled(-1); dist[1][1]=0;
    const dirs=[[1,0],[-1,0],[0,1],[0,-1]];
    while(q.length){
-   const [x,y]=q.shift();
-   for(const [dx,dy] of dirs){
-   const nx=x+dx, ny=y+dy;
-   if(inBounds(nx,ny) && MAP[ny][nx]===0 && dist[ny][nx]===-1){
-   dist[ny][nx]=dist[y][x]+1; q.push([nx,ny]);
-   }
-   }
+     const [x,y]=q.shift();
+     for(const [dx,dy] of dirs){
+       const nx=x+dx, ny=y+dy;
+       if(inBounds(nx,ny) && MAP[ny][nx]===0 && dist[ny][nx]===-1){
+         dist[ny][nx]=dist[y][x]+1; q.push([nx,ny]);
+       }
+     }
    }
    DIST = dist;
 
    // 大広間（最奥）
    let hx=1, hy=1, best=-1;
    for(let y=0;y<H;y++) for(let x=0;x<W;x++){
-   if(MAP[y][x]===0 && dist[y][x]>best){ best=dist[y][x]; hx=x; hy=y; }
+     if(MAP[y][x]===0 && dist[y][x]>best){ best=dist[y][x]; hx=x; hy=y; }
    }
    hallMask[hy][hx]=true; MAP[hy][hx]=6;
 
    // 扉（ボス前）
    for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){
-   const nx=hx+dx, ny=hy+dy;
-   if(inBounds(nx,ny) && MAP[ny][nx]===0 && dist[ny][nx]===best-1){
-   MAP[ny][nx]=2; BOSS_DOOR={x:nx,y:ny}; break;
-   }
+     const nx=hx+dx, ny=hy+dy;
+     if(inBounds(nx,ny) && MAP[ny][nx]===0 && dist[ny][nx]===best-1){
+       MAP[ny][nx]=2; BOSS_DOOR={x:nx,y:ny}; break;
+     }
    }
 
-   // 宝箱 4つ（青）＋中身
+   // 宝箱 4つ
    const candidates=[];
    for(let y=1;y<H-1;y++) for(let x=1;x<W-1;x++){
-   if(MAP[y][x]===0 && !(x===1&&y===1) && MAP[y][x]!==6) candidates.push([x,y]);
+     if(MAP[y][x]===0 && !(x===1&&y===1) && MAP[y][x]!==6) candidates.push([x,y]);
    }
    candidates.sort(()=>Math.random()-0.5);
    const chestPos = candidates.slice(0,4);
    const chestItems = [
-   {type:"weapon", item:WEAPONS[1]},
-   {type:"uniform", item:UNIFORMS[1]},
-   {type:"uniform", item:UNIFORMS[2]},
-   {type:"weapon", item:WEAPONS[2]},
+     {type:"weapon", item:WEAPONS[1]},
+     {type:"uniform", item:UNIFORMS[1]},
+     {type:"uniform", item:UNIFORMS[2]},
+     {type:"weapon", item:WEAPONS[2]},
    ];
    for(let i=0;i<chestPos.length;i++){
-   const [x,y]=chestPos[i]; MAP[y][x]=3; CHEST_LOOT[`${x},${y}`]=chestItems[i] || chestItems[chestItems.length-1];
+     const [x,y]=chestPos[i]; MAP[y][x]=3; CHEST_LOOT[`${x},${y}`]=chestItems[i] || chestItems[chestItems.length-1];
    }
 
    // 初期
@@ -610,38 +485,38 @@
   /* ======== Rendering ======== */
   function draw(){ ctx.save();
    if(state.shakeT>0){
-   const r = state.shakeT/state.shakeDur, s=state.shakeMag*r;
-   ctx.translate((Math.random()*2-1)*s,(Math.random()*2-1)*s);
+     const r = state.shakeT/state.shakeDur, s=state.shakeMag*r;
+     ctx.translate((Math.random()*2-1)*s,(Math.random()*2-1)*s);
    }
    if(state.mode==="title"){ drawTitle(); ctx.restore(); return; }
    if(state.mode==="end"){ drawEnd(); ctx.restore(); return; }
 
    // タイル
    for(let j=0;j<H;j++){ for(let i=0;i<W;i++){
-   let t=MAP[j][i]; if(t===3 && state.openedChests[i+","+j]) t=4;
-   if(t===0 || t===3 || t===4 || t===6 || t===2){
-   if(hallMask[j][i]) drawRedWood(i*TILE,j*TILE,TILE,TILE);
-   else drawWood(i*TILE,j*TILE,TILE,TILE);
-   }else{
-   ctx.fillStyle="#1f3b2d"; ctx.fillRect(i*TILE,j*TILE,TILE,TILE);
-   ctx.fillStyle="#28543d"; for(let k=0;k<TILE;k+=4) ctx.fillRect(i*TILE, j*TILE+k, TILE, 1);
-   }
+     let t=MAP[j][i]; if(t===3 && state.openedChests[i+","+j]) t=4;
+     if(t===0 || t===3 || t===4 || t===6 || t===2){
+       if(hallMask[j][i]) drawRedWood(i*TILE,j*TILE,TILE,TILE);
+       else drawWood(i*TILE,j*TILE,TILE,TILE);
+     }else{
+       ctx.fillStyle="#1f3b2d"; ctx.fillRect(i*TILE,j*TILE,TILE,TILE);
+       ctx.fillStyle="#28543d"; for(let k=0;k<TILE;k+=4) ctx.fillRect(i*TILE, j*TILE+k, TILE, 1);
+     }
    }}
 
    // オブジェクト
    for(let j=0;j<H;j++){ for(let i=0;i<W;i++){
-   const t=MAP[j][i];
-   if(t===3 || (t===4 && !state.openedChests[i+","+j])){
-   ctx.fillStyle="#3a6db4"; ctx.fillRect(i*TILE+3,j*TILE+5,10,8);
-   ctx.fillStyle="#284b8a"; ctx.fillRect(i*TILE+3,j*TILE+9,10,1);
-   } else if(t===4 && state.openedChests[i+","+j]){
-   ctx.fillStyle="#284b8a"; ctx.fillRect(i*TILE+3,j*TILE+9,10,4);
-   ctx.fillStyle="#3a6db4"; ctx.fillRect(i*TILE+3,j*TILE+5,10,3);
-   } else if(t===2){
-   ctx.fillStyle="#8b3434"; ctx.fillRect(i*TILE+2,j*TILE+2,12,12);
-   } else if(t===6){
-   ctx.fillStyle="#e84d4d"; ctx.fillRect(i*TILE+4,j*TILE+4,8,8);
-   }
+     const t=MAP[j][i];
+     if(t===3 || (t===4 && !state.openedChests[i+","+j])){
+       ctx.fillStyle="#3a6db4"; ctx.fillRect(i*TILE+3,j*TILE+5,10,8);
+       ctx.fillStyle="#284b8a"; ctx.fillRect(i*TILE+3,j*TILE+9,10,1);
+     } else if(t===4 && state.openedChests[i+","+j]){
+       ctx.fillStyle="#284b8a"; ctx.fillRect(i*TILE+3,j*TILE+9,10,4);
+       ctx.fillStyle="#3a6db4"; ctx.fillRect(i*TILE+3,j*TILE+5,10,3);
+     } else if(t===2){
+       ctx.fillStyle="#8b3434"; ctx.fillRect(i*TILE+2,j*TILE+2,12,12);
+     } else if(t===6){
+       ctx.fillStyle="#e84d4d"; ctx.fillRect(i*TILE+4,j*TILE+4,8,8);
+     }
    }}
 
    // ラベル
@@ -684,19 +559,18 @@
   }
   function drawText(t,x,y,c="#fff",font="10px monospace"){ ctx.fillStyle=c; ctx.font=font; ctx.textBaseline="top"; ctx.fillText(t,x,y); }
 
-  /* 折返し 等 */
   function wrapLines(text, maxW, font="10px monospace"){
    ctx.font = font; const lines=[]; for(const raw of (""+text).split("\n")){
-   let line=""; for(const ch of raw){ const test=line+ch;
-   if(ctx.measureText(test).width<=maxW){ line=test; } else { lines.push(line); line=ch; } }
-   lines.push(line);
+     let line=""; for(const ch of raw){ const test=line+ch;
+       if(ctx.measureText(test).width<=maxW){ line=test; } else { lines.push(line); line=ch; } }
+     lines.push(line);
    } return lines;
   }
   function drawParagraph(lines, x, y, color="#ddd", font="10px monospace", maxW=280, maxLines=8, lineH=12){
    ctx.font=font; ctx.fillStyle=color; let count=0;
    for(const ln of lines){
-   const wrapped=wrapLines(ln, maxW, font);
-   for(const wln of wrapped){ ctx.fillText(wln, x, y); y+=lineH; count++; if(count>=maxLines) return; }
+     const wrapped=wrapLines(ln, maxW, font);
+     for(const wln of wrapped){ ctx.fillText(wln, x, y); y+=lineH; count++; if(count>=maxLines) return; }
    }
   }
   function drawMaid(tx,ty,dir){
@@ -728,7 +602,6 @@
    drawText("▼ タップ/OKで進む",184,222,"#a4b0ff");
   }
 
-  /* === おまじない === */
   function getOmajinaiList(h){
    const list = [ {id:'moe', name:'もえもえぎゅー (MP5)', mp:5, type:'damage20'} ];
    if(h.lv >= 3) list.push({id:'oishi', name:'おいしくなーれ (MP10)', mp:10, type:'healFull'});
@@ -736,19 +609,16 @@
    return list;
   }
 
-  /* === 戦闘描画（結果表示仕様）=== */
   function drawBattle(){
    const b=state.battle,h=state.hero,e=b.enemy; drawPanel(8,20,304,208);
 
    if(b.phase==="finished"){
-   const lines = [];
-   lines.push(b.victoryLine || `${h.name}は　${e.name}を　いやした！`);
-   if(Array.isArray(b.postMsgs) && b.postMsgs.length){
-   for(const t of b.postMsgs) lines.push(t);
-   }
-   lines.push(b.summary || "【戦闘結果】");
-   drawParagraph(lines, 16, 64, "#fff", "10px monospace", 288, 8, 12);
-   return;
+     const lines = [];
+     lines.push(b.victoryLine || `${h.name}は　${e.name}を　いやした！`);
+     if(Array.isArray(b.postMsgs) && b.postMsgs.length){ for(const t of b.postMsgs) lines.push(t); }
+     lines.push(b.summary || "【戦闘結果】");
+     drawParagraph(lines, 16, 64, "#fff", "10px monospace", 288, 8, 12);
+     return;
    }
 
    drawText("《戦闘》",16,24,"#fff");
@@ -759,22 +629,22 @@
    drawParagraph(b.log.slice(startIdx), 16, 56, "#ddd", "10px monospace", 276, 6, 12);
 
    if(b.phase==="select"){
-   const menu=["いやす","おまじない","ぼうぎょ","どうぐ"]; const cols=2,w=120,hgt=18;
-   let mx=VIEW_W-8-cols*w-8,my=VIEW_H-8-2*hgt-8; drawPanel(mx,my,cols*w+8,2*hgt+8);
-   for(let i=0;i<menu.length;i++){
-   const cx=mx+4+(i%cols)*w, cy=my+4+Math.floor(i/cols)*hgt; const sel=(b.sel||0)===i;
-   ctx.fillStyle=sel?"rgba(255,122,214,.25)":"transparent"; ctx.fillRect(cx,cy,w,hgt);
-   drawText(menu[i],cx+4,cy+4,sel?"#ffd6f2":"#fff");
-   }
+     const menu=["いやす","おまじない","ぼうぎょ","どうぐ"]; const cols=2,w=120,hgt=18;
+     let mx=VIEW_W-8-cols*w-8,my=VIEW_H-8-2*hgt-8; drawPanel(mx,my,cols*w+8,2*hgt+8);
+     for(let i=0;i<menu.length;i++){
+       const cx=mx+4+(i%cols)*w, cy=my+4+Math.floor(i/cols)*hgt; const sel=(b.sel||0)===i;
+       ctx.fillStyle=sel?"rgba(255,122,214,.25)":"transparent"; ctx.fillRect(cx,cy,w,hgt);
+       drawText(menu[i],cx+4,cy+4,sel?"#ffd6f2":"#fff");
+     }
    } else if(b.phase==="omajinai"){
-   const list=getOmajinaiList(state.hero);
-   drawPanel(20,56,280,120); drawText("《おまじない》 ↑↓で選択 / OKで実行 / 戻るで戻る",28,60,"#fff");
-   if(list.length===0){ drawText("まだ何も覚えていない…",28,78,"#ddd"); }
-   for(let i=0;i<list.length;i++){
-   const y2=78+i*14, sel=(b.omSel||0)===i;
-   if(sel){ ctx.fillStyle="rgba(255,122,214,.22)"; ctx.fillRect(24,y2-2,272,14); }
-   drawText(list[i].name,32,y2, sel?"#ffe6f7":"#fff");
-   }
+     const list=getOmajinaiList(state.hero);
+     drawPanel(20,56,280,120); drawText("《おまじない》 ↑↓で選択 / OKで実行 / 戻るで戻る",28,60,"#fff");
+     if(list.length===0){ drawText("まだ何も覚えていない…",28,78,"#ddd"); }
+     for(let i=0;i<list.length;i++){
+       const y2=78+i*14, sel=(b.omSel||0)===i;
+       if(sel){ ctx.fillStyle="rgba(255,122,214,.22)"; ctx.fillRect(24,y2-2,272,14); }
+       drawText(list[i].name,32,y2, sel?"#ffe6f7":"#fff");
+     }
    } else if(b.phase==="item") drawItemMenu();
    else if(b.phase==="inter") drawText("ターン終了。次のターンへ（OK）",16,212,"#a4b0ff");
   }
@@ -784,34 +654,31 @@
    drawText("《どうぐ》 ↑↓で選択 / OKで使用 / 戻るで戻る",28,60,"#fff");
    if(list.length===0){ drawText("まだ何も持っていない…",28,76,"#ddd"); return; }
    for(let i=0;i<list.length;i++){
-   const y=78+i*14, sel=(state.battle.itemSel||0)===i;
-   if(sel){ ctx.fillStyle="rgba(122,225,255,.22)"; ctx.fillRect(24,y-2,272,14); }
-   const base=ITEMS.find(x=>x.id===list[i].id); const label = `${base.name} ×${list[i].qty}`;
-   drawText(label,32,y, sel?"#e7faff":"#fff");
+     const y=78+i*14, sel=(state.battle.itemSel||0)===i;
+     if(sel){ ctx.fillStyle="rgba(122,225,255,.22)"; ctx.fillRect(24,y-2,272,14); }
+     const base=ITEMS.find(x=>x.id===list[i].id); const label = `${base.name} ×${list[i].qty}`;
+     drawText(label,32,y, sel?"#e7faff":"#fff");
    }
   }
 
-  /* 霧 */
   function reveal(x,y,r=3){ for(let j=-r;j<=r;j++){ for(let i=-r;i<=r;i++){
    const nx=x+i, ny=y+j; if(!inBounds(nx,ny)) continue; const d=Math.abs(i)+Math.abs(j);
    if(d<=r) state.visited[ny][nx]=true; } } }
   function drawFog(){ for(let j=0;j<H;j++){ for(let i=0;i<W;i++){ if(!state.visited[j][i]){ ctx.fillStyle="rgba(0,0,0,0.90)"; ctx.fillRect(i*TILE,j*TILE,TILE,TILE); } } } }
 
-  /* FX */
   function addPopup(x,y,text,color="#fff",size=12,up=20,stay=400,fade=200){
    if(state.popups.length>=state.maxPopups) state.popups.shift();
    state.popups.push({x,y,text,color,size,vy:-up/stay,life:stay+fade,stay,fade});
   }
   function drawPopups(){ const arr=state.popups;
    for(let i=arr.length-1;i>=0;i--){ const p=arr[i]; const total=p.stay+p.fade; const gone = total - p.life;
-   let alpha=1; if(gone>p.stay) alpha=Math.max(0,1-(gone-p.stay)/p.fade);
-   const yy = p.y - (gone * (-p.vy));
-   ctx.globalAlpha=alpha; drawText(p.text, p.x, yy, p.color, `bold ${p.size}px monospace`); ctx.globalAlpha=1;
-   p.life--; if(p.life<=0) arr.splice(i,1);
+     let alpha=1; if(gone>p.stay) alpha=Math.max(0,1-(gone-p.stay)/p.fade);
+     const yy = p.y - (gone * (-p.vy));
+     ctx.globalAlpha=alpha; drawText(p.text, p.x, yy, p.color, `bold ${p.size}px monospace`); ctx.globalAlpha=1;
+     p.life--; if(p.life<=0) arr.splice(i,1);
    } }
   function startShake(mag=6, dur=120, decay=0.8){ state.shakeMag=mag; state.shakeDur=dur; state.shakeT=dur; state.shakeDecay=decay; }
 
-  /* 距離→出現帯 */
   function distPercentToBossDoor(x,y){
    if(!DIST || !inBounds(x,y)) return 0;
    const d = DIST[y]?.[x] ?? -1;
@@ -824,14 +691,14 @@
   function pickEnemyFor(x,y){
    const p = distPercentToBossDoor(x,y);
    if(p <= 30){
-   return copyEnemy(ENEMIES[0]);
+     return copyEnemy(ENEMIES[0]);
    }else if(p <= 60){
-   const idx = Math.random()<0.5 ? 0 : 1;
-   return copyEnemy(ENEMIES[idx]);
+     const idx = Math.random()<0.5 ? 0 : 1;
+     return copyEnemy(ENEMIES[idx]);
    }else{
-   const r = Math.random();
-   const idx = r < 1/3 ? 0 : (r < 2/3 ? 1 : 2);
-   return copyEnemy(ENEMIES[idx]);
+     const r = Math.random();
+     const idx = r < 1/3 ? 0 : (r < 2/3 ? 1 : 2);
+     return copyEnemy(ENEMIES[idx]);
    }
   }
 
@@ -842,7 +709,6 @@
     const typing = /INPUT|TEXTAREA|SELECT/.test(tag) || (e.target && e.target.isContentEditable);
 
     keys[e.code] = true;
-    // 入力中は Space の既定動作を妨げない
     if (e.code === "Space" && !typing) e.preventDefault();
 
     if (state.mode === "title" && (e.code === "Enter" || e.code === "Space")) startNameEntry();
@@ -859,22 +725,22 @@
    if(state.mode==='title') { syncControlsDisabled(); return titleUpdate(dt); }
 
    if(prevMode!==state.mode){
-   if(state.mode==='field' || state.mode==='equip' || state.mode==='dialog' || state.mode==='items'){ bgmStart('field'); }
-   else if(state.mode==='battle'){ /* 切替済み */ }
-   else if(state.mode==='end'){ bgmStop(); }
-   else{ bgmStop(); }
-   prevMode=state.mode;
+     if(state.mode==='field' || state.mode==='equip' || state.mode==='dialog' || state.mode==='items'){ bgmStart('field'); }
+     else if(state.mode==='battle'){ /* 切替済み */ }
+     else if(state.mode==='end'){ bgmStop(); }
+     else{ bgmStop(); }
+     prevMode=state.mode;
    }
 
    if(state.mode==='dialog'){
-   if(pressed(["Enter","Space"]) && actionCooldown<=0){
-   actionCooldown=0.18;
-   state.dialogQueue.shift();
-   if(state.dialogQueue.length===0){
-   const fn=state.afterDialogFn; state.afterDialogFn=null;
-   if(typeof fn==="function"){ fn(); } else { state.mode='field'; }
-   }
-   }
+     if(pressed(["Enter","Space"]) && actionCooldown<=0){
+       actionCooldown=0.18;
+       state.dialogQueue.shift();
+       if(state.dialogQueue.length===0){
+         const fn=state.afterDialogFn; state.afterDialogFn=null;
+         if(typeof fn==="function"){ fn(); } else { state.mode='field'; }
+       }
+     }
    }
    else if(state.mode==='battle') battleUpdate(dt);
    else if(state.mode==='equip') equipUpdate(dt);
@@ -887,142 +753,123 @@
    navCD=Math.max(0,navCD-dt);
    if(state.shakeT>0){ state.shakeT -= dt*1000; if(state.shakeT<0) state.shakeT=0; }
 
-   // ★ 戦闘中は下部の装備/道具ボタンを無効化
    syncControlsDisabled();
   }
-function titleUpdate(dt){
-  state.title.blink += dt;
-  if (state.title.blink >= 0.6) {
-    state.title.blink = 0;
-    state.title.show = !state.title.show;
+  function titleUpdate(dt){
+    state.title.blink += dt;
+    if (state.title.blink >= 0.6) { state.title.blink = 0; state.title.show = !state.title.show; }
+    if (state.mode === 'title' && !state.nameMode && (keys["Enter"] || keys["Space"])) startNameEntry();
+    const _hit = document.getElementById('titleStartHit');
+    if (_hit) _hit.style.display = (state.mode === 'title' && !state.nameMode) ? 'block' : 'none';
   }
-  // 擬似キー（OK/Space/Enter）でも開始
-  if (state.mode === 'title' && !state.nameMode && (keys["Enter"] || keys["Space"])) {
-  startNameEntry();
-}
-  
- // タイトル時だけ全面ヒットエリアを表示
-  const _hit = document.getElementById('titleStartHit');
-  if (_hit) _hit.style.display = (state.mode === 'title' && !state.nameMode) ? 'block' : 'none';
-}
 
-  /* 名前入力（文言変更） */
-function startNameEntry(){
-  if (state.nameMode || state.mode !== 'title') return; // ★ガード
-  state.nameMode = true; // ★ロック
-  armAudio();
+  function startNameEntry(){
+    if (state.nameMode || state.mode !== 'title') return;
+    state.nameMode = true;
+    armAudio();
 
-  // 名前確定時の共通処理
-  const proceed = (name)=>{
-    state.hero.name = name;
-    state.playerName = name;
-    reveal(state.x, state.y, 3);
-    prevMode = 'title';
-    state.mode = 'field';
-    bgmStart('field');
-    state.nameMode = false; // ★解除
-  };
-  const abort = ()=>{ state.nameMode = false; };
+    const proceed = (name)=>{
+      state.hero.name = name;
+      state.playerName = name;
+      reveal(state.x, state.y, 3);
+      prevMode = 'title';
+      state.mode = 'field';
+      bgmStart('field');
+      state.nameMode = false;
+    };
+    const abort = ()=>{ state.nameMode = false; };
 
-  // まずは prompt を試す（出る環境では最短）
-  try{
-    const v = prompt("推しのお名前を入力してください（12文字まで）", "");
-    if (v === null){ return abort(); } // キャンセル
-    const name = (v||"").trim().slice(0,12);
-    if (!name){
-      // 空欄 → モーダルへ
+    try{
+      const v = prompt("推しのお名前を入力してください（12文字まで）", "");
+      if (v === null){ return abort(); }
+      const name = (v||"").trim().slice(0,12);
+      if (!name){ openNameModal(proceed, abort); return; }
+      proceed(name);
+    }catch(_){
       openNameModal(proceed, abort);
-      return;
     }
-    proceed(name);
-  }catch(_){
-    // prompt が出ない環境 → モーダルへ
-    openNameModal(proceed, abort);
-  }
-}
-
-// ===== 名前モーダル制御（promptフォールバック用） =====
-const nameMask   = document.getElementById('nameMask');
-const nameInput  = document.getElementById('nameInput');
-const nameOk     = document.getElementById('nameOk');
-const nameCancel = document.getElementById('nameCancel');
-
-function openNameModal(onOK, onCancel){
-  if(!nameMask) { onCancel && onCancel(); return; } // 念のため
-  nameMask.style.display='block';
-  setTimeout(()=>{ try{ nameInput && nameInput.focus(); }catch(_){} }, 0);
-
-  const ok = ()=> {
-    const v = (nameInput?.value||"").trim().slice(0,12);
-    if(!v){ alert("名前を入力してください"); nameInput?.focus(); return; }
-    cleanup(); onOK(v);
-  };
-  const cancel = ()=> { cleanup(); onCancel && onCancel(); };
-
-  function onKey(e){
-    if(e.key==='Enter'){ e.preventDefault(); ok(); }
-    if(e.key==='Escape'){ e.preventDefault(); cancel(); }
-  }
-  function onClickMask(e){ if(e.target===nameMask) cancel(); }
-
-  function cleanup(){
-    nameMask.style.display='none';
-    nameOk?.removeEventListener('click', ok);
-    nameCancel?.removeEventListener('click', cancel);
-    document.removeEventListener('keydown', onKey);
-    nameMask.removeEventListener('click', onClickMask);
   }
 
-  nameOk?.addEventListener('click', ok);
-  nameCancel?.addEventListener('click', cancel);
-  document.addEventListener('keydown', onKey);
-  nameMask.addEventListener('click', onClickMask);
-}
+  const nameMask   = document.getElementById('nameMask');
+  const nameInput  = document.getElementById('nameInput');
+  const nameOk     = document.getElementById('nameOk');
+  const nameCancel = document.getElementById('nameCancel');
 
-  /* ======== Field ======== */
+  function openNameModal(onOK, onCancel){
+    if(!nameMask) { onCancel && onCancel(); return; }
+    nameMask.style.display='block';
+    setTimeout(()=>{ try{ nameInput && nameInput.focus(); }catch(_){} }, 0);
+
+    const ok = ()=> {
+      const v = (nameInput?.value||"").trim().slice(0,12);
+      if(!v){ alert("名前を入力してください"); nameInput?.focus(); return; }
+      cleanup(); onOK(v);
+    };
+    const cancel = ()=> { cleanup(); onCancel && onCancel(); };
+
+    function onKey(e){
+      if(e.key==='Enter'){ e.preventDefault(); ok(); }
+      if(e.key==='Escape'){ e.preventDefault(); cancel(); }
+    }
+    function onClickMask(e){ if(e.target===nameMask) cancel(); }
+
+    function cleanup(){
+      nameMask.style.display='none';
+      nameOk?.removeEventListener('click', ok);
+      nameCancel?.removeEventListener('click', cancel);
+      document.removeEventListener('keydown', onKey);
+      nameMask.removeEventListener('click', onClickMask);
+    }
+
+    nameOk?.addEventListener('click', ok);
+    nameCancel?.addEventListener('click', cancel);
+    document.addEventListener('keydown', onKey);
+    nameMask.addEventListener('click', onClickMask);
+  }
+
   function fieldUpdate(dt){
-   const dx=(keys["ArrowRight"]||keys["KeyD"])?1:(keys["ArrowLeft"]||keys["KeyA"])?-1:0;
-   const dy=(keys["ArrowDown"]||keys["KeyS"])?1:(keys["ArrowUp"]||keys["KeyW"])?-1:0;
-   if(moveCooldown<=0 && (dx||dy)){
-   const nx=Math.max(0,Math.min(W-1,state.x+dx)), ny=Math.max(0,Math.min(H-1,state.y+dy));
-   let t=MAP[ny][nx];
-   if(t!==1){
-   state.x=nx; state.y=ny; moveCooldown=0.12;
-   if(dx>0) state.facing=1; else if(dx<0) state.facing=3; else if(dy<0) state.facing=0; else if(dy>0) state.facing=2;
-   reveal(state.x, state.y, 3);
-   if(t===0 && Math.random()<0.16) startBattle(pickEnemyFor(state.x, state.y));
-   if(t===2){ state.mode='dialog'; state.dialogQueue=["重厚な扉がきしんだ…","大広間から気配を感じる。"]; state.afterDialogFn=null; }
-   if(t===6 && state.bossAlive){
-   state.mode='dialog';
-   const n = state.hero.name || "あなた";
-   const speech = `よくぞ来た${n}よ！ わしがご主人様の中のご主人様、ご主人王である。わしの日常の疲れを思い知るがよいっ！`;
-   state.dialogQueue=[speech,"—— 戦闘開始 ——"];
-   state.afterDialogFn = ()=> startBattle(copyEnemy(BOSS));
-   }
-   if(t===3){
-   const key=nx+","+ny;
-   if(!state.openedChests[key]){
-   const loot=CHEST_LOOT[key];
-   if(loot){ giveLoot(loot); state.openedChests[key]=true; seq([{f:880,ms:60,type:'square',vol:0.5},{f:1320,ms:60,type:'square',vol:0.5}]); }
-   else state.openedChests[key]=true;
-   state.mode='dialog'; const got = loot ? loot.item.name : "なにか"; state.dialogQueue=[`宝箱をあけた！`,`「${got}」を手に入れた！`];
-   try{
-   if(Math.random()<1/128){
-   const u=state.hero.invU;
-   if(!u.some(x=>x.id==="body_replica6")){
-   const rare=UNIFORMS.find(v=>v.id==="body_replica6");
-   if(rare){ u.push(rare); state.dialogQueue.push(`さらに「${rare.name}」を手に入れた！`); }
-   }
-   }
-   }catch(e){}
-   state.afterDialogFn=null;
-   }
-   }
-   }
-   }
+    const dx=(keys["ArrowRight"]||keys["KeyD"])?1:(keys["ArrowLeft"]||keys["KeyA"])?-1:0;
+    const dy=(keys["ArrowDown"]||keys["KeyS"])?1:(keys["ArrowUp"]||keys["KeyW"])?-1:0;
+    if(moveCooldown<=0 && (dx||dy)){
+      const nx=Math.max(0,Math.min(W-1,state.x+dx)), ny=Math.max(0,Math.min(H-1,state.y+dy));
+      let t=MAP[ny][nx];
+      if(t!==1){
+        state.x=nx; state.y=ny; moveCooldown=0.12;
+        if(dx>0) state.facing=1; else if(dx<0) state.facing=3; else if(dy<0) state.facing=0; else if(dy>0) state.facing=2;
+        reveal(state.x, state.y, 3);
+        if(t===0 && Math.random()<0.16) startBattle(pickEnemyFor(state.x, state.y));
+        if(t===2){ state.mode='dialog'; state.dialogQueue=["重厚な扉がきしんだ…","大広間から気配を感じる。"]; state.afterDialogFn=null; }
+        if(t===6 && state.bossAlive){
+          state.mode='dialog';
+          const n = state.hero.name || "あなた";
+          const speech = `よくぞ来た${n}よ！ わしがご主人様の中のご主人様、ご主人王である。わしの日常の疲れを思い知るがよいっ！`;
+          state.dialogQueue=[speech,"—— 戦闘開始 ——"];
+          state.afterDialogFn = ()=> startBattle(copyEnemy(BOSS));
+        }
+        if(t===3){
+          const key=nx+","+ny;
+          if(!state.openedChests[key]){
+            const loot=CHEST_LOOT[key];
+            if(loot){ giveLoot(loot); state.openedChests[key]=true; seq([{f:880,ms:60,type:'square',vol:0.5},{f:1320,ms:60,type:'square',vol:0.5}]); }
+            else state.openedChests[key]=true;
+            state.mode='dialog'; const got = loot ? loot.item.name : "なにか";
+            state.dialogQueue=[`宝箱をあけた！`,`「${got}」を手に入れた！`];
+            try{
+              if(Math.random()<1/128){
+                const u=state.hero.invU;
+                if(!u.some(x=>x.id==="body_replica6")){
+                  const rare=UNIFORMS.find(v=>v.id==="body_replica6");
+                  if(rare){ u.push(rare); state.dialogQueue.push(`さらに「${rare.name}」を手に入れた！`); }
+                }
+              }
+            }catch(e){}
+            state.afterDialogFn=null;
+          }
+        }
+      }
+    }
   }
 
-  /* === フィールド道具 === */
   let fieldItemSel=0;
   function openItemsField(){ state.mode='items'; fieldItemSel=0; }
   function drawItemsField(){
@@ -1031,10 +878,10 @@ function openNameModal(onOK, onCancel){
    drawText("《道具（フィールド）》 ↑↓で選択 / OKで使用 / 戻るで閉じる",28,44,"#fff");
    if(list.length===0){ drawText("何も持っていない…",28,64,"#ddd"); return; }
    for(let i=0;i<list.length;i++){
-   const y=66+i*14, sel=(fieldItemSel||0)===i;
-   if(sel){ ctx.fillStyle="rgba(122,225,255,.22)"; ctx.fillRect(24,y-2,272,14); }
-   const base=ITEMS.find(x=>x.id===list[i].id); const label = `${base.name} ×${list[i].qty}`;
-   drawText(label,32,y, sel?"#e7faff":"#fff");
+     const y=66+i*14, sel=(fieldItemSel||0)===i;
+     if(sel){ ctx.fillStyle="rgba(122,225,255,.22)"; ctx.fillRect(24,y-2,272,14); }
+     const base=ITEMS.find(x=>x.id===list[i].id); const label = `${base.name} ×${list[i].qty}`;
+     drawText(label,32,y, sel?"#e7faff":"#fff");
    }
   }
   function itemsUpdate(dt){
@@ -1043,26 +890,25 @@ function openNameModal(onOK, onCancel){
    if(navReady() && keys["ArrowDown"] && fieldItemSel<Math.max(0,list.length-1)){ fieldItemSel++; navSet(); }
    if(keys["Escape"]||keys["KeyX"]) { state.mode='field'; return; }
    if((keys["Enter"]||keys["Space"]) && actionCooldown<=0){
-   actionCooldown=0.18;
-   if(list.length===0) return;
-   const stack=list[fieldItemSel]; const base=ITEMS.find(x=>x.id===stack.id);
-   if(!base) return;
-   if(base.kind==="insta"){ state.mode='dialog'; state.dialogQueue=["ここでは使えない…（戦闘中のみ）"]; return; }
-   if(base.kind==="healHP"){
-   const before=h.hp; h.hp=Math.min(h.maxhp, h.hp+base.power);
-   const g=h.hp-before; if(g<=0){ state.mode='dialog'; state.dialogQueue=["HPは十分だ。"]; return; }
-   stack.qty--; if(stack.qty<0) stack.qty=0; const inMain = h.invI.find(s=>s.id===stack.id); if(inMain) inMain.qty=stack.qty;
-   state.mode='dialog'; state.dialogQueue=[`「${base.name}」を使った。HPが${g}回復！`];
-   }else if(base.kind==="healMP"){
-   const before=h.mp; h.mp=Math.min(h.maxmp, h.mp+base.power);
-   const g=h.mp-before; if(g<=0){ state.mode='dialog'; state.dialogQueue=["MPは十分だ。"]; return; }
-   stack.qty--; if(stack.qty<0) stack.qty=0; const inMain = h.invI.find(s=>s.id===stack.id); if(inMain) inMain.qty=stack.qty;
-   state.mode='dialog'; state.dialogQueue=[`「${base.name}」を使った。MPが${g}回復！`];
-   }
+     actionCooldown=0.18;
+     if(list.length===0) return;
+     const stack=list[fieldItemSel]; const base=ITEMS.find(x=>x.id===stack.id);
+     if(!base) return;
+     if(base.kind==="insta"){ state.mode='dialog'; state.dialogQueue=["ここでは使えない…（戦闘中のみ）"]; return; }
+     if(base.kind==="healHP"){
+       const before=h.hp; h.hp=Math.min(h.maxhp, h.hp+base.power);
+       const g=h.hp-before; if(g<=0){ state.mode='dialog'; state.dialogQueue=["HPは十分だ。"]; return; }
+       stack.qty--; if(stack.qty<0) stack.qty=0; const inMain = h.invI.find(s=>s.id===stack.id); if(inMain) inMain.qty=stack.qty;
+       state.mode='dialog'; state.dialogQueue=[`「${base.name}」を使った。HPが${g}回復！`];
+     }else if(base.kind==="healMP"){
+       const before=h.mp; h.mp=Math.min(h.maxmp, h.mp+base.power);
+       const g=h.mp-before; if(g<=0){ state.mode='dialog'; state.dialogQueue=["MPは十分だ。"]; return; }
+       stack.qty--; if(stack.qty<0) stack.qty=0; const inMain = h.invI.find(s=>s.id===stack.id); if(inMain) inMain.qty=stack.qty;
+       state.mode='dialog'; state.dialogQueue=[`「${base.name}」を使った。MPが${g}回復！`];
+     }
    }
   }
 
-  /* === 戦闘 === */
   function copyEnemy(t){ return JSON.parse(JSON.stringify(t)); }
   function hasItem(list, id){ return list.some(i=>i.id===id); }
   function giveLoot(loot){ const h=state.hero; if(loot.type==="weapon"){ if(!hasItem(h.invW, loot.item.id)) h.invW.push(loot.item); } else { if(!hasItem(h.invU, loot.item.id)) h.invU.push(loot.item); } }
@@ -1074,20 +920,20 @@ function openNameModal(onOK, onCancel){
   function useItem(base, stack, b, h, e){
    let msg="";
    if(base.kind==="healHP"){
-   const before=h.hp; h.hp=Math.min(h.maxhp, h.hp+base.power);
-   const g=h.hp-before; msg=`${base.name}を食べた！ HPが${g}回復！`; if(g>0) addPopup(96,74,"+"+g,"#66e0ff",12,14,350,200);
+     const before=h.hp; h.hp=Math.min(h.maxhp, h.hp+base.power);
+     const g=h.hp-before; msg=`${base.name}を食べた！ HPが${g}回復！`; if(g>0) addPopup(96,74,"+"+g,"#66e0ff",12,14,350,200);
    }else if(base.kind==="healMP"){
-   const before=h.mp; h.mp=Math.min(h.maxmp, h.mp+base.power);
-   const g=h.mp-before; msg=`${base.name}を飲んだ！ MPが${g}回復！`; if(g>0) addPopup(96,90,"+"+g,"#5aa3ff",12,14,350,200);
+     const before=h.mp; h.mp=Math.min(h.maxmp, h.mp+base.power);
+     const g=h.mp-before; msg=`${base.name}を飲んだ！ MPが${g}回復！`; if(g>0) addPopup(96,90,"+"+g,"#5aa3ff",12,14,350,200);
    }else if(base.kind==="insta"){
-   if(e.boss){
-   const dd = Math.max(30, Math.floor(e.hp*0.7));
-   e.hp = Math.max(1, e.hp - dd);
-   msg=`${base.name}を召喚！ 強烈な一撃！ ${dd}ダメージ！（ボスは耐えた）`;
-   addPopup(200,74,"-"+dd,"#ffd700",14,20,400,200);
-   }else{
-   e.hp=0; msg=`${base.name}を召喚した！ ${e.name}はみるみるうちに倒れた！`; addPopup(200,74,"撃破！","#ffd700",16,20,400,200);
-   }
+     if(e.boss){
+       const dd = Math.max(30, Math.floor(e.hp*0.7));
+       e.hp = Math.max(1, e.hp - dd);
+       msg=`${base.name}を召喚！ 強烈な一撃！ ${dd}ダメージ！（ボスは耐えた）`;
+       addPopup(200,74,"-"+dd,"#ffd700",14,20,400,200);
+     }else{
+       e.hp=0; msg=`${base.name}を召喚した！ ${e.name}はみるみるうちに倒れた！`; addPopup(200,74,"撃破！","#ffd700",16,20,400,200);
+     }
    }
    stack.qty=Math.max(0, stack.qty-1);
    const inMain = state.hero.invI.find(s=>s.id===stack.id); if(inMain) inMain.qty=stack.qty;
@@ -1116,21 +962,21 @@ function openNameModal(onOK, onCancel){
    seq([{f:523,ms:120,type:'sine',vol:0.5},{f:659,ms:120,type:'sine',vol:0.5},{f:784,ms:120,type:'sine',vol:0.5}]);
 
    let gainedExp = e.exp; h.exp+=gainedExp;
-   let leveled=false; const post=[];
+   const post=[];
    while(h.exp >= h.lv*22){
-   h.exp -= h.lv*22; h.lv++; leveled=true;
-   h.maxhp+=6; h.maxmp+=2; h.atk+=2; h.def+=1; h.hp=h.maxhp; h.mp=h.maxmp;
-   post.push(`${h.name}は　レベルが　あがった！`);
-   if(h.lv===3){ post.push(`${h.name}は　あたらしいおまじないを　おぼえた！`); }
-   if(h.lv===5){ post.push(`${h.name}は　あたらしいおまじないを　おぼえた！`); }
+     h.exp -= h.lv*22; h.lv++;
+     h.maxhp+=6; h.maxmp+=2; h.atk+=2; h.def+=1; h.hp=h.maxhp; h.mp=h.maxmp;
+     post.push(`${h.name}は　レベルが　あがった！`);
+     if(h.lv===3){ post.push(`${h.name}は　あたらしいおまじないを　おぼえた！`); }
+     if(h.lv===5){ post.push(`${h.name}は　あたらしいおまじないを　おぼえた！`); }
    }
    let dropNote="";
    if(!e.boss && Math.random()<0.30){
-   const id = (Math.random()<0.5) ? "omurice" : "tea";
-   const base = ITEMS.find(x=>x.id===id);
-   const stack = h.invI.find(s=>s.id===id);
-   if(stack) stack.qty += 1; else h.invI.push({id, qty:1});
-   dropNote = ` / 入手どうぐ：${base.name}`;
+     const id = (Math.random()<0.5) ? "omurice" : "tea";
+     const base = ITEMS.find(x=>x.id===id);
+     const stack = h.invI.find(s=>s.id===id);
+     if(stack) stack.qty += 1; else h.invI.push({id, qty:1});
+     dropNote = ` / 入手どうぐ：${base.name}`;
    }
    const needNext = h.lv*22 - h.exp;
    b.victoryLine = `${h.name}は　${e.name}を　いやした！`;
@@ -1141,81 +987,80 @@ function openNameModal(onOK, onCancel){
   function battleUpdate(dt){
    const b=state.battle,h=state.hero,e=b.enemy;
    if(b.phase==='select'){
-   if(navReady() && keys["ArrowLeft"]&&b.sel%2===1){ b.sel--; navSet(); }
-   if(navReady() && keys["ArrowRight"]&&b.sel%2===0){ b.sel++; navSet(); }
-   if(navReady() && keys["ArrowUp"]&&b.sel>1){ b.sel-=2; navSet(); }
-   if(navReady() && keys["ArrowDown"]&&b.sel<2){ b.sel+=2; navSet(); }
-   if((keys["Enter"]||keys["Space"]) && actionCooldown<=0){
-   actionCooldown=0.18;
-   if(b.sel===0){
-   const atk=h.atk+(h.weapon?h.weapon.atk:0);
-   const dmg=Math.max(1, atk - e.def + Math.floor(Math.random()*3));
-   e.hp-=dmg; b.log.push(`${h.name}のいやしの一撃！ ${e.name}に${dmg}ダメージ！`);
-   addPopup(200,74, String(dmg), "#ffffff", 12, 20, 400, 200);
-   seq([{f:320,ms:70,type:'square',vol:0.5},{f:220,ms:70,type:'square',vol:0.5}]);
-   if(e.hp<=0) return winBattle(); enemyAct();
-   }else if(b.sel===1){ b.phase='omajinai'; b.omSel=0;
-   }else if(b.sel===2){ b.defending=true; b.log.push("身をかためた！ 次の攻撃のダメージを減少"); enemyAct();
-   }else if(b.sel===3){ b.phase='item'; b.itemSel=0; }
-   }
+     if(navReady() && keys["ArrowLeft"]&&b.sel%2===1){ b.sel--; navSet(); }
+     if(navReady() && keys["ArrowRight"]&&b.sel%2===0){ b.sel++; navSet(); }
+     if(navReady() && keys["ArrowUp"]&&b.sel>1){ b.sel-=2; navSet(); }
+     if(navReady() && keys["ArrowDown"]&&b.sel<2){ b.sel+=2; navSet(); }
+     if((keys["Enter"]||keys["Space"]) && actionCooldown<=0){
+       actionCooldown=0.18;
+       if(b.sel===0){
+         const atk=h.atk+(h.weapon?h.weapon.atk:0);
+         const dmg=Math.max(1, atk - e.def + Math.floor(Math.random()*3));
+         e.hp-=dmg; b.log.push(`${h.name}のいやしの一撃！ ${e.name}に${dmg}ダメージ！`);
+         addPopup(200,74, String(dmg), "#ffffff", 12, 20, 400, 200);
+         seq([{f:320,ms:70,type:'square',vol:0.5},{f:220,ms:70,type:'square',vol:0.5}]);
+         if(e.hp<=0) return winBattle(); enemyAct();
+       }else if(b.sel===1){ b.phase='omajinai'; b.omSel=0;
+       }else if(b.sel===2){ b.defending=true; b.log.push("身をかためた！ 次の攻撃のダメージを減少"); enemyAct();
+       }else if(b.sel===3){ b.phase='item'; b.itemSel=0; }
+     }
    }else if(b.phase==='omajinai'){
-   const list=getOmajinaiList(h);
-   if(navReady() && keys["ArrowUp"] && b.omSel>0){ b.omSel--; navSet(); }
-   if(navReady() && keys["ArrowDown"] && b.omSel<Math.max(0,list.length-1)){ b.omSel++; navSet(); }
-   if(keys["Escape"]||keys["KeyX"]) b.phase='select';
-   if((keys["Enter"]||keys["Space"]) && actionCooldown<=0){
-   actionCooldown=0.18;
-   if(list.length===0){ b.log.push("まだ何も覚えていない…"); b.phase='select'; return; }
-   const sp=list[b.omSel];
-   if(h.mp < sp.mp){ b.log.push("MPがたりない…"); return; }
-   h.mp -= sp.mp;
-   if(sp.type==='damage20'){
-   e.hp-=20; b.log.push("おまじない『もえもえぎゅー』！ 20ダメージ！");
-   addPopup(200,74, "20", "#ffffff", 12, 20, 400, 200);
-   seq([{f:660,ms:80,type:'square',vol:0.5},{f:990,ms:80,type:'square',vol:0.5}]);
-   if(e.hp<=0) return winBattle();
-   enemyAct();
-   }else if(sp.type==='healFull'){
-   const gain=h.maxhp-h.hp; h.hp=h.maxhp; b.log.push("おまじない『おいしくなーれ』！ HPが全回復！");
-   if(gain>0) addPopup(96,74, "+"+gain, "#66e0ff", 12, 14, 350, 200);
-   seq([{f:523,ms:300,type:'sine',vol:0.5},{f:659,ms:300,type:'sine',vol:0.5},{f:784,ms:300,type:'sine',vol:0.5}]);
-   enemyAct();
-   }else if(sp.type==='insta'){
-   if(e.boss){
-   const dd = Math.max(30, Math.floor(e.hp*0.7));
-   e.hp = Math.max(1, e.hp - dd);
-   b.log.push("おまじない『にしきぬやまー』！ 圧倒的な気配！(ボスは耐えた)");
-   addPopup(200,74,"-"+dd,"#ffd700",14,20,400,200);
-   enemyAct();
-   }else{
-   e.hp=0; b.log.push("おまじない『にしきぬやまー』！ 敵は飲み込まれた…！");
-   addPopup(200,74,"撃破！","#ffd700",16,20,400,200);
-   return winBattle();
-   }
-   }
-   }
+     const list=getOmajinaiList(h);
+     if(navReady() && keys["ArrowUp"] && b.omSel>0){ b.omSel--; navSet(); }
+     if(navReady() && keys["ArrowDown"] && b.omSel<Math.max(0,list.length-1)){ b.omSel++; navSet(); }
+     if(keys["Escape"]||keys["KeyX"]) b.phase='select';
+     if((keys["Enter"]||keys["Space"]) && actionCooldown<=0){
+       actionCooldown=0.18;
+       if(list.length===0){ b.log.push("まだ何も覚えていない…"); b.phase='select'; return; }
+       const sp=list[b.omSel];
+       if(h.mp < sp.mp){ b.log.push("MPがたりない…"); return; }
+       h.mp -= sp.mp;
+       if(sp.type==='damage20'){
+         e.hp-=20; b.log.push("おまじない『もえもえぎゅー』！ 20ダメージ！");
+         addPopup(200,74, "20", "#ffffff", 12, 20, 400, 200);
+         seq([{f:660,ms:80,type:'square',vol:0.5},{f:990,ms:80,type:'square',vol:0.5}]);
+         if(e.hp<=0) return winBattle();
+         enemyAct();
+       }else if(sp.type==='healFull'){
+         const gain=h.maxhp-h.hp; h.hp=h.maxhp; b.log.push("おまじない『おいしくなーれ』！ HPが全回復！");
+         if(gain>0) addPopup(96,74, "+"+gain, "#66e0ff", 12, 14, 350, 200);
+         seq([{f:523,ms:300,type:'sine',vol:0.5},{f:659,ms:300,type:'sine',vol:0.5},{f:784,ms:300,type:'sine',vol:0.5}]);
+         enemyAct();
+       }else if(sp.type==='insta'){
+         if(e.boss){
+           const dd = Math.max(30, Math.floor(e.hp*0.7));
+           e.hp = Math.max(1, e.hp - dd);
+           b.log.push("おまじない『にしきぬやまー』！ 圧倒的な気配！(ボスは耐えた)");
+           addPopup(200,74,"-"+dd,"#ffd700",14,20,400,200);
+           enemyAct();
+         }else{
+           e.hp=0; b.log.push("おまじない『にしきぬやまー』！ 敵は飲み込まれた…！");
+           addPopup(200,74,"撃破！","#ffd700",16,20,400,200);
+           return winBattle();
+         }
+       }
+     }
    }else if(b.phase==='item'){
-   const list=h.invI.filter(it=>it.qty>0);
-   if(navReady() && keys["ArrowUp"] && b.itemSel>0){ b.itemSel--; navSet(); }
-   if(navReady() && keys["ArrowDown"] && b.itemSel<Math.max(0,list.length-1)){ b.itemSel++; navSet(); }
-   if(keys["Escape"]||keys["KeyX"]) b.phase='select';
-   if((keys["Enter"]||keys["Space"]) && actionCooldown<=0){
-   actionCooldown=0.18;
-   if(list.length===0){ b.log.push("まだ何も持っていない…"); b.phase='select'; return; }
-   const stack=list[b.itemSel]; const base=ITEMS.find(x=>x.id===stack.id);
-   if(!base){ b.phase='select'; return; }
-   useItem(base, stack, b, h, e);
-   }
+     const list=h.invI.filter(it=>it.qty>0);
+     if(navReady() && keys["ArrowUp"] && b.itemSel>0){ b.itemSel--; navSet(); }
+     if(navReady() && keys["ArrowDown"] && b.itemSel<Math.max(0,list.length-1)){ b.itemSel++; navSet(); }
+     if(keys["Escape"]||keys["KeyX"]) b.phase='select';
+     if((keys["Enter"]||keys["Space"]) && actionCooldown<=0){
+       actionCooldown=0.18;
+       if(list.length===0){ b.log.push("まだ何も持っていない…"); b.phase='select'; return; }
+       const stack=list[b.itemSel]; const base=ITEMS.find(x=>x.id===stack.id);
+       if(!base){ b.phase='select'; return; }
+       useItem(base, stack, b, h, e);
+     }
    }else if(b.phase==='inter'){
-   if((keys["Enter"]||keys["Space"]) && actionCooldown<=0){ actionCooldown=0.18; b.phase='select'; b.sel=0; b.turn++; }
+     if((keys["Enter"]||keys["Space"]) && actionCooldown<=0){ actionCooldown=0.18; b.phase='select'; b.sel=0; b.turn++; }
    }else if(b.phase==='finished'){
-   if((keys["Escape"]||keys["KeyX"]) && actionCooldown<=0){ actionCooldown=0.18; endBattle(true); }
+     if((keys["Escape"]||keys["KeyX"]) && actionCooldown<=0){ actionCooldown=0.18; endBattle(true); }
    }
   }
   function showEnding(){ bgmStop(); state.mode='end'; }
   function endBattle(){ state.mode='field'; state.battle=null; bgmStart('field'); }
 
-  /* ======== Game Over（名前保持） ======== */
   function gameOver(){
    const lastName = state.hero && state.hero.name ? state.hero.name : (state.playerName||null);
    state.hero=JSON.parse(JSON.stringify(heroBase));
@@ -1224,7 +1069,6 @@ function openNameModal(onOK, onCancel){
    state.mode='dialog'; state.dialogQueue=['目の前が真っ黒になった…','屋敷の気配が変わったようだ（マップが変化した）']; state.afterDialogFn=null; bgmStart('field');
   }
 
-  /* ======== Equip ======== */
   let equipState={cat:0, sel:0};
   function openEquip(){ equipState={cat:0,sel:0}; state.mode='equip'; }
   function equipList(cat,h){ if(cat===0) return h.invW; if(cat===1) return h.invU.filter(i=>i.slot==='legs'); if(cat===2) return h.invU.filter(i=>i.slot==='body'); return h.invU.filter(i=>i.slot==='head'); }
@@ -1249,31 +1093,28 @@ function openNameModal(onOK, onCancel){
    drawText("カテゴリ: "+title,16,104,"#fff");
    const list=equipList(equipState.cat,h);
    for(let i=0;i<list.length;i++){
-   const y=120+i*14, sel=i===equipState.sel;
-   if(sel){ctx.fillStyle="rgba(122,225,255,.22)"; ctx.fillRect(12,y-2,296,14);}
-   const it=list[i];
-   drawText(`${it.name} ${it.atk?`(+ATK ${it.atk})`:`(+DEF ${it.def})`}`,20,y, sel?"#e7faff":"#fff");
+     const y=120+i*14, sel=i===equipState.sel;
+     if(sel){ctx.fillStyle="rgba(122,225,255,.22)"; ctx.fillRect(12,y-2,296,14);}
+     const it=list[i];
+     drawText(`${it.name} ${it.atk?`(+ATK ${it.atk})`:`(+DEF ${it.def})`}`,20,y, sel?"#e7faff":"#fff");
    }
   }
   function closeEquip(){ state.mode='field'; }
 
-  /* ======== Buttons / Header Clicks ======== */
   document.getElementById('btnReset').onclick=()=>{ if(confirm("最初からはじめますか？")){
    bgmStop();
    state={ hero:JSON.parse(JSON.stringify(heroBase)), x:1,y:1,facing:2, mode:"title", dialogQueue:[], battle:null, bossAlive:true, openedChests:{}, title:{blink:0,show:true}, nameMode:false, playerName:state.playerName, popups:[], shakeT:0, visited:Array.from({length:H},()=>Array(W).fill(false)), afterDialogFn:null };
    prevMode='title'; regenerateWorld();
   } };
-  document.getElementById('btnMute').onclick=(e)=>{ mute=!mute; e.target.textContent="効果音: "+(mute?"OFF":"ON"); if(mute) bgmStop(); else{ if(state.mode==='field' || state.mode==='equip' || state.mode==='dialog' || state.mode==='items') bgmStart('field'); else if(state.mode==='battle'){ const boss = state.battle?.enemy?.boss; bgmStart(boss ? 'boss' : 'battle'); } } };
+  document.getElementById('btnMute').onclick=(e)=>{ mute=!mute; e.target.textContent="効果音: "+(mute?"OFF":"ON"); if(mute) bgmStop(); else{
+    if(state.mode==='field' || state.mode==='equip' || state.mode==='dialog' || state.mode==='items') bgmStart('field');
+    else if(state.mode==='battle'){ const boss = state.battle?.enemy?.boss; bgmStart(boss ? 'boss' : 'battle'); }
+  } };
   document.getElementById('btnFull').onclick=()=>{ const el=document.getElementById('game'); if(!document.fullscreenElement){ el.requestFullscreen && el.requestFullscreen(); } else { document.exitFullscreen && document.exitFullscreen(); } };
-  document.getElementById('btnStart').onclick=(e)=>{
-  e.preventDefault();
-  if (state.mode === 'title' && !state.nameMode) startNameEntry();
-};
+  document.getElementById('btnStart').onclick=(e)=>{ e.preventDefault(); if (state.mode === 'title' && !state.nameMode) startNameEntry(); };
 
-  /* ▼▼▼ ここが今回の変更：戦闘中は無反応 ▼▼▼ */
   document.getElementById('btnActEquip').onclick=()=>{ if(state.mode==='battle') return; openEquip(false); };
   document.getElementById('btnActItems').onclick=()=>{ if(state.mode==='battle') return; openItemsField(); };
-  /* ▲▲▲ */
 
   function syncControlsDisabled(){
    const equipBtn = document.getElementById('btnActEquip');
@@ -1283,7 +1124,6 @@ function openNameModal(onOK, onCancel){
    if(itemsBtn) itemsBtn.classList.toggle('disabled', disabled);
   }
 
-  /* === 説明（DOMモーダル制御） === */
   const helpMask = document.getElementById('helpMask');
   const helpBody = document.getElementById('helpBody');
   const helpClose = document.getElementById('helpClose');
@@ -1291,107 +1131,97 @@ function openNameModal(onOK, onCancel){
   helpClose.onclick=()=>{ helpMask.style.display='none'; };
   helpMask.addEventListener('click', (e)=>{ if(e.target===helpMask) helpMask.style.display='none'; });
 
-  /* === iOS audio unlock === */
   function armAudio(){ try{ const c=(window.AudioContext||window.webkitAudioContext)?audio():null; if(c&&c.state==='suspended'&&c.resume) c.resume(); }catch(_ ){} }
   ['pointerdown','touchstart'].forEach(ev=>{ document.addEventListener(ev, ()=>armAudio(), {once:true, passive:true}); });
 
-  /* === タイトル起動＆タップ開始 === */
- function bootGameToTitle(){
-  if (bootGameToTitle._booted) return; 
-  bootGameToTitle._booted = true;
+  function bootGameToTitle(){
+    if (bootGameToTitle._booted) return; 
+    bootGameToTitle._booted = true;
 
-  regenerateWorld(); 
-  prevMode = 'title'; 
-  state.mode = 'title'; 
-  state.title.show = true; 
-  bgmStop(); 
-  requestAnimationFrame(loop);
+    regenerateWorld(); 
+    prevMode = 'title'; 
+    state.mode = 'title'; 
+    state.title.show = true; 
+    bgmStop(); 
+    requestAnimationFrame(loop);
 
-  function handleTapToStart(e){
-  if (state.mode === 'title' && !state.nameMode) {
-    if (e && e.cancelable) e.preventDefault();
-    startNameEntry();
-  }
-}
+    function handleTapToStart(e){
+      if (state.mode === 'title' && !state.nameMode) {
+        if (e && e.cancelable) e.preventDefault();
+        startNameEntry();
+      }
+    }
 
-  // ★ pointerup を追加し、document でも拾う
-   ['click','touchend','pointerup'].forEach(ev=>{
-    cvs.addEventListener(ev, handleTapToStart, {passive:false});
-    document.addEventListener(ev, handleTapToStart, {passive:false});
-  });
-
-  // ★ iOS対策：touchstart/pointerdown も拾う
-  ['touchstart','pointerdown'].forEach(ev=>{
-    cvs.addEventListener(ev, handleTapToStart, {passive:false});
-    document.addEventListener(ev, handleTapToStart, {passive:false});
-  });
-
-  // ★ タイトル全面ヒットエリアでも開始
-  const hit = document.getElementById('titleStartHit');
-  if (hit) {
-    ['click','touchstart','touchend','pointerdown','pointerup'].forEach(ev=>{
-      hit.addEventListener(ev, handleTapToStart, {passive:false});
+    ['click','touchend','pointerup'].forEach(ev=>{
+      cvs.addEventListener(ev, handleTapToStart, {passive:false});
+      document.addEventListener(ev, handleTapToStart, {passive:false});
     });
+    ['touchstart','pointerdown'].forEach(ev=>{
+      cvs.addEventListener(ev, handleTapToStart, {passive:false});
+      document.addEventListener(ev, handleTapToStart, {passive:false});
+    });
+
+    const hit = document.getElementById('titleStartHit');
+    if (hit) {
+      ['click','touchstart','touchend','pointerdown','pointerup'].forEach(ev=>{
+        hit.addEventListener(ev, handleTapToStart, {passive:false});
+      });
+    }
   }
-}
   bootGameToTitle();
 
   function resetToTitle(){
-   state={ hero:JSON.parse(JSON.stringify(heroBase)), x:1,y:1,facing:2, mode:"title", dialogQueue:[], battle:null, bossAlive:true, openedChests:{}, title:{blink:0,show:true}, nameMode:false, playerName:state.playerName, popups:[], shakeT:0, visited:Array.from({length:H},()=>Array(W).fill(false)), afterDialogFn:null };
-   regenerateWorld();
-   prevMode='title';
-   bgmStop();
+    state={ hero:JSON.parse(JSON.stringify(heroBase)), x:1,y:1,facing:2, mode:"title", dialogQueue:[], battle:null, bossAlive:true, openedChests:{}, title:{blink:0,show:true}, nameMode:false, playerName:state.playerName, popups:[], shakeT:0, visited:Array.from({length:H},()=>Array(W).fill(false)), afterDialogFn:null };
+    regenerateWorld();
+    prevMode='title';
+    bgmStop();
   }
 
-  /* タッチD-Pad/OK/戻る */
   function press(code, duration=120){ keys[code]=true; setTimeout(()=>{ delete keys[code]; }, duration); }
- function bindPad(){
-  document.querySelectorAll('.btnc').forEach(b=>{
-    const code = b.getAttribute('data-k');
-    let tid = null;
-    const start = ()=>{ press(code); tid = setInterval(()=>press(code), 150); };
-    const end   = ()=>{ if(tid){ clearInterval(tid); tid=null; delete keys[code]; } };
-    b.addEventListener('touchstart', e=>{ e.preventDefault(); start(); }, {passive:false});
-    b.addEventListener('mousedown',  e=>{ e.preventDefault(); start(); });
-    ['touchend','touchcancel','mouseup','mouseleave'].forEach(ev=> b.addEventListener(ev, end, {passive:true}));
-  });
+  function bindPad(){
+    document.querySelectorAll('.btnc').forEach(b=>{
+      const code = b.getAttribute('data-k');
+      let tid = null;
+      const start = ()=>{ press(code); tid = setInterval(()=>press(code), 150); };
+      const end   = ()=>{ if(tid){ clearInterval(tid); tid=null; delete keys[code]; } };
+      b.addEventListener('touchstart', e=>{ e.preventDefault(); start(); }, {passive:false});
+      b.addEventListener('mousedown',  e=>{ e.preventDefault(); start(); });
+      ['touchend','touchcancel','mouseup','mouseleave'].forEach(ev=> b.addEventListener(ev, end, {passive:true}));
+    });
 
-  document.querySelectorAll('.btnL').forEach(b=>{
-    let main = b.getAttribute('data-k');
-    let alt  = b.getAttribute('data-alt');
-    if (main){
-      b.addEventListener('click', e=>{
-        e.preventDefault();
-        press(main);
-        if (alt) setTimeout(()=>press(alt), 10);
-        // タイトル中なら直呼びで開始
-       if (state.mode === 'title' && !state.nameMode && (main === 'Enter' || main === 'Space')) {
-  startNameEntry();
-}
-      });
-    }
-  });
-}
+    document.querySelectorAll('.btnL').forEach(b=>{
+      let main = b.getAttribute('data-k');
+      let alt  = b.getAttribute('data-alt');
+      if (main){
+        b.addEventListener('click', e=>{
+          e.preventDefault();
+          press(main);
+          if (alt) setTimeout(()=>press(alt), 10);
+          if (state.mode === 'title' && !state.nameMode && (main === 'Enter' || main === 'Space')) {
+            startNameEntry();
+          }
+        });
+      }
+    });
+  }
   bindPad();
 
-    // ★ 直付け（iOS古機種の保険）
-['click','touchstart','touchend','pointerdown','pointerup'].forEach(ev=>{
-  cvs.addEventListener(ev, (e)=>{
-    if (state.mode === 'title' && !state.nameMode) {
-      if (e && e.cancelable) e.preventDefault();
-      startNameEntry();
-    }
-  }, {passive:false});
-});
+  ['click','touchstart','touchend','pointerdown','pointerup'].forEach(ev=>{
+    cvs.addEventListener(ev, (e)=>{
+      if (state.mode === 'title' && !state.nameMode) {
+        if (e && e.cancelable) e.preventDefault();
+        startNameEntry();
+      }
+    }, {passive:false});
+  });
 
-  /* ユーティリティ */
   function getHallPos(){
    for(let y=0;y<H;y++) for(let x=0;x<W;x++){ if(hallMask[y][x]) return {x,y}; }
    return {x:W-2,y:H-2};
   }
   </script>
 
-     <!-- ④ オープニングのメッセージを受けて表示を切り替える + フォールバック -->
+  <!-- ④ オープニングのメッセージを受けて表示を切り替える + フォールバック -->
   <script>
     const openingFrame = document.getElementById('opening-frame');
     const gameRoot     = document.getElementById('game-root');
@@ -1402,13 +1232,11 @@ function openNameModal(onOK, onCancel){
       shown = true;
       openingFrame.style.display = 'none';
       gameRoot.style.display = 'block';
-      // ★ キャンバスにフォーカスして、すぐ操作できるように
       try { cvs.setAttribute('tabindex', '0'); cvs.focus(); } catch(_) {}
-      // ★ 念のためタイトル起動済みか確認して、未起動なら起動
       if (!bootGameToTitle._booted) bootGameToTitle();
     }
 
-    // --- X（旧Twitter）アプリ内ブラウザをゆるく検出 ---
+    // --- X（旧Twitter）アプリ内ブラウザ検出
     function isInAppX() {
       const ua  = navigator.userAgent || "";
       const ref = document.referrer || "";
@@ -1418,7 +1246,44 @@ function openNameModal(onOK, onCancel){
       );
     }
 
-        // === Xアプリ内ブラウザ用バナー：自動表示＆操作 ===
+    /* ★★ ここが今回の追加：外部ブラウザへ“できるだけ”誘導 ★★
+       - Android: intent:// を使ってChrome等へ。失敗時は _blank も試す。
+       - iOS: _blank を試み、失敗時は手動案内バナーを出す。
+       ブラウザやアプリの制限上、完全保証はできないため段階的にフォールバックします。 */
+    function tryOpenExternalOnce() {
+      const url = location.href.split('#')[0];
+      const ua  = navigator.userAgent || "";
+      const isAndroid = /Android/i.test(ua);
+      const isIOS     = /iPhone|iPad|iPod/i.test(ua);
+
+      // すでに外部ブラウザっぽい → 何もしない
+      if (!isInAppX()) return false;
+
+      let attempted = false;
+
+      if (isAndroid) {
+        // intent:// で外部ブラウザ起動を試みる
+        const intent = 'intent://' + url.replace(/^https?:\/\//,'') +
+                       '#Intent;scheme=https;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;S.browser_fallback_url=' +
+                       encodeURIComponent(url) + ';end';
+        try { location.href = intent; attempted = true; } catch(_) {}
+        // 念のため _blank も試みる
+        try { setTimeout(()=>window.open(url, '_blank', 'noopener'), 300); } catch(_) {}
+      } else if (isIOS) {
+        // iOS は _blank をトライ（X側の制限でダメな場合も多い）
+        let win = null;
+        try { win = window.open(url, '_blank'); attempted = true; } catch(_) {}
+        // 失敗検知は難しいので、以降はバナーへフォールバック
+        setTimeout(()=>{ /* no-op */ }, 400);
+      } else {
+        // その他環境は _blank
+        try { window.open(url, '_blank', 'noopener'); attempted = true; } catch(_) {}
+      }
+
+      return attempted;
+    }
+
+    // === Xアプリ内ブラウザ用バナー：自動表示＆操作 ===
     (function setupInAppBanner(){
       const banner   = document.getElementById('inapp-banner');
       const openBtn  = document.getElementById('inapp-open-external');
@@ -1428,32 +1293,34 @@ function openNameModal(onOK, onCancel){
       const KEY = 'inappBannerClosed';
       const closed = sessionStorage.getItem(KEY) === '1';
 
-      // Xアプリ内で、かつ未クローズなら表示
       if (isInAppX() && !closed) {
+        // 先に自動トライ（ユーザー操作なしで成功したら、そのまま遷移して戻ってこない想定）
+        tryOpenExternalOnce();
+
+        // バナー表示（失敗/ブロック時の案内）
         banner.style.display = 'block';
         document.body.classList.add('with-inapp-banner');
 
-        // 外部ブラウザで開く（まずは素直に同URLを_blank）
+        // ボタン押下時：できる限り外部で開く
         try {
-          const url = location.href;
+          const url = location.href.split('#')[0];
           openBtn.href = url;
 
-          // Androidは明示的に window.open を試す（失敗したら通常遷移）
-          if (/Android/i.test(navigator.userAgent)) {
-            openBtn.addEventListener('click', (e)=>{
-              try {
-                e.preventDefault();
-                window.open(url, '_blank', 'noopener');
-              } catch(_) {
-                // フォールバック
-                location.assign(url);
-              }
-            });
-          }
+          // Androidは intent を優先してさらに強制を試みる
+          openBtn.addEventListener('click', (e)=>{
+            const ua = navigator.userAgent || "";
+            if (/Android/i.test(ua)) {
+              e.preventDefault();
+              const intent = 'intent://' + url.replace(/^https?:\/\//,'') +
+                             '#Intent;scheme=https;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;S.browser_fallback_url=' +
+                             encodeURIComponent(url) + ';end';
+              try { location.href = intent; } catch(_) { window.open(url, '_blank', 'noopener'); }
+            }
+          });
         } catch(_) {}
       }
 
-      // 閉じる（次回以降は当面出さない）
+      // 閉じる（当面出さない）
       closeBtn.addEventListener('click', ()=>{
         banner.style.display = 'none';
         document.body.classList.remove('with-inapp-banner');
@@ -1461,21 +1328,18 @@ function openNameModal(onOK, onCancel){
       }, { passive: true });
     })();
 
-    // --- opening.html からのメッセージ（通常ルート） ---
+    // opening.html → finished 通知で通常切替
     window.addEventListener('message', (event) => {
-      // 必要ならオリジン制限を戻す:
-      // if (event.origin !== 'https://potoro1001.github.io') return;
       if (!event.data || event.data.type !== 'opening-finished') return;
       showGame();
     });
 
-    // --- 追加: iframe の onload でも保険（postMessageが来ない環境向け） ---
+    // iframe onload 保険（postMessageが来ない環境）
     openingFrame.addEventListener('load', () => {
-      // 読み込めているのに進まないケースは 4 秒で切り替え
       setTimeout(() => { if (!shown) showGame(); }, 4000);
     });
 
-    // --- 追加: 初回ユーザー操作で即表示（X対策の決め手） ---
+    // 初回ユーザー操作で即表示（X対策）
     const userKick = () => { if (!shown) showGame(); cleanupUserKick(); };
     function cleanupUserKick() {
       const opts = { passive: true };
@@ -1485,22 +1349,21 @@ function openNameModal(onOK, onCancel){
     ['pointerdown','pointerup','touchstart','touchend','click','keydown','wheel','scroll']
       .forEach(ev => document.addEventListener(ev, userKick, { passive: true }));
 
-    // --- ページが可視化されたタイミングでも保険（バックから復帰等） ---
+    // 可視化タイミング保険
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible' && !shown) {
         setTimeout(() => { if (!shown) showGame(); }, 1000);
       }
     });
 
-    // --- タイマー保険（段階的）。Xでは setTimeout が寝ることがあるため複数回撃つ ---
+    // タイマー保険（XでsetTimeoutが寝る対策）
     setTimeout(() => { try { if (!shown) showGame(); } catch(_){} }, 7000);
     setTimeout(() => { try { if (!shown) showGame(); } catch(_){} }, 12000);
 
-    // --- X アプリ内っぽいなら、さらに早めに強制表示 ---
+    // X っぽいなら早めに強制表示
     if (isInAppX()) {
       setTimeout(() => { if (!shown) showGame(); }, 800);
     }
   </script>
-
 </body>
 </html>
