@@ -15,7 +15,7 @@
     /* game root */
     #game-root{ display:none; height:100%; }
 
-    /* ====== game styles (元のまま) ====== */
+    /* ====== game styles ====== */
     .app{ min-height:100%; display:flex; flex-direction:column; gap:8px;
       padding:env(safe-area-inset-top) var(--pad) calc(110px + env(safe-area-inset-bottom)) var(--pad); }
     .topbar{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
@@ -56,7 +56,7 @@
     .help-foot{ padding:10px 12px; border-top:1px solid #2b3246; display:flex; gap:8px; justify-content:flex-end; }
     .help-close{ background:#17213a; color:#e8ecff; border:1px solid #34406a; border-radius:10px; padding:8px 12px; font-weight:700; }
 
-    /* === シンプルなアプリ内ブラウザ警告バナー（文＋コピーのみ） === */
+    /* === アプリ内ブラウザ警告バナー（注意文＋コピー＋閉じる） === */
     .inapp-banner{
       position:fixed; left:0; right:0; top:0; z-index:10000;
       display:none; padding:calc(10px + env(safe-area-inset-top)) 12px 10px 12px;
@@ -66,6 +66,7 @@
     .inapp-banner .row{ display:flex; align-items:center; gap:12px; justify-content:space-between; max-width:980px; margin:0 auto; }
     .inapp-banner .msg{ display:flex; align-items:center; gap:8px; font-weight:700; }
     .inapp-banner .msg .dot{ width:8px; height:8px; border-radius:50%; background:#ff7ad6; flex:0 0 auto; }
+    .inapp-banner .actions{ display:flex; gap:8px; }
     .inapp-banner button{
       appearance:none; -webkit-appearance:none; border:1px solid #34406a;
       background:#1a2238; color:#e8ecff; padding:8px 12px; border-radius:10px; font-weight:800; cursor:pointer;
@@ -86,8 +87,9 @@
         <span class="dot" aria-hidden="true"></span>
         <span id="inapp-banner-text">アプリ内ブラウザで開いているため、ゲームの開始がブロックされることがあります。</span>
       </div>
-      <div>
+      <div class="actions">
         <button id="copy-url" type="button">URLをコピー</button>
+        <button id="inapp-close" type="button" aria-label="バナーを閉じる">閉じる</button>
       </div>
     </div>
   </div>
@@ -176,11 +178,9 @@
     </div>
   </div>
 
-  <!-- === ゲーム本体JS（略さず収載：前版と同等機能） === -->
+  <!-- === ゲーム本体JS === -->
   <script>
-  /* ここから下は前回のゲーム本体ロジック（描画/戦闘/装備/道具/タイトル→名前入力→開始 など）
-     をそのまま内包しています。差分は一切入れていません。 */
-
+  /* 以降、ゲームロジックは前版同等です（省略なし） */
   const VIEW_W=320, VIEW_H=240, TILE=16;
   const W=20, H=15;
 
@@ -525,6 +525,7 @@
     const hit=document.getElementById('titleStartHit'); if(hit){ ['click','touchstart','touchend','pointerdown','pointerup'].forEach(ev=>{ hit.addEventListener(ev,handleTapToStart,{passive:false}); }); }
   }
   bootGameToTitle();
+
   function resetToTitle(){ state={ hero:JSON.parse(JSON.stringify(heroBase)), x:1,y:1,facing:2, mode:"title", dialogQueue:[], battle:null, bossAlive:true, openedChests:{}, title:{blink:0,show:true}, nameMode:false, playerName:state.playerName, popups:[], shakeT:0, visited:Array.from({length:H},()=>Array(W).fill(false)), afterDialogFn:null }; regenerateWorld(); prevMode='title'; bgmStop(); }
 
   function press(code,duration=120){ keys[code]=true; setTimeout(()=>{ delete keys[code]; },duration); }
@@ -545,27 +546,66 @@
   function getHallPos(){ for(let y=0;y<H;y++) for(let x=0;x<W;x++) if(hallMask[y][x]) return {x,y}; return {x:W-2,y:H-2}; }
   </script>
 
-  <!-- === opening完了の受信＋シンプルなXアプリ検出＆コピーだけ === -->
+  <!-- === opening完了の受信＋Xアプリ検出＆コピー＋閉じる＋冗長フォールバック === -->
   <script>
     const openingFrame=document.getElementById('opening-frame');
     const gameRoot=document.getElementById('game-root');
     let shown=false;
-    function showGame(){ if(shown) return; shown=true; openingFrame.style.display='none'; gameRoot.style.display='block';
-      try{ const cvs=document.getElementById('game'); cvs.setAttribute('tabindex','0'); cvs.focus(); }catch(_){} try{ if(!bootGameToTitle._booted) bootGameToTitle(); }catch(_){} }
-    function isInAppX(){ const ua=navigator.userAgent||""; const ref=document.referrer||""; return (/Twitter|XAndroidApp|X-iOS/i.test(ua) || /t\.co|x\.com|mobile\.twitter\.com/i.test(ref)); }
 
-    // opening からの通知 & フォールバック
+    function showGame(){
+      if(shown) return;
+      shown=true;
+      openingFrame.style.display='none';
+      gameRoot.style.display='block';
+      try{ const cvs=document.getElementById('game'); cvs.setAttribute('tabindex','0'); cvs.focus(); }catch(_){}
+      try{ if(!bootGameToTitle._booted) bootGameToTitle(); }catch(_){}
+    }
+
+    function isInAppX(){
+      const ua=navigator.userAgent||"";
+      const ref=document.referrer||"";
+      return (/Twitter|XAndroidApp|X-iOS/i.test(ua) || /t\.co|x\.com|mobile\.twitter\.com/i.test(ref));
+    }
+
+    // opening からの通知
     window.addEventListener('message',(event)=>{ if(!event.data||event.data.type!=='opening-finished') return; showGame(); });
+    // iframe onload 後の保険
     openingFrame.addEventListener('load',()=>{ setTimeout(()=>{ if(!shown) showGame(); },4000); });
-    document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible' && !shown){ setTimeout(()=>{ if(!shown) showGame(); },1000); } });
+    // 可視化時の保険
+    document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible' && !shown){ setTimeout(()=>{ if(!shown) showGame(); },1200); } });
+    // 段階的タイマー保険
+    setTimeout(()=>{ if(!shown) showGame(); },1200);
     setTimeout(()=>{ if(!shown) showGame(); },7000);
 
-    // ここからシンプルバナー（コピーのみ）
+    // 初回ユーザー操作で即表示（最優先保険）
+    const userKick=()=>{ if(!shown) showGame(); cleanupUserKick(); };
+    function cleanupUserKick(){
+      const opts={passive:true};
+      ['pointerdown','pointerup','touchstart','touchend','click','keydown','wheel','scroll']
+        .forEach(ev=> document.removeEventListener(ev,userKick,opts));
+    }
+    ['pointerdown','pointerup','touchstart','touchend','click','keydown','wheel','scroll']
+      .forEach(ev=> document.addEventListener(ev,userKick,{passive:true}));
+
+    // DOM 準備時にも必ずブート（ループ未起動で真っ黒になるのを防ぐ）
+    document.addEventListener('DOMContentLoaded', ()=> {
+      try{ if(!bootGameToTitle._booted) bootGameToTitle(); }catch(_){}
+    });
+
+    // === シンプルバナー（コピー＋閉じる） ===
     (function(){
       const banner=document.getElementById('inapp-banner');
       const btnCopy=document.getElementById('copy-url');
-      if(isInAppX()){ banner.style.display='block'; document.body.classList.add('with-inapp-banner'); }
+      const btnClose=document.getElementById('inapp-close');
+      const KEY='inappBannerClosed';
+
+      if(isInAppX() && sessionStorage.getItem(KEY)!=='1'){
+        banner.style.display='block';
+        document.body.classList.add('with-inapp-banner');
+      }
+
       const url=location.href.split('#')[0];
+
       btnCopy.addEventListener('click', async ()=>{
         try{
           await navigator.clipboard.writeText(url);
@@ -578,6 +618,12 @@
           setTimeout(()=>btnCopy.textContent='URLをコピー',1600);
         }
       });
+
+      btnClose.addEventListener('click', ()=>{
+        banner.style.display='none';
+        document.body.classList.remove('with-inapp-banner');
+        sessionStorage.setItem(KEY,'1');
+      }, {passive:true});
     })();
   </script>
 </body>
