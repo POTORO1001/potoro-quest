@@ -120,12 +120,9 @@
     /* クリック案内はもう使わない */
     .tap-to-start { display: none; }
 
-    @media (max-width: 600px) {
-      .crawl { font-size: 1.2rem; width: 90%; }
-      .intro { font-size: 1rem; }
-      .title-block h1 { font-size: 1.8rem; }
-      #skip-opening { font-size: 0.7rem; top: .75rem; right: .75rem; }
-    }
+    @media (prefers-reduced-motion: reduce) {
+  .crawl.play { animation: none; opacity: 1; transform: translate(-50%, 0) rotateX(0); }
+}
   </style>
 </head>
 <body>
@@ -167,7 +164,7 @@
   function notifyFinish() {
     if (finished) return;
     finished = true;
-    window.parent.postMessage({ type: "opening-finished" }, "*");
+    window.parent.postMessage({ type: "opening-finished" }, "https://potoro1001.github.io");
   }
 
   function startOpening() {
@@ -181,9 +178,9 @@
   }
 
   crawl.addEventListener('animationend', () => {
-    if (finishTimer) clearTimeout(finishTimer);
-    notifyFinish();
-  });
+  if (finishTimer) clearTimeout(finishTimer);
+  notifyFinish();
+}, { once: true });
 
   skipBtn.addEventListener('click', (e) => {
     e.stopPropagation();
