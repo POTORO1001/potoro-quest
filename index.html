@@ -1368,7 +1368,7 @@
   }
   </script>
 
-  <!-- ④ オープニングのメッセージを受けて表示を切り替える + フォールバック + バナー -->
+    <!-- ④ オープニングのメッセージを受けて表示を切り替える（早期フォールバック廃止） -->
   <script>
     const openingFrame = document.getElementById('opening-frame');
     const gameRoot     = document.getElementById('game-root');
@@ -1383,100 +1383,27 @@
       if (!bootGameToTitle._booted) bootGameToTitle();
     }
 
-    // --- X（旧Twitter）アプリ内ブラウザをゆるく検出 ---
-    function isInAppX() {
-      const ua  = navigator.userAgent || "";
-      const ref = document.referrer || "";
-      return (
-        /Twitter|XAndroidApp|X-iOS/i.test(ua) ||
-        /t\.co|x\.com|mobile\.twitter\.com/i.test(ref)
-      );
-    }
-
-    // === Xアプリ内ブラウザ用バナー：自動表示＆操作 ===
-    (function setupInAppBanner(){
-      const banner   = document.getElementById('inapp-banner');
-      const btnCopy  = document.getElementById('btnCopyUrl');
-      const btnClose = document.getElementById('btnBannerClose');
-      if (!banner || !btnCopy || !btnClose) return;
-
-      const KEY = 'inappBannerClosed';
-      const closed = sessionStorage.getItem(KEY) === '1';
-
-      if (isInAppX() && !closed) {
-        banner.style.display = 'block';
-        document.body.classList.add('with-inapp-banner');
-      }
-
-      btnCopy.addEventListener('click', async (e)=>{
-        e.stopPropagation();   // ★ タイトル開始へ伝播させない
-        e.preventDefault();
-        const url = location.href.split('#')[0];
-        try{
-          await navigator.clipboard.writeText(url);
-          btnCopy.textContent='コピーしました';
-          setTimeout(()=>btnCopy.textContent='URLをコピー',1600);
-        }catch(_){
-          // フォールバック（X内などで clipboard API が使えない場合）
-          const ta=document.createElement('textarea');
-          ta.value=url;
-          ta.style.position='fixed';
-          ta.style.top='-1000px';
-          document.body.appendChild(ta);
-          ta.select();
-          try{ document.execCommand('copy'); btnCopy.textContent='コピーしました'; }catch(_){}
-          document.body.removeChild(ta);
-          setTimeout(()=>btnCopy.textContent='URLをコピー',1600);
-        }
-      }, {passive:false});
-
-      btnClose.addEventListener('click', (e)=>{
-        e.stopPropagation();
-        e.preventDefault();
-        banner.style.display='none';
-        document.body.classList.remove('with-inapp-banner');
-        sessionStorage.setItem(KEY,'1');
-      }, {passive:false});
-    })();
-
-    // --- opening.html からのメッセージ（通常ルート） ---
+    // --- opening.html からのメッセージ（通常ルート）
     window.addEventListener('message', (event) => {
-      // 必要ならオリジン制限を戻す:
+      // 必要ならオリジン固定（GitHub Pages の実URLに合わせて有効化）
       // if (event.origin !== 'https://potoro1001.github.io') return;
       if (!event.data || event.data.type !== 'opening-finished') return;
       showGame();
     });
 
-    // --- 追加: iframe の onload でも保険（postMessageが来ない環境向け） ---
-    openingFrame.addEventListener('load', () => {
-      setTimeout(() => { if (!shown) showGame(); }, 4000);
-    });
+    // --- フォールバック（超長め・子のフェイルセーフより後）
+    // opening.html は 120000ms でフェイルセーフ通知する設計なので、
+    // 親側はそれより少し後ろ（121000ms）に設定
+    setTimeout(() => {
+      if (!shown) showGame();
+    }, 121000);
 
-    // --- 追加: 初回ユーザー操作で即表示（X対策の決め手） ---
-    const userKick = () => { if (!shown) showGame(); cleanupUserKick(); };
-    function cleanupUserKick() {
-      const opts = { passive: true };
-      ['pointerdown','pointerup','touchstart','touchend','click','keydown','wheel','scroll']
-        .forEach(ev => document.removeEventListener(ev, userKick, opts));
-    }
-    ['pointerdown','pointerup','touchstart','touchend','click','keydown','wheel','scroll']
-      .forEach(ev => document.addEventListener(ev, userKick, { passive: true }));
-
-    // --- ページが可視化されたタイミングでも保険 ---
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible' && !shown) {
-        setTimeout(() => { if (!shown) showGame(); }, 1000);
-      }
-    });
-
-    // --- タイマー保険（段階的） ---
-    setTimeout(() => { try { if (!shown) showGame(); } catch(_){} }, 7000);
-    setTimeout(() => { try { if (!shown) showGame(); } catch(_){} }, 12000);
-
-    // --- X アプリ内っぽいなら、さらに早めに強制表示 ---
-    if (isInAppX()) {
-      setTimeout(() => { if (!shown) showGame(); }, 800);
-    }
+    // 早期フォールバックを全て削除（または無効化）
+    // ・openingFrame.onload 4s → 削除
+    // ・userKick（ユーザー操作で即表示） → 削除
+    // ・visibilitychange 1s → 削除
+    // ・7s / 12s タイマー → 削除
+    // ・Xアプリ内 800ms → 削除
   </script>
 
 </body>
