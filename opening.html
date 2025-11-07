@@ -159,36 +159,44 @@
   </div>
 
   <script>
-    const crawl = document.getElementById('crawl');
-    const skipBtn = document.getElementById('skip-opening');
-    let finishTimer = null;
+  const crawl = document.getElementById('crawl');
+  const skipBtn = document.getElementById('skip-opening');
+  let finishTimer = null;
+  let finished = false;
 
-    function notifyFinish() {
-      window.parent.postMessage({ type: "opening-finished" }, "*");
-    }
+  function notifyFinish() {
+    if (finished) return;
+    finished = true;
+    // 任意：origin 固定できるなら "*" を指定オリジンへ
+    window.parent.postMessage({ type: "opening-finished" }, "*");
+  }
 
-    function startOpening() {
-      // ★ ここが「冒頭が消えてからの待ち時間」
-      // 5000ms（消えるまで）
-      setTimeout(() => {
-        crawl.classList.add('play');
-      }, 5000);
+  function startOpening() {
+    // イントロ4s終了と同時にクロール開始
+    setTimeout(() => {
+      crawl.classList.add('play');
+    }, 4000);
 
-      // ★ 自動でオープニング終了通知（お好みで変えてOK）
-      finishTimer = setTimeout(() => {
-        notifyFinish();
-      }, 95000);
-    }
-
-    // SKIPで即終了
-    skipBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      if (finishTimer) clearTimeout(finishTimer);
+    // 保険（ユーザー放置やアニメ停止時のフェイルセーフ）
+    finishTimer = setTimeout(() => {
       notifyFinish();
-    });
+    }, 120000); // 2分など十分長め
+  }
 
-    // ページ表示と同時に開始
-    startOpening();
-  </script>
+  // ★ クロールが本当に終わったら即通知（将来の秒数変更にも強い）
+  crawl.addEventListener('animationend', () => {
+    if (finishTimer) clearTimeout(finishTimer);
+    notifyFinish();
+  });
+
+  // SKIPで即終了
+  skipBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (finishTimer) clearTimeout(finishTimer);
+    notifyFinish();
+  });
+
+  startOpening();
+</script>
 </body>
 </html>
