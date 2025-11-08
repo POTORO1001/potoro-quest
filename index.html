@@ -1396,12 +1396,19 @@
       showGame();
     });
 
-    // --- フォールバック（超長め・子のフェイルセーフより後）
-    // opening.html は 120000ms でフェイルセーフ通知する設計なので、
-    // 親側はそれより少し後ろ（121000ms）に設定
+        // --- フォールバック（短め & ユーザー操作トリガー付き） ---
+
+    // ① ユーザーが何か操作したら即ゲーム表示（オープニングをスキップ）
+    ['click','touchstart','keydown'].forEach(ev => {
+      window.addEventListener(ev, () => {
+        if (!shown) showGame();
+      }, { once: true, passive: true });
+    });
+
+    // ② 念のための時間フォールバック（8秒くらい）
     setTimeout(() => {
       if (!shown) showGame();
-    }, 121000);
+    }, 8000);
 
     // 早期フォールバックを全て削除（または無効化）
     // ・openingFrame.onload 4s → 削除
