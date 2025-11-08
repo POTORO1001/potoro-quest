@@ -16,6 +16,7 @@
       color: #ffe81f;
       letter-spacing: 0.08em;
     }
+
     /* 冒頭の一文：0〜3秒表示、3〜4秒で消える */
     .intro {
       position: absolute;
@@ -34,41 +35,20 @@
       100% { opacity: 0; } /* ここでちょうど4秒 */
     }
 
+    /* あらすじ本体：真ん中に表示するコンテナ */
     .star-wars {
-      position: relative;
-      height: 100vh;
-      perspective: 400px;
-      perspective-origin: 50% 100%;
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 12vw;
+      text-align: center;
     }
 
-    /* ロール：初期は完全に見えない＆下にある */
+    /* 元テキストを隠しておく領域（画面には出さない） */
     .crawl {
-      position: absolute;
-      bottom: -100vh;
-      width: 80%;
-      max-width: 720px;
-      left: 50%;
-      transform-origin: 50% 100%;
-      font-size: 1.5rem;
-      text-align: justify;
-      line-height: 1.5;
-      text-shadow: 0 0 8px rgba(0,0,0,0.8);
-      opacity: 0; /* ←絶対に表示させない */
-      pointer-events: none;
-    }
-    /* 再生するときだけアニメする */
-    .crawl.play {
-      animation: crawl var(--crawl-duration) linear forwards;
-    }
-    @keyframes crawl {
-      0% {
-        opacity: 1;  /* ここで初めて表示 */
-        transform: translate(-50%, 10vh) rotateX(20deg);
-      }
-      100% {
-        opacity: 1;
-        transform: translate(-50%, -190vh) rotateX(28deg);
-      }
+      display: none;
     }
 
     .title-block { text-align: center; margin-bottom: 2.5rem; }
@@ -97,38 +77,22 @@
       to { transform: translateY(300px); }
     }
 
-    /* SKIPボタン */
-    #skip-opening {
-      position: absolute;
-      top: 1.2rem;
-      right: 1.2rem;
-      background: rgba(0,0,0,0.35);
-      border: 1px solid rgba(255,232,31,0.7);
-      color: #ffe81f;
-      padding: 0.4rem 0.75rem;
-      border-radius: 999px;
-      font-size: 0.75rem;
-      cursor: pointer;
-      z-index: 10;
-      backdrop-filter: blur(2px);
-      transition: background .2s;
-    }
-    #skip-opening:hover {
-      background: rgba(0,0,0,0.6);
-    }
-
     /* クリック案内はもう使わない */
     .tap-to-start { display: none; }
 
-    @media (prefers-reduced-motion: reduce) {
-  .crawl.play { animation: none; opacity: 1; transform: translate(-50%, 0) rotateX(0); }
-}
+    /* 実際に表示する行テキスト */
+    #story-active {
+      max-width: 720px;
+      font-size: 1.3rem;
+      line-height: 1.7;
+      text-shadow: 0 0 8px rgba(0,0,0,0.8);
+      opacity: 0;
+      transition: opacity 0.6s ease;
+    }
   </style>
 </head>
 <body>
   <div class="stars"></div>
-
-  <button id="skip-opening" type="button">SKIP</button>
 
   <div class="intro">
     遥か未来、そしてどこにでもありそうな社会で――<br>
@@ -136,6 +100,7 @@
   </div>
 
   <div class="star-wars" aria-label="オープニングストーリー">
+    <!-- 元テキストはここに隠しておく -->
     <div class="crawl" id="crawl">
       <div class="title-block">
         <div class="episode">EPISODE 1</div>
@@ -153,43 +118,73 @@
         <strong>「ポ・トロクエスト」</strong><br>である。
       </p>
     </div>
+
+    <!-- 実際に表示される行 -->
+    <div id="story-active"></div>
   </div>
 
- <script>
-  const crawl = document.getElementById('crawl');
-  const skipBtn = document.getElementById('skip-opening');
-  let finishTimer = null;
-  let finished = false;
+  <script>
+    const crawl = document.getElementById('crawl');
+    const storyActive = document.getElementById('story-active');
 
-  function notifyFinish() {
-    if (finished) return;
-    finished = true;
-    window.parent.postMessage({ type: 'opening-finished' }, '*');
-  }
+    // crawl の中から、タイトルブロック＋各段落を抽出して、1行ずつの配列にする
+    const lines = [];
 
-  function startOpening() {
-    setTimeout(() => {               // イントロ終了と同時に開始
-      crawl.classList.add('play');
-    }, 4000);
+    // 1) タイトルブロック（EPISODE と大見出し）を1つの塊として扱う
+    const titleBlock = crawl.querySelector('.title-block');
+    if (titleBlock) {
+      lines.push(titleBlock.innerHTML);
+    }
 
-    finishTimer = setTimeout(() => { // フェイルセーフ（例：2分）
-      notifyFinish();
-    }, 120000);
-  }
+    // 2) 段落 <p> を順番に拾っていく
+    const paragraphs = Array.from(crawl.querySelectorAll('p'));
+    paragraphs.forEach(p => {
+      lines.push(p.innerHTML);
+    });
 
-  crawl.addEventListener('animationend', () => {
-  if (finishTimer) clearTimeout(finishTimer);
-  notifyFinish();
-}, { once: true });// ← 追加
+    let currentIndex = 0;
+    const FADE_MS = 600;    // フェードイン/アウトの時間
+    const SHOW_MS = 2800;   // 表示しておく時間（好みで調整可）
 
-  skipBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    if (finishTimer) clearTimeout(finishTimer);
-    notifyFinish();
-  });
+    function showLine(index) {
+      if (!storyActive || index < 0 || index >= lines.length) return;
 
-  startOpening();
-</script>
+      // いったんフェードアウト → テキスト差し替え → フェードイン
+      storyActive.style.opacity = 0;
 
+      setTimeout(() => {
+        storyActive.innerHTML = lines[index];
+        storyActive.style.opacity = 1;
+      }, FADE_MS); // フェードアウト後に内容を変える
+    }
+
+    function startStoryLines() {
+      if (!lines.length) return;
+
+      // 最初の1行
+      showLine(0);
+      currentIndex = 0;
+
+      // 2行目以降：一定間隔で更新
+      const interval = FADE_MS + SHOW_MS; // 1行あたりのサイクル
+      const timer = setInterval(() => {
+        currentIndex++;
+        if (currentIndex >= lines.length) {
+          // 最後の行まで表示したら止める（ループしたければここで 0 に戻す）
+          clearInterval(timer);
+          return;
+        }
+        showLine(currentIndex);
+      }, interval);
+    }
+
+    // イントロ文（.intro）のアニメが4秒なので、
+    // その終了に合わせて行ごと表示をスタート
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        startStoryLines();
+      }, 4000);
+    });
+  </script>
 </body>
 </html>
