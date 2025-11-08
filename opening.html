@@ -164,7 +164,7 @@
   function notifyFinish() {
     if (finished) return;
     finished = true;
-    window.parent.postMessage({ type: "opening-finished" }, "https://potoro1001.github.io");
+    window.parent.postMessage({ type: 'opening-finished' }, '*');
   }
 
   function startOpening() {
