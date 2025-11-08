@@ -911,35 +911,40 @@
   }
 
   /* 名前入力 */
-  function startNameEntry(){
-    if (state.nameMode || state.mode !== 'title') return;
-    state.nameMode = true;
-    armAudio();
+ function startNameEntry(){
+  if (state.nameMode || state.mode !== 'title') return;
+  state.nameMode = true;
+  armAudio();
 
-    const proceed = (name)=>{
-      state.hero.name = name;
-      state.playerName = name;
-      reveal(state.x, state.y, 3);
-      prevMode = 'title';
-      state.mode = 'field';
-      bgmStart('field');
-      state.nameMode = false;
-    };
-    const abort = ()=>{ state.nameMode = false; };
+  const proceed = (name)=>{
+    state.hero.name = name;
+    state.playerName = name;
+    reveal(state.x, state.y, 3);
+    prevMode = 'title';
+    state.mode = 'field';
+    bgmStart('field');
+    state.nameMode = false;
+  };
+  const abort = ()=>{ state.nameMode = false; };
 
-    try{
-      const v = prompt("推しのお名前を入力してください（12文字まで）", "");
-      if (v === null){ return abort(); }
-      const name = (v||"").trim().slice(0,12);
-      if (!name){
-        openNameModal(proceed, abort);
-        return;
-      }
-      proceed(name);
-    }catch(_){
+  try{
+    const v = prompt("推しのお名前を入力してください（12文字まで）", "");
+    // ▼ ここを修正：null（キャンセル/ブロック）のときはモーダルにフォールバック
+    if (v === null){
       openNameModal(proceed, abort);
+      return;
     }
+    const name = (v || "").trim().slice(0, 12);
+    if (!name){
+      openNameModal(proceed, abort);
+      return;
+    }
+    proceed(name);
+  }catch(_){
+    // prompt 自体が失敗したときも同様にフォールバック
+    openNameModal(proceed, abort);
   }
+}
 
   // ===== 名前モーダル制御 =====
   const nameMask   = document.getElementById('nameMask');
