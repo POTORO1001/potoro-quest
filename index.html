@@ -684,11 +684,20 @@
   function drawRedWood(x,y,w,h){ ctx.fillStyle="#7a2a2a"; ctx.fillRect(x,y,w,h); ctx.fillStyle="#a33b3b"; for(let k=2;k<h;k+=4) ctx.fillRect(x, y+k, w, 1); ctx.fillStyle="#6a2323"; for(let k=3;k<w;k+=6) ctx.fillRect(x+k, y+1, 1, h-2); }
 
   function drawTitle(){
-   ctx.fillStyle="#0b0f18"; ctx.fillRect(0,0,VIEW_W,VIEW_H);
-   for(let i=0;i<VIEW_H;i+=8){ ctx.fillStyle=(i/8)%2? "#111a2a":"#0e1626"; ctx.fillRect(0,i,VIEW_W,8); }
-   centerText("ポ・トロクエスト", VIEW_W/2, 80, "bold 18px sans-serif", "#ff7ad6");
-   if(state.title.show) drawText("PRESS START",104,140,"#e8ecff","bold 14px sans-serif");
+  ctx.fillStyle="#0b0f18";
+  ctx.fillRect(0,0,VIEW_W,VIEW_H);
+
+  for(let i=0;i<VIEW_H;i+=8){
+    ctx.fillStyle = (i/8)%2 ? "#111a2a" : "#0e1626";
+    ctx.fillRect(0, i, VIEW_W, 8);
   }
+
+  centerText("ポ・トロクエスト", VIEW_W/2, 80, "bold 18px sans-serif", "#ff7ad6");
+
+  // ★ ここを「常に描画」にする（state.title.show を使わない）
+  drawText("PRESS START", 104, 140, "#e8ecff", "bold 14px sans-serif");
+}
+
   function drawEnd(){
    ctx.fillStyle="#0b0f18"; ctx.fillRect(0,0,VIEW_W,VIEW_H);
    const name = state.playerName || state.hero?.name || "あなた";
