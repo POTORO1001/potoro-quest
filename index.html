@@ -618,6 +618,13 @@
   const cvs = document.getElementById('game');
   const ctx = cvs.getContext('2d');
 
+  /* タイトル用ヒットエリア参照 */
+  const titleHitArea = document.getElementById('titleStartHit');
+  function syncTitleHitArea(){
+    if(!titleHitArea) return;
+    titleHitArea.style.display = (state.mode === 'title' && !state.nameMode) ? 'block' : 'none';
+  }
+
   /* ======== Rendering ======== */
   function draw(){ ctx.save();
    if(state.shakeT>0){
@@ -867,6 +874,9 @@
   function pressed(a){ return a.some(k=>keys[k]); }
   let prevMode="title";
   function update(dt){
+   // タイトル用ヒットエリアの表示/非表示を常に同期
+   syncTitleHitArea();
+
    if(state.mode==='title') { syncControlsDisabled(); return titleUpdate(dt); }
 
    if(prevMode!==state.mode){
@@ -907,10 +917,6 @@
       state.title.blink = 0;
       state.title.show = !state.title.show;
     }
-
-    // タイトル時だけ全面ヒットエリアを表示
-    const _hit = document.getElementById('titleStartHit');
-    if (_hit) _hit.style.display = (state.mode === 'title' && !state.nameMode) ? 'block' : 'none';
   }
 
   /* 名前入力 */
@@ -1332,6 +1338,7 @@
     state.mode = 'title';
     state.title.show = true;
     bgmStop();
+    syncTitleHitArea();
     requestAnimationFrame(loop);
 
     function handleTapToStart(e){
@@ -1354,23 +1361,12 @@
   }
   bootGameToTitle();
 
-  /* ★ 追加：タイトル画面中は「画面のどこをタップしても」スタート */
-  function handleGlobalTapToStart(e) {
-    if (state.mode === 'title' && !state.nameMode) {
-      if (e && e.cancelable) e.preventDefault();
-      e.stopPropagation();
-      startNameEntry();
-    }
-  }
-  ['click','touchstart','pointerdown'].forEach(ev=>{
-    document.addEventListener(ev, handleGlobalTapToStart, {passive:false});
-  });
-
   function resetToTitle(){
    state={ hero:JSON.parse(JSON.stringify(heroBase)), x:1,y:1,facing:2, mode:"title", dialogQueue:[], battle:null, bossAlive:true, openedChests:{}, title:{blink:0,show:true}, nameMode:false, playerName:state.playerName, popups:[], shakeT:0, visited:Array.from({length:H},()=>Array(W).fill(false)), afterDialogFn:null };
    regenerateWorld();
    prevMode='title';
    bgmStop();
+   syncTitleHitArea();
   }
 
   /* タッチD-Pad/OK/戻る */
