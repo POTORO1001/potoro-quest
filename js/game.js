@@ -118,57 +118,53 @@
     }
     ctx.restore();
   }
- function drawEnemyGraphic(enemy, battle){
-  var img = getLoadedImage(enemy && enemy.image);
-  var hit = battle && battle.enemyFlash>0;
-  var appear = battle && battle.appearT>0 ? battle.appearT/0.55 : 0;
-  if(appear<0) appear=0;
-  if(appear>1) appear=1;
+  function drawEnemyGraphic(enemy, battle){
+    var img = getLoadedImage(enemy && enemy.image);
+    var hit = battle && battle.enemyFlash>0;
+    var appear = battle && battle.appearT>0 ? battle.appearT/0.55 : 0;
+    if(appear<0) appear=0;
+    if(appear>1) appear=1;
 
-  var fadeAlpha = 1 - appear*0.65;
-  var offsetY = appear*10;
-  var offsetX = battle && battle.enemyShake>0 ? (Math.random()*2-1)*4 : 0;
+    var fadeAlpha = 1 - appear*0.65;
+    var offsetY = appear*10;
+    var offsetX = battle && battle.enemyShake>0 ? (Math.random()*2-1)*4 : 0;
 
-  // 敵の影
-  ctx.save();
-  ctx.fillStyle = "rgba(0,0,0,0.35)";
-  ctx.beginPath();
-  ctx.ellipse(220 + offsetX, 122, 44, 12, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.restore();
+    ctx.save();
+    ctx.fillStyle = "rgba(0,0,0,0.35)";
+    ctx.beginPath();
+    ctx.ellipse(112 + offsetX, 118, 42, 10, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
 
-  ctx.save();
-  ctx.translate(220 + offsetX, 82 + offsetY);
+    ctx.save();
+    ctx.translate(112 + offsetX, 76 + offsetY);
 
-  if(img){
-    var maxW = 150;
-    var maxH = 120;
-    var ratio = Math.min(maxW / img.naturalWidth, maxH / img.naturalHeight);
-    if(!isFinite(ratio) || ratio <= 0) ratio = 1;
+    if(img){
+      var maxW = 120;
+      var maxH = 96;
+      var ratio = Math.min(maxW / img.naturalWidth, maxH / img.naturalHeight);
+      if(!isFinite(ratio) || ratio <= 0) ratio = 1;
 
-    var w = img.naturalWidth * ratio;
-    var h = img.naturalHeight * ratio;
+      var w = img.naturalWidth * ratio;
+      var h = img.naturalHeight * ratio;
 
-    if(hit){
-      ctx.save();
-      ctx.globalAlpha = 0.35;
-      ctx.fillStyle = "#ffffff";
-      ctx.fillRect(-w/2, -h/2, w, h);
-      ctx.restore();
+      ctx.drawImage(img, -w/2, -h/2, w, h);
+
+      if(hit){
+        ctx.fillStyle = "rgba(255,255,255,0.22)";
+        ctx.fillRect(-w/2, -h/2, w, h);
+      }
+    }else{
+      drawFallbackEnemy(enemy, 0, 0, enemy && enemy.boss ? 1.15 : 1);
     }
 
-    ctx.drawImage(img, -w/2, -h/2, w, h);
-  }else{
-    drawFallbackEnemy(enemy, 0, 0, enemy && enemy.boss ? 1.2 : 1.05);
-  }
-  ctx.restore();
+    ctx.restore();
 
-  // 出現時の白フェード
-  if(fadeAlpha>0){
-    ctx.fillStyle = "rgba(255,255,255," + fadeAlpha + ")";
-    ctx.fillRect(112, 20, 190, 118);
+    if(fadeAlpha>0){
+      ctx.fillStyle = "rgba(255,255,255," + fadeAlpha + ")";
+      ctx.fillRect(28, 18, 168, 112);
+    }
   }
-}
 
 
   /* ======== Player base ======== */
