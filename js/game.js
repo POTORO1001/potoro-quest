@@ -125,10 +125,14 @@
     if(appear<0) appear=0;
     if(appear>1) appear=1;
 
+    // 本画像が未読込なら何も描かない（仮画像を出さない）
+    if(!img) return;
+
     var fadeAlpha = 1 - appear*0.65;
     var offsetY = appear*10;
     var offsetX = battle && battle.enemyShake>0 ? (Math.random()*2-1)*4 : 0;
 
+    // 影
     ctx.save();
     ctx.fillStyle = "rgba(0,0,0,0.35)";
     ctx.beginPath();
@@ -136,30 +140,28 @@
     ctx.fill();
     ctx.restore();
 
+    // 敵本体
     ctx.save();
-    ctx.translate(112 + offsetX, 76 + offsetY);
+    ctx.translate(112 + offsetX, 84 + offsetY);
 
-    if(img){
-      var maxW = 120;
-      var maxH = 96;
-      var ratio = Math.min(maxW / img.naturalWidth, maxH / img.naturalHeight);
-      if(!isFinite(ratio) || ratio <= 0) ratio = 1;
+    var maxW = 120;
+    var maxH = 96;
+    var ratio = Math.min(maxW / img.naturalWidth, maxH / img.naturalHeight);
+    if(!isFinite(ratio) || ratio <= 0) ratio = 1;
 
-      var w = img.naturalWidth * ratio;
-      var h = img.naturalHeight * ratio;
+    var w = img.naturalWidth * ratio;
+    var h = img.naturalHeight * ratio;
 
-      ctx.drawImage(img, -w/2, -h/2, w, h);
+    ctx.drawImage(img, -w/2, -h/2, w, h);
 
-      if(hit){
-        ctx.fillStyle = "rgba(255,255,255,0.22)";
-        ctx.fillRect(-w/2, -h/2, w, h);
-      }
-    }else{
-      drawFallbackEnemy(enemy, 0, 0, enemy && enemy.boss ? 1.15 : 1);
+    if(hit){
+      ctx.fillStyle = "rgba(255,255,255,0.22)";
+      ctx.fillRect(-w/2, -h/2, w, h);
     }
 
     ctx.restore();
 
+    // 出現時フェード
     if(fadeAlpha>0){
       ctx.fillStyle = "rgba(255,255,255," + fadeAlpha + ")";
       ctx.fillRect(28, 18, 168, 112);
@@ -665,8 +667,7 @@
     if(!e.baseHp) e.baseHp = enemyHpMax;
     enemyHpMax = e.baseHp;
 
-    drawEnemyGraphic(e, b);
-
+    // 先にUIを描く
     drawRpgWindow(8, 8, 154, 42);
     drawText(e.name, 16, 16, "#ffffff", "bold 10px monospace");
     drawText("HP", 16, 31, "#9cc7ff", "bold 10px monospace");
@@ -689,6 +690,7 @@
     if(b.phase==="finished"){
       drawRpgWindow(168, 192, 144, 40);
       drawText("OKで戻る", 208, 206, "#ffe7a1", "bold 10px monospace");
+      drawEnemyGraphic(e, b);
       return;
     }
 
@@ -731,6 +733,9 @@
       drawRpgWindow(168, 8, 144, 56);
       drawText("OKでつぎへ", 190, 30, "#ffe7a1", "bold 11px monospace");
     }
+
+    // 最後に敵を描く（UIより前面）
+    drawEnemyGraphic(e, b);
   }
 
   function drawItemMenu(){
