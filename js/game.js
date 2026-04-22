@@ -1,4 +1,4 @@
-/* ======== Core constants ======== */
+  /* ======== Core constants ======== */
   const VIEW_W=320, VIEW_H=240, TILE=16;
   const W=20, H=15;
 
@@ -22,11 +22,139 @@
 
   /* ======== Enemies ======== */
   let ENEMIES=[
-   {name:"定時のご主人様",     hp:42,  atk:10, def:6,  exp:22},
-   {name:"残業のご主人様",     hp:70,  atk:14, def:8,  exp:36},
-   {name:"叱責を受けたご主人様", hp:110, atk:18, def:12, exp:60}
+   {name:"定時のご主人様", hp:42, atk:10, def:6, exp:22, image:"img/enemies/teiji.png", bg:"img/backgrounds/battle_room.png", color:"#7fd6ff"},
+   {name:"残業のご主人様", hp:70, atk:14, def:8, exp:36, image:"img/enemies/zangyo.png", bg:"img/backgrounds/battle_room.png", color:"#ffb06b"},
+   {name:"叱責を受けたご主人様", hp:110, atk:18, def:12, exp:60, image:"img/enemies/shisseki.png", bg:"img/backgrounds/battle_boss_room.png", color:"#ff8fb3"}
   ];
-  let BOSS={name:"残業かつ叱責されたご主人様", hp:220, atk:24, def:16, exp:200, boss:true};
+  let BOSS={name:"残業かつ叱責されたご主人様", hp:220, atk:24, def:16, exp:200, boss:true, image:"img/enemies/boss.png", bg:"img/backgrounds/battle_boss_room.png", color:"#d89bff"};
+
+  /* ======== Battle Assets ======== */
+  var imageCache = {};
+  function loadImage(src){
+    if(!src) return null;
+    if(imageCache[src]) return imageCache[src];
+    var img = new Image();
+    img.src = src;
+    imageCache[src] = img;
+    return img;
+  }
+  function getLoadedImage(src){
+    var img = loadImage(src);
+    if(img && img.complete && img.naturalWidth>0) return img;
+    return null;
+  }
+  function preloadBattleAssets(enemy){
+    if(!enemy) return;
+    if(enemy.image) loadImage(enemy.image);
+    if(enemy.bg) loadImage(enemy.bg);
+  }
+  function drawRpgWindow(x,y,w,h){
+    ctx.fillStyle="#08101f";
+    ctx.fillRect(x,y,w,h);
+    ctx.strokeStyle="#f4f6ff";
+    ctx.lineWidth=2;
+    ctx.strokeRect(x+1,y+1,w-2,h-2);
+    ctx.strokeStyle="#6ea8ff";
+    ctx.lineWidth=1;
+    ctx.strokeRect(x+4,y+4,w-8,h-8);
+    ctx.lineWidth=1;
+  }
+  function drawBattleBackground(enemy){
+    var bg = getLoadedImage(enemy && enemy.bg);
+    if(bg){
+      ctx.drawImage(bg,0,0,VIEW_W,VIEW_H);
+      ctx.fillStyle="rgba(7,10,18,0.28)";
+      ctx.fillRect(0,0,VIEW_W,VIEW_H);
+      return;
+    }
+    var grad = ctx.createLinearGradient(0,0,0,VIEW_H);
+    grad.addColorStop(0, enemy && enemy.boss ? "#24122f" : "#1d243f");
+    grad.addColorStop(0.55, enemy && enemy.boss ? "#3a2236" : "#2a3558");
+    grad.addColorStop(1, "#111827");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0,0,VIEW_W,VIEW_H);
+    ctx.fillStyle = "rgba(255,255,255,0.05)";
+    for(var i=0;i<12;i++){
+      ctx.fillRect(0, 112 + i*8, VIEW_W, 1);
+    }
+    ctx.fillStyle="#30394e";
+    ctx.fillRect(0,168,VIEW_W,72);
+  }
+  function drawFallbackEnemy(enemy, x, y, scale){
+    var color = (enemy && enemy.color) ? enemy.color : "#9ed0ff";
+    ctx.save();
+    ctx.translate(x,y);
+    ctx.scale(scale, scale);
+    ctx.fillStyle = "rgba(0,0,0,0.28)";
+    ctx.beginPath();
+    ctx.ellipse(0,36,38,10,0,0,Math.PI*2);
+    ctx.fill();
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(0,0,30,0,Math.PI*2);
+    ctx.fill();
+    ctx.fillStyle = "#ffffff";
+    ctx.beginPath();
+    ctx.arc(-10,-6,8,0,Math.PI*2);
+    ctx.arc(10,-6,8,0,Math.PI*2);
+    ctx.fill();
+    ctx.fillStyle = "#111827";
+    ctx.beginPath();
+    ctx.arc(-10,-5,3,0,Math.PI*2);
+    ctx.arc(10,-5,3,0,Math.PI*2);
+    ctx.fill();
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(-14,12);
+    ctx.quadraticCurveTo(0,20,14,12);
+    ctx.stroke();
+    if(enemy && enemy.boss){
+      ctx.fillStyle = "#ffd166";
+      ctx.beginPath();
+      ctx.moveTo(-18,-26); ctx.lineTo(-8,-40); ctx.lineTo(0,-26);
+      ctx.lineTo(8,-40); ctx.lineTo(18,-26); ctx.closePath();
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+  function drawEnemyGraphic(enemy, battle){
+    var img = getLoadedImage(enemy && enemy.image);
+    var hit = battle && battle.enemyFlash>0;
+    var appear = battle && battle.appearT>0 ? battle.appearT/0.55 : 0;
+    if(appear<0) appear=0;
+    if(appear>1) appear=1;
+    var alpha = 1 - appear*0.65;
+    var offsetY = appear*14;
+    var offsetX = battle && battle.enemyShake>0 ? (Math.random()*2-1)*3 : 0;
+
+    ctx.save();
+    ctx.translate(228 + offsetX, 96 + offsetY);
+    if(hit){
+      ctx.globalAlpha = 0.82;
+    }
+    if(img){
+      var maxW = 112, maxH = 86;
+      var ratio = Math.min(maxW/img.naturalWidth, maxH/img.naturalHeight);
+      if(!isFinite(ratio) || ratio<=0) ratio = 1;
+      var w = img.naturalWidth * ratio;
+      var h = img.naturalHeight * ratio;
+      ctx.drawImage(img, -w/2, -h/2, w, h);
+    }else{
+      drawFallbackEnemy(enemy, 0, 0, enemy && enemy.boss ? 1.15 : 1);
+    }
+    ctx.restore();
+
+    if(hit){
+      ctx.fillStyle = "rgba(255,255,255,0.22)";
+      ctx.fillRect(112,24,180,112);
+    }
+    if(alpha>0){
+      ctx.fillStyle = "rgba(255,255,255," + alpha + ")";
+      ctx.fillRect(112,24,180,112);
+    }
+  }
+
 
   /* ======== Player base ======== */
   const heroBase={
@@ -520,54 +648,77 @@
   /* === 戦闘描画 === */
   function drawBattle(){
     var b=state.battle, h=state.hero, e=b.enemy;
-    drawPanel(8,20,304,208);
+    drawBattleBackground(e);
+
+    var enemyHpMax = e.maxhp || e.hpMax || e.baseHp || Math.max(e.hp, 1);
+    if(!e.baseHp) e.baseHp = enemyHpMax;
+    enemyHpMax = e.baseHp;
+
+    drawEnemyGraphic(e, b);
+
+    drawRpgWindow(8, 8, 154, 42);
+    drawText(e.name, 16, 16, "#ffffff", "bold 10px monospace");
+    drawText("HP", 16, 31, "#9cc7ff", "bold 10px monospace");
+    ctx.fillStyle = "#1f2940";
+    ctx.fillRect(38, 31, 108, 8);
+    ctx.fillStyle = e.boss ? "#ff8ea1" : "#7ce0a1";
+    ctx.fillRect(38, 31, Math.max(0, Math.floor((e.hp/enemyHpMax)*108)), 8);
+    ctx.strokeStyle = "#dfe8ff";
+    ctx.strokeRect(38.5, 31.5, 107, 7);
+
+    drawRpgWindow(168, 144, 144, 44);
+    drawText(h.name, 176, 152, "#ffffff", "bold 10px monospace");
+    drawText("HP "+h.hp+"/"+h.maxhp, 176, 166, "#ffffff", "10px monospace");
+    drawText("MP "+h.mp+"/"+h.maxmp, 246, 166, "#9cc7ff", "10px monospace");
+
+    drawRpgWindow(8, 144, 154, 88);
+    var startIdx = Math.max(0,b.log.length-4);
+    drawParagraph(b.log.slice(startIdx), 16, 152, "#ffffff", "10px monospace", 138, 5, 14);
 
     if(b.phase==="finished"){
-      var lines=[];
-      lines.push(b.victoryLine || (h.name+"は　"+e.name+"を　いやした！"));
-      if(b.postMsgs && b.postMsgs.length){
-        for(var pi=0;pi<b.postMsgs.length;pi++) lines.push(b.postMsgs[pi]);
-      }
-      lines.push(b.summary || "【戦闘結果】");
-      drawParagraph(lines,16,64,"#fff","10px monospace",288,8,12);
+      drawRpgWindow(168, 192, 144, 40);
+      drawText("OKで戻る", 208, 206, "#ffe7a1", "bold 10px monospace");
       return;
     }
 
-    drawText("《戦闘》",16,24,"#fff");
-    drawText(e.name,16,40,"#ffd37a");
-    drawText(h.name+" HP:"+h.hp+"/"+h.maxhp+" MP:"+h.mp+"/"+h.maxmp,144,40,"#7ad3ff");
-
-    var startIdx = Math.max(0,b.log.length-10);
-    drawParagraph(b.log.slice(startIdx), 16,56,"#ddd","10px monospace",276,6,12);
-
     if(b.phase==="select"){
-      var menu=["いやす","おまじない","ぼうぎょ","どうぐ"];
-      var cols=2, w=120, hgt=18;
-      var mx=VIEW_W-8-cols*w-8, my=VIEW_H-8-2*hgt-8;
-      drawPanel(mx,my,cols*w+8,2*hgt+8);
+      drawRpgWindow(168, 8, 144, 128);
+      var menu=["たたかう","おまじない","ぼうぎょ","どうぐ"];
       for(var i=0;i<menu.length;i++){
-        var cx=mx+4+(i%cols)*w;
-        var cy=my+4+Math.floor(i/cols)*hgt;
+        var cy = 20 + i*26;
         var sel=(b.sel||0)===i;
-        ctx.fillStyle=sel?"rgba(255,122,214,.25)":"transparent";
-        ctx.fillRect(cx,cy,w,hgt);
-        drawText(menu[i],cx+4,cy+4,sel?"#ffd6f2":"#fff");
+        drawText((sel?"▶ ":"  ")+menu[i], 180, cy, sel?"#ffe7a1":"#ffffff", "bold 12px monospace");
       }
     }else if(b.phase==="omajinai"){
+      drawRpgWindow(168, 8, 144, 128);
+      drawText("おまじない", 180, 18, "#9cc7ff", "bold 10px monospace");
       var list=getOmajinaiList(state.hero);
-      drawPanel(20,56,280,120);
-      drawText("《おまじない》 ↑↓で選択 / OKで実行 / 戻るで戻る",28,60,"#fff");
-      if(!list.length){ drawText("まだ何も覚えていない…",28,78,"#ddd"); }
-      for(i=0;i<list.length;i++){
-        var y2=78+i*14;
-        var sel2=(b.omSel||0)===i;
-        if(sel2){ ctx.fillStyle="rgba(255,122,214,.22)"; ctx.fillRect(24,y2-2,272,14); }
-        drawText(list[i].name,32,y2, sel2?"#ffe6f7":"#fff");
+      if(!list.length){
+        drawText("まだない", 180, 40, "#ffffff", "10px monospace");
+      }
+      for(var j=0;j<list.length;j++){
+        var yy=34+j*24;
+        var sel2=(b.omSel||0)===j;
+        drawText((sel2?"▶ ":"  ")+list[j].name, 176, yy, sel2?"#ffe7a1":"#ffffff", "10px monospace");
       }
     }else if(b.phase==="item"){
-      drawItemMenu();
+      drawRpgWindow(168, 8, 144, 128);
+      drawText("どうぐ", 180, 18, "#9cc7ff", "bold 10px monospace");
+      var items=h.invI.filter(function(it){return it.qty>0;});
+      if(!items.length){
+        drawText("もっていない", 180, 40, "#ffffff", "10px monospace");
+      }
+      for(var k=0;k<items.length;k++){
+        var base = null;
+        for(var ii=0;ii<ITEMS.length;ii++){ if(ITEMS[ii].id===items[k].id){ base=ITEMS[ii]; break; } }
+        var label=(base?base.name:items[k].id)+" x"+items[k].qty;
+        var yy2=34+k*24;
+        var sel3=(b.itemSel||0)===k;
+        drawText((sel3?"▶ ":"  ")+label, 176, yy2, sel3?"#ffe7a1":"#ffffff", "10px monospace");
+      }
     }else if(b.phase==="inter"){
-      drawText("ターン終了。次のターンへ（OK）",16,212,"#a4b0ff");
+      drawRpgWindow(168, 8, 144, 56);
+      drawText("OKでつぎへ", 190, 30, "#ffe7a1", "bold 11px monospace");
     }
   }
 
@@ -769,6 +920,11 @@
     if(state.shakeT>0){
       state.shakeT -= dt*1000;
       if(state.shakeT<0) state.shakeT=0;
+    }
+    if(state.battle){
+      if(state.battle.appearT>0) state.battle.appearT = Math.max(0, state.battle.appearT-dt);
+      if(state.battle.enemyFlash>0) state.battle.enemyFlash = Math.max(0, state.battle.enemyFlash-dt);
+      if(state.battle.enemyShake>0) state.battle.enemyShake = Math.max(0, state.battle.enemyShake-dt);
     }
 
     syncControlsDisabled();
@@ -1036,6 +1192,8 @@
   }
 
   function startBattle(enemy){
+    preloadBattleAssets(enemy);
+    enemy.baseHp = enemy.hp;
     state.battle={
       enemy:enemy,
       phase:'select',
@@ -1046,7 +1204,10 @@
       defending:false,
       omSel:0,
       postMsgs:[],
-      summary:""
+      summary:"",
+      appearT:0.55,
+      enemyFlash:0,
+      enemyShake:0
     };
     bgmStart(enemy.boss ? 'boss' : 'battle');
     state.mode='battle';
@@ -1069,10 +1230,12 @@
         var dd = Math.max(30, Math.floor(e.hp*0.7));
         e.hp = Math.max(1, e.hp - dd);
         msg=base.name+"を召喚！ 強烈な一撃！ "+dd+"ダメージ！（ボスは耐えた）";
+        b.enemyFlash=0.28; b.enemyShake=0.34;
         addPopup(200,74,"-"+dd,"#ffd700",14,20,400,200);
       }else{
         e.hp=0;
         msg=base.name+"を召喚した！ "+e.name+"はみるみるうちに倒れた！";
+        b.enemyFlash=0.3; b.enemyShake=0.36;
         addPopup(200,74,"撃破！","#ffd700",16,20,400,200);
       }
     }
@@ -1104,6 +1267,8 @@
     h.hp-=dmg;
     addPopup(96,74,"-"+dmg,"#ff5555",12,16,350,200);
     startShake(6,120,0.8);
+    b.enemyFlash = 0;
+    b.enemyShake = 0;
     seq([{f:180,ms:120,type:'sine',vol:0.5}]);
     b.log.push(enemyAttackMessage(e.name,dmg));
     if(h.hp<=0){
@@ -1165,10 +1330,8 @@
   function battleUpdate(dt){
     var b=state.battle, h=state.hero, e=b.enemy;
     if(b.phase==='select'){
-      if(navReady() && keys["ArrowLeft"] && b.sel%2===1){ b.sel--; navSet(); }
-      if(navReady() && keys["ArrowRight"]&& b.sel%2===0){ b.sel++; navSet(); }
-      if(navReady() && keys["ArrowUp"]   && b.sel>1)    { b.sel-=2; navSet(); }
-      if(navReady() && keys["ArrowDown"] && b.sel<2)    { b.sel+=2; navSet(); }
+      if(navReady() && keys["ArrowUp"]   && b.sel>0){ b.sel--; navSet(); }
+      if(navReady() && keys["ArrowDown"] && b.sel<3){ b.sel++; navSet(); }
       if((keys["Enter"]||keys["Space"]) && actionCooldown<=0){
         actionCooldown=0.18;
         if(b.sel===0){
@@ -1176,6 +1339,7 @@
           var dmg=Math.max(1, atk - e.def + Math.floor(Math.random()*3));
           e.hp-=dmg;
           b.log.push(h.name+"のいやしの一撃！ "+e.name+"に"+dmg+"ダメージ！");
+          b.enemyFlash=0.18; b.enemyShake=0.22;
           addPopup(200,74,String(dmg),"#ffffff",12,20,400,200);
           seq([{f:320,ms:70,type:'square',vol:0.5},{f:220,ms:70,type:'square',vol:0.5}]);
           if(e.hp<=0) return winBattle();
@@ -1203,6 +1367,7 @@
         h.mp -= sp.mp;
         if(sp.type==='damage20'){
           e.hp-=20; b.log.push("おまじない『もえもえぎゅー』！ 20ダメージ！");
+          b.enemyFlash=0.18; b.enemyShake=0.22;
           addPopup(200,74,"20","#ffffff",12,20,400,200);
           seq([{f:660,ms:80,type:'square',vol:0.5},{f:990,ms:80,type:'square',vol:0.5}]);
           if(e.hp<=0) return winBattle();
@@ -1218,11 +1383,13 @@
             var dd=Math.max(30, Math.floor(e.hp*0.7));
             e.hp=Math.max(1,e.hp-dd);
             b.log.push("おまじない『にしきぬやまー』！ 圧倒的な気配！(ボスは耐えた)");
+            b.enemyFlash=0.28; b.enemyShake=0.34;
             addPopup(200,74,"-"+dd,"#ffd700",14,20,400,200);
             enemyAct();
           }else{
             e.hp=0;
             b.log.push("おまじない『にしきぬやまー』！ 敵は飲み込まれた…！");
+            b.enemyFlash=0.3; b.enemyShake=0.36;
             addPopup(200,74,"撃破！","#ffd700",16,20,400,200);
             return winBattle();
           }
@@ -1250,7 +1417,7 @@
         b.phase='select'; b.sel=0; b.turn++;
       }
     }else if(b.phase==='finished'){
-      if((keys["Escape"]||keys["KeyX"]) && actionCooldown<=0){
+      if((keys["Enter"]||keys["Space"]||keys["Escape"]||keys["KeyX"]) && actionCooldown<=0){
         actionCooldown=0.18;
         endBattle(true);
       }
@@ -1554,492 +1721,3 @@
     }
     return {x:W-2,y:H-2};
   }
-
-
-/* ===== ドラクエ風バトル強化 v2 ===== */
-var BATTLE_SKINS = {
-  "定時のご主人様": {kind:"slime", color:"#8fc7ff", accent:"#ffffff", aura:"#4aa3ff", bgTop:"#22306a", bgBottom:"#0d1224"},
-  "残業のご主人様": {kind:"bat", color:"#ad7cff", accent:"#e9d8ff", aura:"#8254ff", bgTop:"#3a245f", bgBottom:"#0d1020"},
-  "叱責を受けたご主人様": {kind:"beast", color:"#ff9f7a", accent:"#fff2c9", aura:"#ff7b42", bgTop:"#5a2c24", bgBottom:"#130d10"},
-  "叱責されたご主人様": {kind:"beast", color:"#ff9f7a", accent:"#fff2c9", aura:"#ff7b42", bgTop:"#5a2c24", bgBottom:"#130d10"},
-  "残業かつ叱責されたご主人様": {kind:"boss", color:"#ff5b89", accent:"#fff1a8", aura:"#ffbe3d", bgTop:"#4c1026", bgBottom:"#0d0810"}
-};
-
-function getBattleSkin(enemy){
-  return BATTLE_SKINS[enemy.name] || {kind:"slime", color:"#9ad3ff", accent:"#ffffff", aura:"#59b7ff", bgTop:"#1c2759", bgBottom:"#0a0f1d"};
-}
-function clamp(v, min, max){
-  return Math.max(min, Math.min(max, v));
-}
-function drawGradientBattleBg(enemy){
-  var skin = getBattleSkin(enemy);
-  var g = ctx.createLinearGradient(0, 0, 0, VIEW_H);
-  g.addColorStop(0, skin.bgTop);
-  g.addColorStop(.55, "#10182f");
-  g.addColorStop(1, skin.bgBottom);
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, VIEW_W, VIEW_H);
-
-  var g2 = ctx.createRadialGradient(VIEW_W*0.52, 70, 10, VIEW_W*0.52, 80, 160);
-  g2.addColorStop(0, "rgba(255,255,255,.16)");
-  g2.addColorStop(.5, "rgba(173,205,255,.05)");
-  g2.addColorStop(1, "rgba(0,0,0,0)");
-  ctx.fillStyle = g2;
-  ctx.fillRect(0,0,VIEW_W,VIEW_H);
-
-  for(var i=0;i<24;i++){
-    var y = 118 + i*4;
-    ctx.fillStyle = (i%2===0) ? "rgba(255,255,255,.035)" : "rgba(0,0,0,.08)";
-    ctx.fillRect(0, y, VIEW_W, 2);
-  }
-
-  ctx.fillStyle = "rgba(255,255,255,.04)";
-  ctx.beginPath();
-  ctx.ellipse(162, 148, 90, 18, 0, 0, Math.PI*2);
-  ctx.fill();
-}
-
-function drawDQWindow(x,y,w,h, active){
-  ctx.fillStyle = "#081125";
-  ctx.fillRect(x,y,w,h);
-  ctx.strokeStyle = active ? "#cbe2ff" : "#7ea2d8";
-  ctx.lineWidth = 2;
-  ctx.strokeRect(x+1,y+1,w-2,h-2);
-  ctx.strokeStyle = "#315890";
-  ctx.strokeRect(x+4,y+4,w-8,h-8);
-  ctx.lineWidth = 1;
-}
-function drawBar(x,y,w,h,ratio,fill1,fill2){
-  ratio = clamp(ratio,0,1);
-  ctx.fillStyle = "#081125";
-  ctx.fillRect(x,y,w,h);
-  ctx.strokeStyle = "#a7c2e8";
-  ctx.strokeRect(x+.5,y+.5,w-1,h-1);
-  var gw = Math.max(0, Math.floor((w-4)*ratio));
-  var g = ctx.createLinearGradient(x+2,y+2,x+2,y+h-2);
-  g.addColorStop(0, fill1);
-  g.addColorStop(1, fill2);
-  ctx.fillStyle = g;
-  ctx.fillRect(x+2,y+2,gw,h-4);
-}
-function battleText(t,x,y,color,font){
-  drawText(t,x,y,color || "#fff",font || "bold 10px monospace");
-}
-
-function drawEnemySprite(enemy, x, y){
-  var skin = getBattleSkin(enemy);
-  var b = state.battle || {};
-  var hit = (b.hitFlashT||0) > 0;
-  var appear = (b.appearT||0) > 0 ? 1 - (b.appearT / 28) : 1;
-  var bob = Math.sin((Date.now()%700)/700*Math.PI*2) * 2;
-  var shake = hit ? ((Math.random()*2-1)*3) : 0;
-  ctx.save();
-  ctx.translate(x + shake, y + bob + (1-appear)*24);
-  ctx.globalAlpha = clamp(appear, 0, 1);
-
-  // aura
-  var aura = ctx.createRadialGradient(0,0,12,0,0,56);
-  aura.addColorStop(0, hit ? "rgba(255,255,255,.55)" : "rgba(255,255,255,.18)");
-  aura.addColorStop(.45, hexToRgba(skin.aura, hit ? .38 : .22));
-  aura.addColorStop(1, "rgba(0,0,0,0)");
-  ctx.fillStyle = aura;
-  ctx.beginPath();
-  ctx.arc(0,0,60,0,Math.PI*2);
-  ctx.fill();
-
-  if(skin.kind==="slime"){
-    ctx.fillStyle = hit ? "#ffffff" : skin.color;
-    ctx.beginPath();
-    ctx.moveTo(-24,12); ctx.quadraticCurveTo(-27,-18,0,-28);
-    ctx.quadraticCurveTo(27,-18,24,12);
-    ctx.quadraticCurveTo(0,28,-24,12);
-    ctx.fill();
-    ctx.fillStyle = hexToRgba(skin.accent, .85);
-    ctx.beginPath(); ctx.ellipse(-8,-10,8,5,-.35,0,Math.PI*2); ctx.fill();
-    drawEnemyEyes(-10,-2,10,-2, hit);
-  }else if(skin.kind==="bat"){
-    ctx.fillStyle = hit ? "#ffffff" : skin.color;
-    ctx.beginPath();
-    ctx.moveTo(-10,-6); ctx.quadraticCurveTo(-46,-28,-54,6); ctx.quadraticCurveTo(-26,-4,-14,8);
-    ctx.lineTo(0,2); ctx.lineTo(14,8); ctx.quadraticCurveTo(26,-4,54,6); ctx.quadraticCurveTo(46,-28,10,-6);
-    ctx.quadraticCurveTo(0,-22,-10,-6);
-    ctx.fill();
-    drawEnemyEyes(-9,-2,9,-2, hit);
-  }else if(skin.kind==="beast"){
-    ctx.fillStyle = hit ? "#ffffff" : skin.color;
-    roundBody(-26,-22,52,46,16);
-    ctx.fillStyle = skin.accent;
-    ctx.beginPath(); ctx.moveTo(-18,-16); ctx.lineTo(-8,-34); ctx.lineTo(0,-12); ctx.fill();
-    ctx.beginPath(); ctx.moveTo(18,-16); ctx.lineTo(8,-34); ctx.lineTo(0,-12); ctx.fill();
-    drawEnemyEyes(-11,-2,11,-2, hit);
-    ctx.fillStyle = "#23181a";
-    ctx.fillRect(-3,7,6,7);
-  }else{
-    ctx.fillStyle = hit ? "#ffffff" : skin.color;
-    roundBody(-30,-28,60,58,18);
-    ctx.fillStyle = skin.accent;
-    ctx.fillRect(-22,-34,14,14);
-    ctx.fillRect(8,-34,14,14);
-    ctx.fillStyle = "#2b1020";
-    ctx.fillRect(-10,8,20,10);
-    drawEnemyEyes(-12,-6,12,-6, hit);
-  }
-
-  ctx.restore();
-}
-function roundBody(x,y,w,h,r){
-  ctx.beginPath();
-  ctx.moveTo(x+r,y);
-  ctx.lineTo(x+w-r,y);
-  ctx.quadraticCurveTo(x+w,y,x+w,y+r);
-  ctx.lineTo(x+w,y+h-r);
-  ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
-  ctx.lineTo(x+r,y+h);
-  ctx.quadraticCurveTo(x,y+h,x,y+h-r);
-  ctx.lineTo(x,y+r);
-  ctx.quadraticCurveTo(x,y,x+r,y);
-  ctx.fill();
-}
-function drawEnemyEyes(x1,y1,x2,y2, hit){
-  ctx.fillStyle = hit ? "#111" : "#111827";
-  ctx.fillRect(x1-3,y1,6,9);
-  ctx.fillRect(x2-3,y2,6,9);
-  ctx.fillStyle = "#fff";
-  ctx.fillRect(x1-1,y1+2,2,2);
-  ctx.fillRect(x2-1,y2+2,2,2);
-}
-function hexToRgba(hex, alpha){
-  var h = (hex || "#ffffff").replace("#","");
-  if(h.length===3){ h = h[0]+h[0]+h[1]+h[1]+h[2]+h[2]; }
-  var r = parseInt(h.substring(0,2),16);
-  var g = parseInt(h.substring(2,4),16);
-  var b = parseInt(h.substring(4,6),16);
-  return "rgba("+r+","+g+","+b+","+alpha+")";
-}
-
-function drawBattleStatusPanel(h,e){
-  drawDQWindow(8,8,134,36,true);
-  battleText(e.name, 16, 14, "#fff3b0");
-  drawBar(16,28,112,9, e.hp/Math.max(1,e.maxhp || e.hp), "#ff8ab4", "#b81c54");
-
-  drawDQWindow(188,8,124,54,true);
-  battleText(h.name, 196, 14, "#ffffff");
-  battleText("H", 196, 28, "#ffffff");
-  drawBar(210,28,92,8,h.hp/Math.max(1,h.maxhp),"#74d6ff","#1f79dd");
-  battleText(String(h.hp)+"/"+String(h.maxhp), 212, 38, "#d8f2ff", "10px monospace");
-  battleText("M", 196, 48, "#ffffff");
-  drawBar(210,48,92,8,h.mp/Math.max(1,h.maxmp),"#a7a7ff","#5f4ed8");
-}
-
-function getBattleMessages(b){
-  var lines = [];
-  if(b.phase==="finished"){
-    lines.push(b.victoryLine || "");
-    if(b.postMsgs && b.postMsgs.length){
-      for(var i=0;i<b.postMsgs.length;i++) lines.push(b.postMsgs[i]);
-    }
-    if(b.summary) {
-      var split = String(b.summary).split("\n");
-      for(var j=0;j<split.length;j++) lines.push(split[j]);
-    }
-    return lines;
-  }
-  var start = Math.max(0, b.log.length - 3);
-  return b.log.slice(start);
-}
-
-function drawBattleMessageWindow(lines){
-  drawDQWindow(8,156,192,76,true);
-  drawParagraph(lines, 18, 168, "#ffffff", "10px monospace", 172, 5, 12);
-}
-
-function drawBattleCommandWindow(b){
-  drawDQWindow(208,156,104,76,true);
-  if(b.phase==="select"){
-    var menu=["たたかう","じゅもん","ぼうぎょ","どうぐ"];
-    for(var i=0;i<menu.length;i++){
-      var y=166 + i*14;
-      var sel=(b.sel||0)===i;
-      battleText((sel?"▶ ":"  ")+menu[i], 218, y, sel?"#fff3b0":"#ffffff");
-    }
-  }else if(b.phase==="omajinai"){
-    var list=getOmajinaiList(state.hero);
-    for(var j=0;j<Math.min(4,list.length);j++){
-      var y2=166 + j*14;
-      var sel2=(b.omSel||0)===j;
-      battleText((sel2?"▶ ":"  ")+list[j].name.replace(/ \(MP.*$/,""), 214, y2, sel2?"#fff3b0":"#ffffff", "10px monospace");
-    }
-  }else if(b.phase==="item"){
-    var list2=state.hero.invI.filter(function(it){return it.qty>0;});
-    for(var k=0;k<Math.min(4,list2.length);k++){
-      var y3=166 + k*14;
-      var sel3=(b.itemSel||0)===k;
-      var base=null;
-      for(var z=0;z<ITEMS.length;z++){ if(ITEMS[z].id===list2[k].id){ base=ITEMS[z]; break; } }
-      var name = base ? base.name : list2[k].id;
-      battleText((sel3?"▶ ":"  ")+name, 214, y3, sel3?"#fff3b0":"#ffffff", "10px monospace");
-    }
-  }else if(b.phase==="inter"){
-    battleText("▶ つぎへ", 222, 184, "#fff3b0");
-  }else{
-    battleText("▶ もどる", 222, 184, "#fff3b0");
-  }
-}
-
-function drawBattle(){
-  var b=state.battle, h=state.hero, e=b.enemy;
-  drawGradientBattleBg(e);
-  drawBattleStatusPanel(h,e);
-  drawEnemySprite(e,160,92);
-
-  if((b.encounterFlashT||0)>0){
-    ctx.fillStyle = "rgba(255,255,255,"+(b.encounterFlashT/14)*0.7+")";
-    ctx.fillRect(0,0,VIEW_W,VIEW_H);
-  }
-
-  drawBattleMessageWindow(getBattleMessages(b));
-  drawBattleCommandWindow(b);
-
-  if((b.phase==="finished")){
-    battleText("戻るで終了", 214, 214, "#dbe7ff", "10px monospace");
-  }else if(b.phase==="omajinai"){
-    battleText("Xで戻る", 226, 214, "#dbe7ff", "10px monospace");
-  }else if(b.phase==="item"){
-    battleText("Xで戻る", 226, 214, "#dbe7ff", "10px monospace");
-  }
-}
-
-var _oldStartBattle = startBattle;
-startBattle = function(enemy){
-  if(enemy && typeof enemy.maxhp!=="number"){ enemy.maxhp = enemy.hp; }
-  state.battle={
-    enemy:enemy,
-    phase:'select',
-    log:[""+enemy.name+" が あらわれた！"],
-    sel:0,
-    turn:1,
-    itemSel:0,
-    defending:false,
-    omSel:0,
-    postMsgs:[],
-    summary:"",
-    appearT:28,
-    hitFlashT:0,
-    encounterFlashT:14
-  };
-  bgmStart(enemy.boss ? 'boss' : 'battle');
-  state.mode='battle';
-};
-
-function triggerEnemyHit(){
-  if(state.battle){
-    state.battle.hitFlashT = 8;
-  }
-  startShake(5,100,0.8);
-}
-function triggerEncounterTick(dt){
-  if(!state.battle) return;
-  if(state.battle.appearT>0) state.battle.appearT = Math.max(0, state.battle.appearT-1);
-  if(state.battle.hitFlashT>0) state.battle.hitFlashT = Math.max(0, state.battle.hitFlashT-1);
-  if(state.battle.encounterFlashT>0) state.battle.encounterFlashT = Math.max(0, state.battle.encounterFlashT-1);
-}
-
-var _originalUpdate = update;
-update = function(dt){
-  if(state.mode==="battle"){ triggerEncounterTick(dt); }
-  _originalUpdate(dt);
-  if(document && document.body){
-    if(state.mode==="battle") document.body.classList.add("battle-mode");
-    else document.body.classList.remove("battle-mode");
-  }
-};
-
-useItem = function(base, stack, b, h, e){
-  var msg="";
-  if(base.kind==="healHP"){
-    var before=h.hp;
-    h.hp=Math.min(h.maxhp, h.hp+base.power);
-    var g=h.hp-before;
-    msg=base.name+"を つかった！ HPが "+g+" かいふく！";
-    if(g>0) addPopup(92,70,"+"+g,"#66e0ff",12,14,350,200);
-  }else if(base.kind==="healMP"){
-    var beforeMP=h.mp;
-    h.mp=Math.min(h.maxmp, h.mp+base.power);
-    var g2=h.mp-beforeMP;
-    msg=base.name+"を つかった！ MPが "+g2+" かいふく！";
-    if(g2>0) addPopup(92,88,"+"+g2,"#8f97ff",12,14,350,200);
-  }else if(base.kind==="insta"){
-    if(e.boss){
-      var dd = Math.max(30, Math.floor(e.hp*0.7));
-      e.hp = Math.max(1, e.hp - dd);
-      msg=base.name+"が あばれた！ "+dd+" ダメージ！";
-      addPopup(198,68,"-"+dd,"#ffd700",14,20,400,200);
-      triggerEnemyHit();
-    }else{
-      e.hp=0;
-      msg=base.name+"が とびだした！ "+e.name+"を たおした！";
-      addPopup(196,68,"撃破!","#ffd700",16,20,400,200);
-      triggerEnemyHit();
-    }
-  }
-  stack.qty=Math.max(0, stack.qty-1);
-  var inMain=null;
-  for(var i=0;i<h.invI.length;i++){ if(h.invI[i].id===stack.id){ inMain=h.invI[i]; break; } }
-  if(inMain) inMain.qty=stack.qty;
-  b.log.push(msg);
-  if(e.hp<=0){ return winBattle(); }
-  enemyAct();
-};
-
-enemyAct = function(){
-  var b=state.battle, h=state.hero, e=b.enemy;
-  var def=totalDef(h);
-  var dmg=Math.max(1, e.atk - def + Math.floor(Math.random()*3));
-  if(b.defending){ dmg=Math.floor(dmg/2); b.defending=false; }
-  h.hp-=dmg;
-  addPopup(92,70,"-"+dmg,"#ff7c7c",12,16,350,200);
-  startShake(6,120,0.8);
-  seq([{f:180,ms:120,type:'sine',vol:0.5}]);
-  b.log.push(enemyAttackMessage(e.name,dmg));
-  if(h.hp<=0){
-    b.log.push(h.name+"は たおれてしまった…");
-    setTimeout(function(){ gameOver(); },400);
-  }else{
-    b.phase='inter';
-  }
-};
-
-winBattle = function(){
-  var b=state.battle, h=state.hero, e=b.enemy;
-  b.log.push(e.name+"を たおした！");
-  seq([
-    {f:523,ms:120,type:'sine',vol:0.5},
-    {f:659,ms:120,type:'sine',vol:0.5},
-    {f:784,ms:120,type:'sine',vol:0.5}
-  ]);
-
-  var gainedExp=e.exp;
-  h.exp+=gainedExp;
-  var post=[];
-  while(h.exp >= h.lv*22){
-    h.exp -= h.lv*22; h.lv++;
-    h.maxhp+=6; h.maxmp+=2; h.atk+=2; h.def+=1;
-    h.hp=h.maxhp; h.mp=h.maxmp;
-    post.push(h.name+"は レベルが あがった！");
-    if(h.lv===3 || h.lv===5) post.push(h.name+"は あたらしい おまじないを おぼえた！");
-  }
-  var dropNote="";
-  if(!e.boss && Math.random()<0.30){
-    var id = (Math.random()<0.5) ? "omurice" : "tea";
-    var base=null, stack=null;
-    for(var ii=0;ii<ITEMS.length;ii++){ if(ITEMS[ii].id===id){ base=ITEMS[ii]; break; } }
-    for(var jj=0;jj<h.invI.length;jj++){ if(h.invI[jj].id===id){ stack=h.invI[jj]; break; } }
-    if(stack) stack.qty+=1;
-    else h.invI.push({id:id,qty:1});
-    if(base) dropNote=" / どうぐ: "+base.name;
-  }
-  var needNext=h.lv*22 - h.exp;
-  b.victoryLine = h.name+"は "+e.name+"を いやした！";
-  b.postMsgs = post;
-  b.summary  = "EXP+"+gainedExp+"\nつぎのレベルまで "+Math.max(0,needNext)+dropNote;
-  b.phase='finished';
-
-  if(e.boss){
-    setTimeout(function(){ showEnding(); },900);
-  }
-};
-
-battleUpdate = function(dt){
-  var b=state.battle, h=state.hero, e=b.enemy;
-  if(b.phase==='select'){
-    if(navReady() && keys["ArrowUp"]   && b.sel>0){ b.sel--; navSet(); }
-    if(navReady() && keys["ArrowDown"] && b.sel<3){ b.sel++; navSet(); }
-    if((keys["Enter"]||keys["Space"]) && actionCooldown<=0){
-      actionCooldown=0.18;
-      if(b.sel===0){
-        var atk=h.atk+(h.weapon?h.weapon.atk:0);
-        var dmg=Math.max(1, atk - e.def + Math.floor(Math.random()*3));
-        e.hp-=dmg;
-        b.log.push(h.name+"の こうげき！ "+e.name+"に "+dmg+" ダメージ！");
-        addPopup(198,68,String(dmg),"#ffffff",12,20,400,200);
-        seq([{f:320,ms:70,type:'square',vol:0.5},{f:220,ms:70,type:'square',vol:0.5}]);
-        triggerEnemyHit();
-        if(e.hp<=0) return winBattle();
-        enemyAct();
-      }else if(b.sel===1){
-        b.phase='omajinai'; b.omSel=0;
-      }else if(b.sel===2){
-        b.defending=true;
-        b.log.push("みを まもった！");
-        enemyAct();
-      }else if(b.sel===3){
-        b.phase='item'; b.itemSel=0;
-      }
-    }
-  }else if(b.phase==='omajinai'){
-    var list=getOmajinaiList(h);
-    if(navReady() && keys["ArrowUp"]   && b.omSel>0){ b.omSel--; navSet(); }
-    if(navReady() && keys["ArrowDown"] && b.omSel<Math.max(0,list.length-1)){ b.omSel++; navSet(); }
-    if(keys["Escape"]||keys["KeyX"]) b.phase='select';
-    if((keys["Enter"]||keys["Space"]) && actionCooldown<=0){
-      actionCooldown=0.18;
-      if(!list.length){ b.log.push("まだ なにも おぼえていない…"); b.phase='select'; return; }
-      var sp=list[b.omSel];
-      if(h.mp < sp.mp){ b.log.push("MPが たりない…"); return; }
-      h.mp -= sp.mp;
-      if(sp.type==='damage20'){
-        e.hp-=20; b.log.push("もえもえぎゅー！ 20ダメージ！");
-        addPopup(198,68,"20","#ffffff",12,20,400,200);
-        seq([{f:660,ms:80,type:'square',vol:0.5},{f:990,ms:80,type:'square',vol:0.5}]);
-        triggerEnemyHit();
-        if(e.hp<=0) return winBattle();
-        enemyAct();
-      }else if(sp.type==='healFull'){
-        var gain=h.maxhp-h.hp;
-        h.hp=h.maxhp; b.log.push("おいしくなーれ！ HPが ぜんかいふく！");
-        if(gain>0) addPopup(92,70,"+"+gain,"#66e0ff",12,14,350,200);
-        seq([{f:523,ms:300,type:'sine',vol:0.5},{f:659,ms:300,type:'sine',vol:0.5},{f:784,ms:300,type:'sine',vol:0.5}]);
-        enemyAct();
-      }else if(sp.type==='insta'){
-        if(e.boss){
-          var dd=Math.max(30, Math.floor(e.hp*0.7));
-          e.hp=Math.max(1,e.hp-dd);
-          b.log.push("にしきぬやまー！ ボスに "+dd+" ダメージ！");
-          addPopup(198,68,"-"+dd,"#ffd700",14,20,400,200);
-          triggerEnemyHit();
-          enemyAct();
-        }else{
-          e.hp=0;
-          b.log.push("にしきぬやまー！ てきを たおした！");
-          addPopup(196,68,"撃破!","#ffd700",16,20,400,200);
-          triggerEnemyHit();
-          return winBattle();
-        }
-      }
-    }
-  }else if(b.phase==='item'){
-    var list2=h.invI.filter(function(it){return it.qty>0;});
-    if(navReady() && keys["ArrowUp"]   && b.itemSel>0){ b.itemSel--; navSet(); }
-    if(navReady() && keys["ArrowDown"] && b.itemSel<Math.max(0,list2.length-1)){ b.itemSel++; navSet(); }
-    if(keys["Escape"]||keys["KeyX"]) b.phase='select';
-    if((keys["Enter"]||keys["Space"]) && actionCooldown<=0){
-      actionCooldown=0.18;
-      if(!list2.length){ b.log.push("まだ なにも もっていない…"); b.phase='select'; return; }
-      var stack2=list2[b.itemSel];
-      var base2=null;
-      for(var i2=0;i2<ITEMS.length;i2++){ if(ITEMS[i2].id===stack2.id){ base2=ITEMS[i2]; break; } }
-      if(!base2){ b.phase='select'; return; }
-      useItem(base2, stack2, b, h, e);
-    }
-  }else if(b.phase==='inter'){
-    if((keys["Enter"]||keys["Space"]) && actionCooldown<=0){
-      actionCooldown=0.18;
-      b.phase='select'; b.sel=0; b.turn++;
-    }
-  }else if(b.phase==='finished'){
-    if((keys["Escape"]||keys["KeyX"]) && actionCooldown<=0){
-      actionCooldown=0.18;
-      endBattle(true);
-    }
-  }
-};
