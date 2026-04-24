@@ -120,52 +120,51 @@
   }
   function drawEnemyGraphic(enemy, battle){
     var img = getLoadedImage(enemy && enemy.image);
-    var hit = battle && battle.enemyFlash>0;
-    var appear = battle && battle.appearT>0 ? battle.appearT/0.55 : 0;
-    if(appear<0) appear=0;
-    if(appear>1) appear=1;
-
-    // 本画像が未読込なら何も描かない（仮画像を出さない）
     if(!img) return;
 
-    var fadeAlpha = 1 - appear*0.65;
-    var offsetY = appear*10;
-    var offsetX = battle && battle.enemyShake>0 ? (Math.random()*2-1)*4 : 0;
+    var isBoss = !!(enemy && enemy.boss);
+    var hit = battle && battle.enemyFlash>0;
+    var shake = battle && battle.enemyShake>0 ? (Math.random()*2-1)*3 : 0;
 
-    // 影
-    ctx.save();
-    ctx.fillStyle = "rgba(0,0,0,0.35)";
-    ctx.beginPath();
-    ctx.ellipse(112 + offsetX, 118, 42, 10, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
+    /*
+      表示安定優先版：
+      - 元画像が大きくても、必ず指定サイズ内に収める
+      - 白い巨大四角を防ぐため、描画サイズを固定
+      - フェード用の白塗りは停止
+      - まず「確実に見える」ことを優先
+    */
+    var boxW = isBoss ? 132 : 112;
+    var boxH = isBoss ? 104 : 92;
 
-    // 敵本体
-    ctx.save();
-    ctx.translate(112 + offsetX, 84 + offsetY);
-
-    var maxW = 120;
-    var maxH = 96;
-    var ratio = Math.min(maxW / img.naturalWidth, maxH / img.naturalHeight);
+    var ratio = Math.min(boxW / img.naturalWidth, boxH / img.naturalHeight);
     if(!isFinite(ratio) || ratio <= 0) ratio = 1;
 
-    var w = img.naturalWidth * ratio;
-    var h = img.naturalHeight * ratio;
+    var w = Math.floor(img.naturalWidth * ratio);
+    var h = Math.floor(img.naturalHeight * ratio);
 
-    ctx.drawImage(img, -w/2, -h/2, w, h);
+    var cx = isBoss ? 104 : 104;
+    var cy = isBoss ? 88 : 86;
 
+    ctx.save();
+
+    // 影
+    ctx.fillStyle = "rgba(0,0,0,0.38)";
+    ctx.beginPath();
+    ctx.ellipse(cx + shake, cy + h/2 - 4, Math.max(24, w*0.34), 8, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 敵画像
+    ctx.drawImage(img, cx - w/2 + shake, cy - h/2, w, h);
+
+    // 被弾フラッシュ
     if(hit){
-      ctx.fillStyle = "rgba(255,255,255,0.22)";
-      ctx.fillRect(-w/2, -h/2, w, h);
+      ctx.globalCompositeOperation = "source-atop";
+      ctx.fillStyle = "rgba(255,255,255,0.25)";
+      ctx.fillRect(cx - w/2 + shake, cy - h/2, w, h);
+      ctx.globalCompositeOperation = "source-over";
     }
 
     ctx.restore();
-
-    // 出現時フェード
-    if(fadeAlpha>0){
-      ctx.fillStyle = "rgba(255,255,255," + fadeAlpha + ")";
-      ctx.fillRect(28, 18, 168, 112);
-    }
   }
 
 
@@ -667,7 +666,10 @@
     if(!e.baseHp) e.baseHp = enemyHpMax;
     enemyHpMax = e.baseHp;
 
-    // 先にUIを描く
+    // 敵を先に描く。UIは後から描いて、文字とコマンドを必ず読めるようにする。
+    drawEnemyGraphic(e, b);
+
+    // UIを描く
     drawRpgWindow(8, 8, 154, 42);
     drawText(e.name, 16, 16, "#ffffff", "bold 10px monospace");
     drawText("HP", 16, 31, "#9cc7ff", "bold 10px monospace");
@@ -690,7 +692,6 @@
     if(b.phase==="finished"){
       drawRpgWindow(168, 192, 144, 40);
       drawText("OKで戻る", 208, 206, "#ffe7a1", "bold 10px monospace");
-      drawEnemyGraphic(e, b);
       return;
     }
 
@@ -734,8 +735,6 @@
       drawText("OKでつぎへ", 190, 30, "#ffe7a1", "bold 11px monospace");
     }
 
-    // 最後に敵を描く（UIより前面）
-    drawEnemyGraphic(e, b);
   }
 
   function drawItemMenu(){
