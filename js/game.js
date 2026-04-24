@@ -127,14 +127,12 @@
     var shake = battle && battle.enemyShake>0 ? (Math.random()*2-1)*3 : 0;
 
     /*
-      表示安定優先版：
-      - 元画像が大きくても、必ず指定サイズ内に収める
-      - 白い巨大四角を防ぐため、描画サイズを固定
-      - フェード用の白塗りは停止
-      - まず「確実に見える」ことを優先
+      戦闘画面再設計版：
+      敵画像は上部中央の専用エリアにだけ表示する。
+      コマンド欄・メッセージ欄とは絶対に重ねない。
     */
-    var boxW = isBoss ? 132 : 112;
-    var boxH = isBoss ? 104 : 92;
+    var boxW = isBoss ? 124 : 104;
+    var boxH = isBoss ? 86 : 78;
 
     var ratio = Math.min(boxW / img.naturalWidth, boxH / img.naturalHeight);
     if(!isFinite(ratio) || ratio <= 0) ratio = 1;
@@ -142,21 +140,18 @@
     var w = Math.floor(img.naturalWidth * ratio);
     var h = Math.floor(img.naturalHeight * ratio);
 
-    var cx = isBoss ? 104 : 104;
-    var cy = isBoss ? 88 : 86;
+    var cx = 160;
+    var cy = isBoss ? 82 : 78;
 
     ctx.save();
 
-    // 影
     ctx.fillStyle = "rgba(0,0,0,0.38)";
     ctx.beginPath();
-    ctx.ellipse(cx + shake, cy + h/2 - 4, Math.max(24, w*0.34), 8, 0, 0, Math.PI * 2);
+    ctx.ellipse(cx + shake, cy + h/2 - 2, Math.max(28, w*0.32), 8, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // 敵画像
     ctx.drawImage(img, cx - w/2 + shake, cy - h/2, w, h);
 
-    // 被弾フラッシュ
     if(hit){
       ctx.globalCompositeOperation = "source-atop";
       ctx.fillStyle = "rgba(255,255,255,0.25)";
@@ -666,75 +661,82 @@
     if(!e.baseHp) e.baseHp = enemyHpMax;
     enemyHpMax = e.baseHp;
 
-    // 敵を先に描く。UIは後から描いて、文字とコマンドを必ず読めるようにする。
+    /*
+      戦闘画面再設計版
+      上部：敵専用エリア
+      下部左：メッセージ
+      下部右：コマンド
+      最下部：主人公ステータス
+    */
+
+    drawRpgWindow(8, 8, 304, 118);
+    drawText(e.name, 18, 16, "#ffffff", "bold 10px monospace");
+    drawText("HP", 18, 31, "#9cc7ff", "bold 10px monospace");
+
+    ctx.fillStyle = "#1f2940";
+    ctx.fillRect(40, 31, 120, 8);
+    ctx.fillStyle = e.boss ? "#ff8ea1" : "#7ce0a1";
+    ctx.fillRect(40, 31, Math.max(0, Math.floor((e.hp/enemyHpMax)*120)), 8);
+    ctx.strokeStyle = "#dfe8ff";
+    ctx.strokeRect(40.5, 31.5, 119, 7);
+
     drawEnemyGraphic(e, b);
 
-    // UIを描く
-    drawRpgWindow(8, 8, 154, 42);
-    drawText(e.name, 16, 16, "#ffffff", "bold 10px monospace");
-    drawText("HP", 16, 31, "#9cc7ff", "bold 10px monospace");
-    ctx.fillStyle = "#1f2940";
-    ctx.fillRect(38, 31, 108, 8);
-    ctx.fillStyle = e.boss ? "#ff8ea1" : "#7ce0a1";
-    ctx.fillRect(38, 31, Math.max(0, Math.floor((e.hp/enemyHpMax)*108)), 8);
-    ctx.strokeStyle = "#dfe8ff";
-    ctx.strokeRect(38.5, 31.5, 107, 7);
+    drawRpgWindow(8, 132, 194, 64);
+    var startIdx = Math.max(0,b.log.length-3);
+    drawParagraph(b.log.slice(startIdx), 16, 140, "#ffffff", "10px monospace", 178, 4, 14);
 
-    drawRpgWindow(168, 144, 144, 44);
-    drawText(h.name, 176, 152, "#ffffff", "bold 10px monospace");
-    drawText("HP "+h.hp+"/"+h.maxhp, 176, 166, "#ffffff", "10px monospace");
-    drawText("MP "+h.mp+"/"+h.maxmp, 246, 166, "#9cc7ff", "10px monospace");
-
-    drawRpgWindow(8, 144, 154, 88);
-    var startIdx = Math.max(0,b.log.length-4);
-    drawParagraph(b.log.slice(startIdx), 16, 152, "#ffffff", "10px monospace", 138, 5, 14);
+    drawRpgWindow(8, 200, 194, 32);
+    drawText(h.name, 16, 207, "#ffffff", "bold 10px monospace");
+    drawText("HP "+h.hp+"/"+h.maxhp+"   MP "+h.mp+"/"+h.maxmp, 16, 220, "#9cc7ff", "10px monospace");
 
     if(b.phase==="finished"){
-      drawRpgWindow(168, 192, 144, 40);
-      drawText("OKで戻る", 208, 206, "#ffe7a1", "bold 10px monospace");
+      drawRpgWindow(208, 132, 104, 100);
+      drawText("OKで戻る", 232, 174, "#ffe7a1", "bold 10px monospace");
       return;
     }
 
     if(b.phase==="select"){
-      drawRpgWindow(168, 8, 144, 128);
+      drawRpgWindow(208, 132, 104, 100);
       var menu=["たたかう","おまじない","ぼうぎょ","どうぐ"];
       for(var i=0;i<menu.length;i++){
-        var cy = 20 + i*26;
+        var cy = 144 + i*20;
         var sel=(b.sel||0)===i;
-        drawText((sel?"▶ ":"  ")+menu[i], 180, cy, sel?"#ffe7a1":"#ffffff", "bold 12px monospace");
+        drawText((sel?"▶ ":"  ")+menu[i], 216, cy, sel?"#ffe7a1":"#ffffff", "bold 10px monospace");
       }
     }else if(b.phase==="omajinai"){
-      drawRpgWindow(168, 8, 144, 128);
-      drawText("おまじない", 180, 18, "#9cc7ff", "bold 10px monospace");
+      drawRpgWindow(208, 132, 104, 100);
+      drawText("おまじない", 216, 140, "#9cc7ff", "bold 10px monospace");
       var list=getOmajinaiList(state.hero);
       if(!list.length){
-        drawText("まだない", 180, 40, "#ffffff", "10px monospace");
+        drawText("まだない", 216, 158, "#ffffff", "10px monospace");
       }
       for(var j=0;j<list.length;j++){
-        var yy=34+j*24;
+        var yy=156+j*20;
         var sel2=(b.omSel||0)===j;
-        drawText((sel2?"▶ ":"  ")+list[j].name, 176, yy, sel2?"#ffe7a1":"#ffffff", "10px monospace");
+        var label = list[j].name.replace(/ \(.*?\)/g,"");
+        drawText((sel2?"▶ ":"  ")+label, 212, yy, sel2?"#ffe7a1":"#ffffff", "9px monospace");
       }
     }else if(b.phase==="item"){
-      drawRpgWindow(168, 8, 144, 128);
-      drawText("どうぐ", 180, 18, "#9cc7ff", "bold 10px monospace");
+      drawRpgWindow(208, 132, 104, 100);
+      drawText("どうぐ", 216, 140, "#9cc7ff", "bold 10px monospace");
       var items=h.invI.filter(function(it){return it.qty>0;});
       if(!items.length){
-        drawText("もっていない", 180, 40, "#ffffff", "10px monospace");
+        drawText("もっていない", 216, 158, "#ffffff", "10px monospace");
       }
       for(var k=0;k<items.length;k++){
         var base = null;
         for(var ii=0;ii<ITEMS.length;ii++){ if(ITEMS[ii].id===items[k].id){ base=ITEMS[ii]; break; } }
         var label=(base?base.name:items[k].id)+" x"+items[k].qty;
-        var yy2=34+k*24;
+        var yy2=156+k*20;
         var sel3=(b.itemSel||0)===k;
-        drawText((sel3?"▶ ":"  ")+label, 176, yy2, sel3?"#ffe7a1":"#ffffff", "10px monospace");
+        drawText((sel3?"▶ ":"  ")+label, 212, yy2, sel3?"#ffe7a1":"#ffffff", "9px monospace");
       }
     }else if(b.phase==="inter"){
-      drawRpgWindow(168, 8, 144, 56);
-      drawText("OKでつぎへ", 190, 30, "#ffe7a1", "bold 11px monospace");
+      drawRpgWindow(208, 132, 104, 100);
+      drawText("OKで", 244, 164, "#ffe7a1", "bold 10px monospace");
+      drawText("つぎへ", 238, 180, "#ffe7a1", "bold 10px monospace");
     }
-
   }
 
   function drawItemMenu(){
