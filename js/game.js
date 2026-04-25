@@ -265,6 +265,7 @@ function showDamage(value,target){
 }
 
 function enemyFlash(){
+  screenShake();
   const img=document.getElementById('enemyImage');
   img.classList.remove('hit');
   void img.offsetWidth;
@@ -272,6 +273,7 @@ function enemyFlash(){
 }
 
 function playerFlash(){
+  screenShake();
   const panel=document.querySelector('.status-panel');
   panel.classList.remove('player-hit');
   void panel.offsetWidth;
@@ -279,6 +281,8 @@ function playerFlash(){
 }
 
 function bossEntrance(){
+  screenShake();
+  screenFlash();
   const panel=document.querySelector('.enemy-panel');
   panel.classList.remove('boss-enter');
   void panel.offsetWidth;
@@ -290,6 +294,51 @@ function victoryEffect(){
   panel.classList.remove('victory-flash');
   void panel.offsetWidth;
   panel.classList.add('victory-flash');
+}
+
+
+function screenShake(){
+  document.body.classList.remove('screen-shake');
+  void document.body.offsetWidth;
+  document.body.classList.add('screen-shake');
+  setTimeout(()=>document.body.classList.remove('screen-shake'),360);
+}
+
+function screenFlash(){
+  const fx=document.getElementById('screenFx');
+  if(!fx) return;
+  fx.classList.remove('hidden');
+  void fx.offsetWidth;
+  setTimeout(()=>fx.classList.add('hidden'),360);
+}
+
+function showCutin(title,text){
+  const overlay=document.getElementById('cutinOverlay');
+  const titleEl=document.getElementById('cutinTitle');
+  const textEl=document.getElementById('cutinText');
+  if(!overlay || !titleEl || !textEl) return Promise.resolve();
+
+  titleEl.textContent=title;
+  textEl.textContent=text;
+  overlay.classList.remove('hidden');
+  void overlay.offsetWidth;
+
+  return new Promise(resolve=>{
+    setTimeout(()=>{
+      overlay.classList.add('hidden');
+      resolve();
+    },760);
+  });
+}
+
+function showLevelToast(text){
+  const old=document.querySelector('.level-toast');
+  if(old) old.remove();
+  const toast=document.createElement('div');
+  toast.className='level-toast';
+  toast.textContent=text;
+  document.body.appendChild(toast);
+  setTimeout(()=>toast.remove(),1300);
 }
 
 function startGame(){
@@ -473,11 +522,13 @@ async function useMagic(kind){
   if(kind==='moe'){
     if(p.mp<5){ await failAction('MPがたりない！'); return; }
     p.mp-=5;
+    await showCutin('おまじない','もえもえぎゅー！！');
     const damage=18+Math.floor(Math.random()*5);
     await damageEnemy(`もえもえぎゅー！！`,damage);
   }else if(kind==='heal'){
     if(p.mp<8){ await failAction('MPがたりない！'); return; }
     p.mp-=8;
+    await showCutin('おまじない','おいしくなーれ！');
     const heal=Math.min(35,p.maxHp-p.hp);
     p.hp+=heal;
     setMessage(`おいしくなーれ！ HPが ${heal} 回復！`);
@@ -489,6 +540,8 @@ async function useMagic(kind){
   }else if(kind==='nishiki'){
     if(p.mp<12){ await failAction('MPがたりない！'); return; }
     p.mp-=12;
+    await showCutin('必殺おまじない','にしきぬやまー！！');
+    screenFlash();
     const damage=e.boss?45:65;
     await damageEnemy(`にしきぬやまー！！`,damage);
   }
@@ -707,6 +760,7 @@ async function winBattle(){
     p.hp=p.maxHp;
     p.mp=p.maxMp;
     seLevelUp();
+    showLevelToast(`LEVEL UP！ Lv.${p.lv}`);
     setMessage(`${p.name} は レベル ${p.lv} に あがった！`);
     updateUI();
     await sleep(1200);
