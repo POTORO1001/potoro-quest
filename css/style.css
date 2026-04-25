@@ -496,3 +496,89 @@ animation:bossEnterStrong 1.1s ease;
 60%{transform:scale(.98);filter:brightness(.8) saturate(1.5);}
 100%{transform:scale(1);filter:brightness(1) saturate(1);}
 }
+
+
+/* ===== v11 仕上げ調整 ===== */
+body{
+-webkit-tap-highlight-color:transparent;
+touch-action:manipulation;
+}
+
+button{
+cursor:pointer;
+user-select:none;
+}
+
+.enemy-header{
+display:flex;
+flex-direction:column;
+gap:4px;
+}
+
+.enemy-area{
+min-height:220px;
+}
+
+@media (max-height:720px){
+.enemy-area{
+min-height:190px;
+}
+.enemy-area img{
+max-width:185px;
+max-height:185px;
+}
+.message-panel{
+min-height:64px;
+}
+.command-panel button{
+padding:12px 6px;
+}
+}
+
+.guide-modal{
+position:fixed;
+inset:0;
+z-index:60;
+background:rgba(0,0,0,.65);
+display:flex;
+align-items:center;
+justify-content:center;
+padding:18px;
+}
+
+.guide-card{
+width:100%;
+max-width:430px;
+max-height:86vh;
+overflow:auto;
+background:rgba(11,16,32,.98);
+border:2px solid #dfe8ff;
+border-radius:18px;
+box-shadow:0 24px 70px rgba(0,0,0,.55);
+}
+
+.guide-head{
+position:sticky;
+top:0;
+display:flex;
+align-items:center;
+justify-content:space-between;
+padding:14px;
+background:#0b1020;
+border-bottom:1px solid rgba(255,255,255,.18);
+}
+
+.guide-body{
+padding:14px;
+line-height:1.7;
+font-size:14px;
+}
+
+.guide-body p{
+margin:.5em 0;
+}
+
+.guide-note{
+color:#fde68a;
+font-weight:700;
+}
