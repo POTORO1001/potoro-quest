@@ -1,8 +1,8 @@
 const enemies=[
-  {id:'teiji',name:'定時のご主人様',hp:38,maxHp:38,atk:5,exp:14,image:'img/enemies/teiji.png?v=13',intro:'定時のご主人様が あらわれた！'},
-  {id:'zangyo',name:'残業のご主人様',hp:66,maxHp:66,atk:8,exp:22,image:'img/enemies/zangyo.png?v=13',intro:'残業のご主人様が つかれた顔で あらわれた！'},
-  {id:'shisseki',name:'叱責のご主人様',hp:92,maxHp:92,atk:11,exp:34,image:'img/enemies/shisseki.png?v=13',intro:'叱責のご主人様が ふるえながら あらわれた！'},
-  {id:'boss',name:'ご主人王',hp:155,maxHp:155,atk:15,exp:100,image:'img/enemies/boss.png?v=13',boss:true,intro:'ご主人王が あらわれた！！'}
+  {id:'teiji',name:'定時のご主人様',hp:38,maxHp:38,atk:5,exp:14,image:'img/enemies/teiji.png?v=14',intro:'定時のご主人様が あらわれた！'},
+  {id:'zangyo',name:'残業のご主人様',hp:66,maxHp:66,atk:8,exp:22,image:'img/enemies/zangyo.png?v=14',intro:'残業のご主人様が つかれた顔で あらわれた！'},
+  {id:'shisseki',name:'叱責のご主人様',hp:92,maxHp:92,atk:11,exp:34,image:'img/enemies/shisseki.png?v=14',intro:'叱責のご主人様が ふるえながら あらわれた！'},
+  {id:'boss',name:'ご主人王',hp:155,maxHp:155,atk:15,exp:100,image:'img/enemies/boss.png?v=14',boss:true,intro:'ご主人王が あらわれた！！'}
 ];
 
 const equipmentData={
@@ -825,12 +825,12 @@ function restartFromEnding(){
 
 
 const ASSETS_TO_PRELOAD=[
-  'img/enemies/teiji.png?v=13',
-  'img/enemies/zangyo.png?v=13',
-  'img/enemies/shisseki.png?v=13',
-  'img/enemies/boss.png?v=13',
-  'img/backgrounds/battle_room.png?v=13',
-  'img/backgrounds/battle_boss_room.png?v=13'
+  'img/enemies/teiji.png?v=14',
+  'img/enemies/zangyo.png?v=14',
+  'img/enemies/shisseki.png?v=14',
+  'img/enemies/boss.png?v=14',
+  'img/backgrounds/battle_room.png?v=14',
+  'img/backgrounds/battle_boss_room.png?v=14'
 ];
 
 function preloadImage(src){
@@ -866,24 +866,6 @@ function closeGuide(){
 
 
 
-function jumpToBossForTest(){
-  if(!state.started){
-    document.getElementById('titleScreen').classList.add('hidden');
-    document.getElementById('battleScreen').classList.remove('hidden');
-    state.started=true;
-  }
-  closeSubMenu();
-  closeEquipMenu();
-  state.player.hp=state.player.maxHp;
-  state.player.mp=state.player.maxMp;
-  state.player.lv=Math.max(state.player.lv,3);
-  setButtonsDisabled(false);
-  state.busy=false;
-  startBattle(enemies.length-1);
-  setMessage('テスト用：ボス戦を開始しました。');
-}
-
-
 document.getElementById('startBtn').addEventListener('click',startGame);
 document.getElementById('restartBtn').addEventListener('click',resetGame);
 document.getElementById('equipBtn').addEventListener('click',openEquipMenu);
@@ -898,4 +880,3 @@ document.getElementById('guideModal').addEventListener('click',function(e){
   if(e.target===this) closeGuide();
 });
 
-document.getElementById('testBossBtn').addEventListener('click',jumpToBossForTest);
