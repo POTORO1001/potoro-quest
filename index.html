@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ポ・トロクエスト（Map版）</title>
+<title>ポ・トロクエスト（ランダム迷路版）</title>
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -11,49 +11,82 @@
 <section id="titleScreen" class="title-screen">
   <div class="title-card">
     <h1>ポ・トロクエスト</h1>
-    <p>ご主人様たちをいやして、ポ・トロに平和を取り戻そう！</p>
+    <p>ランダムに変化するお屋敷を探索し、ご主人王を目指そう！</p>
     <button id="startBtn" class="start-btn">冒険をはじめる</button>
-    <div class="version-label">スマホ版 v16 / Map</div>
+    <div class="version-label">スマホ版 v16 / Random Maze</div>
   </div>
 </section>
 
-<main id="mapScreen" class="hidden">
+<main id="mapScreen" class="map-screen hidden">
   <section class="map-panel">
-    <h2>お屋敷マップ</h2>
-    <div id="locationName" class="location-name">玄関ホール</div>
-
-    <div class="map-route">
-      <div class="map-step active">玄関</div>
-      <div class="map-line"></div>
-      <div class="map-step">廊下</div>
-      <div class="map-line"></div>
-      <div class="map-step">休憩室</div>
-      <div class="map-line"></div>
-      <div class="map-step">大広間</div>
-      <div class="map-line"></div>
-      <div class="map-step boss">王の間</div>
+    <div class="map-head">
+      <h2>お屋敷探索</h2>
+      <button id="newMapBtn" class="mini-btn">マップ再生成</button>
     </div>
 
-    <p id="mapMessage">探索してみよう！</p>
+    <canvas id="mapCanvas" width="352" height="352"></canvas>
 
-    <div class="map-actions">
-      <button id="searchBtn">探索する</button>
-      <button id="nextBtn">次へ進む</button>
+    <p id="mapMessage">矢印キーで探索してください。</p>
+
+    <div class="dpad">
+      <div></div>
+      <button data-move="up">▲</button>
+      <div></div>
+      <button data-move="left">◀</button>
+      <button data-move="down">▼</button>
+      <button data-move="right">▶</button>
     </div>
   </section>
 </main>
 
-<main id="battleScreen" class="hidden">
-  <section class="battle-panel">
-    <h2 id="enemyName">敵が現れた！</h2>
-    <img id="enemyImage" src="img/enemies/teiji.png?v=16" alt="enemy">
-    <p id="battleMessage">戦闘開始！</p>
+<main id="battleScreen" class="battle-screen hidden">
+<section class="enemy-panel">
+<div class="enemy-header">
+<h1 id="enemyName">定時のご主人様</h1>
+<div class="hp-bar"><div id="enemyHpFill" class="hp-fill"></div></div>
+</div>
+<div class="enemy-area">
+<img id="enemyImage" src="img/enemies/teiji.png?v=16" alt="enemy">
+</div>
+</section>
 
-    <div class="battle-actions">
-      <button onclick="finishBattle()">勝利する</button>
-    </div>
-  </section>
+<section class="message-panel">
+<p id="messageText">敵があらわれた！</p>
+</section>
+
+<section class="bottom-ui">
+<div class="status-panel">
+<h2>まろ Lv.1</h2>
+<p id="playerHp">HP 28 / 28</p>
+<p id="playerMp">MP 10 / 10</p>
+<p id="playerExp">EXP 0 / 20</p>
+</div>
+
+<div class="command-panel">
+<button onclick="playerAction('attack')">たたかう</button>
+<button onclick="playerAction('magic')">おまじない</button>
+<button onclick="playerAction('guard')">ぼうぎょ</button>
+<button onclick="playerAction('item')">どうぐ</button>
+</div>
+</section>
 </main>
+
+<section id="endingScreen" class="ending-screen hidden">
+  <div class="ending-card">
+    <h1>ポ・トロに平和が戻った！</h1>
+    <p id="endingMessage">ご主人王をいやした！</p>
+    <div id="chekiTicket" class="cheki-ticket hidden">
+      <div class="ticket-label">SPECIAL DROP</div>
+      <h2>チェキ券</h2>
+      <p>この画面のスクリーンショットをお屋敷でご提示ください。</p>
+      <div class="cheki-time">
+        <span>発行時刻</span>
+        <strong id="chekiIssuedAt">--:--</strong>
+      </div>
+    </div>
+    <button id="endingRestartBtn" class="start-btn">もう一度あそぶ</button>
+  </div>
+</section>
 
 <script src="js/game.js"></script>
 </body>
