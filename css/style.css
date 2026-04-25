@@ -263,3 +263,24 @@ padding:8px 12px;
 .command-panel button.active-command{
 background:#7c3aed;
 }
+
+
+/* ===== v5 装備 ===== */
+.utility-panel{
+gap:8px;
+}
+
+.equip-current{
+font-size:12px;
+line-height:1.5;
+color:#dbeafe;
+background:rgba(255,255,255,.06);
+border-radius:10px;
+padding:8px;
+margin-bottom:8px;
+}
+
+.equip-stat{
+font-size:12px;
+color:#fef3c7;
+}
