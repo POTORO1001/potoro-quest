@@ -571,12 +571,45 @@ async function winBattle(){
     state.busy=false;
     setButtonsDisabled(false);
   }else{
-    setMessage('ご主人王をいやした！ ポ・トロに平和がもどった！');
-    setButtonsDisabled(true);
-    state.busy=true;
+    await showEnding();
   }
 }
+
+
+async function showEnding(){
+  setButtonsDisabled(true);
+  state.busy=true;
+  setMessage('ご主人王をいやした！ ポ・トロに平和がもどった！');
+  await sleep(900);
+
+  document.getElementById('battleScreen').classList.add('hidden');
+  document.getElementById('endingScreen').classList.remove('hidden');
+
+  const cheki=document.getElementById('chekiTicket');
+  cheki.classList.add('hidden');
+
+  // チェキ券ドロップ率：仮で 1/3。運用時に調整可能。
+  const drop=Math.random()<1/3;
+
+  if(drop){
+    document.getElementById('endingMessage').textContent='ご主人王がチェキ券を落とした！';
+    cheki.classList.remove('hidden');
+  }else{
+    document.getElementById('endingMessage').textContent='ご主人王をいやした！ 一人前のメイドに近づいた！';
+  }
+}
+
+function restartFromEnding(){
+  document.getElementById('endingScreen').classList.add('hidden');
+  document.getElementById('titleScreen').classList.remove('hidden');
+  document.getElementById('chekiTicket').classList.add('hidden');
+  state.busy=false;
+  state.started=false;
+}
+
 
 document.getElementById('startBtn').addEventListener('click',startGame);
 document.getElementById('restartBtn').addEventListener('click',resetGame);
 document.getElementById('equipBtn').addEventListener('click',openEquipMenu);
+
+document.getElementById('endingRestartBtn').addEventListener('click',restartFromEnding);
