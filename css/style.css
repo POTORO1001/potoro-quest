@@ -59,7 +59,7 @@ padding:12px;
 gap:12px;
 background:
 linear-gradient(180deg,rgba(15,23,42,.92),rgba(17,24,39,.98)),
-url("../img/backgrounds/battle_room.png?v=14");
+url("../img/backgrounds/battle_room.png?v=15");
 background-size:cover;
 background-position:center;
 }
@@ -386,7 +386,7 @@ opacity:.8;
 body.boss-battle .battle-screen{
 background:
 linear-gradient(180deg,rgba(20,10,30,.86),rgba(5,5,12,.98)),
-url("../img/backgrounds/battle_boss_room.png?v=14");
+url("../img/backgrounds/battle_boss_room.png?v=15");
 background-size:cover;
 background-position:center;
 }
@@ -740,4 +740,29 @@ display:none;
   .utility-grid{
     grid-template-columns:1fr 1fr;
   }
+}
+
+
+/* ===== v15 チェキ券発行時刻 ===== */
+.cheki-time{
+  margin-top:12px;
+  padding:10px;
+  border:2px dashed #b45309;
+  border-radius:12px;
+  background:rgba(255,255,255,.55);
+}
+
+.cheki-time span{
+  display:block;
+  font-size:12px;
+  font-weight:900;
+  color:#92400e;
+  letter-spacing:.08em;
+}
+
+.cheki-time strong{
+  display:block;
+  margin-top:4px;
+  font-size:20px;
+  color:#7c2d12;
 }
