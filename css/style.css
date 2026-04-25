@@ -215,3 +215,51 @@ animation:victoryFlash .8s ease;
 30%{filter:brightness(1.8);}
 100%{filter:brightness(1);}
 }
+
+
+/* ===== v4 サブメニュー ===== */
+.sub-menu{
+background:rgba(11,16,32,.96);
+border:2px solid #dfe8ff;
+border-radius:12px;
+padding:12px;
+box-shadow:0 8px 24px rgba(0,0,0,.32);
+}
+
+.sub-menu-head{
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:10px;
+}
+
+.sub-menu-body{
+display:grid;
+grid-template-columns:1fr;
+gap:8px;
+}
+
+.sub-menu-body button{
+width:100%;
+padding:12px;
+font-size:14px;
+border:none;
+border-radius:10px;
+background:#1d4ed8;
+color:#fff;
+font-weight:700;
+text-align:left;
+}
+
+.mini-btn{
+border:none;
+border-radius:999px;
+background:#334155;
+color:#fff;
+font-weight:700;
+padding:8px 12px;
+}
+
+.command-panel button.active-command{
+background:#7c3aed;
+}
