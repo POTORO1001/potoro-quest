@@ -56,6 +56,152 @@ function makePlayer(){
   return JSON.parse(JSON.stringify(initialPlayer));
 }
 
+
+/* ===== v9 BGM・SE ===== */
+const soundState={
+  ctx:null,
+  enabled:true,
+  bgmTimer:null,
+  bgmKind:null
+};
+
+function initAudio(){
+  if(soundState.ctx) return soundState.ctx;
+  try{
+    soundState.ctx=new (window.AudioContext||window.webkitAudioContext)();
+    return soundState.ctx;
+  }catch(e){
+    return null;
+  }
+}
+
+function stopBgm(){
+  if(soundState.bgmTimer){
+    clearInterval(soundState.bgmTimer);
+    soundState.bgmTimer=null;
+  }
+  soundState.bgmKind=null;
+}
+
+function toggleSound(){
+  soundState.enabled=!soundState.enabled;
+  const btn=document.getElementById('soundBtn');
+  if(btn){
+    btn.textContent=soundState.enabled?'音: ON':'音: OFF';
+    btn.classList.toggle('sound-off',!soundState.enabled);
+  }
+  if(!soundState.enabled) stopBgm();
+  else if(state.enemy) startBgm(state.enemy.boss?'boss':'battle');
+}
+
+function tone(freq,duration,type='square',gain=0.08,delay=0){
+  if(!soundState.enabled) return;
+  const ctx=initAudio();
+  if(!ctx) return;
+  const osc=ctx.createOscillator();
+  const g=ctx.createGain();
+  osc.type=type;
+  osc.frequency.value=freq;
+  g.gain.setValueAtTime(gain,ctx.currentTime+delay);
+  g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+delay+duration);
+  osc.connect(g);
+  g.connect(ctx.destination);
+  osc.start(ctx.currentTime+delay);
+  osc.stop(ctx.currentTime+delay+duration);
+}
+
+function playSeq(notes){
+  let t=0;
+  notes.forEach(n=>{
+    if(n.f>0) tone(n.f,n.d,n.type||'square',n.g||0.08,t);
+    t+=n.wait||n.d;
+  });
+}
+
+function seAttack(){
+  playSeq([{f:520,d:.06,g:.09},{f:260,d:.08,g:.08}]);
+}
+
+function seHit(){
+  playSeq([{f:110,d:.09,type:'sawtooth',g:.08},{f:85,d:.08,type:'sawtooth',g:.06}]);
+}
+
+function seHeal(){
+  playSeq([
+    {f:523,d:.08,type:'sine',g:.08},
+    {f:659,d:.08,type:'sine',g:.08},
+    {f:784,d:.12,type:'sine',g:.08}
+  ]);
+}
+
+function seMagic(){
+  playSeq([
+    {f:740,d:.07,type:'triangle',g:.07},
+    {f:988,d:.07,type:'triangle',g:.07},
+    {f:1175,d:.12,type:'triangle',g:.07}
+  ]);
+}
+
+function seTreasure(){
+  playSeq([
+    {f:659,d:.08,type:'sine',g:.08},
+    {f:784,d:.08,type:'sine',g:.08},
+    {f:988,d:.12,type:'sine',g:.09}
+  ]);
+}
+
+function seLevelUp(){
+  playSeq([
+    {f:523,d:.09,type:'sine',g:.08},
+    {f:659,d:.09,type:'sine',g:.08},
+    {f:784,d:.09,type:'sine',g:.08},
+    {f:1046,d:.18,type:'sine',g:.08}
+  ]);
+}
+
+function seVictory(){
+  playSeq([
+    {f:392,d:.12,type:'triangle',g:.08},
+    {f:523,d:.12,type:'triangle',g:.08},
+    {f:659,d:.12,type:'triangle',g:.08},
+    {f:784,d:.2,type:'triangle',g:.08}
+  ]);
+}
+
+function seCheki(){
+  playSeq([
+    {f:880,d:.08,type:'sine',g:.09},
+    {f:1175,d:.08,type:'sine',g:.09},
+    {f:1568,d:.18,type:'sine',g:.09}
+  ]);
+}
+
+function startBgm(kind){
+  if(!soundState.enabled) return;
+  if(soundState.bgmKind===kind) return;
+  stopBgm();
+  soundState.bgmKind=kind;
+
+  const battle=[
+    {f:196,d:.1,g:.035},{f:0,d:.04},{f:247,d:.1,g:.035},{f:0,d:.04},
+    {f:294,d:.1,g:.035},{f:247,d:.1,g:.035},
+    {f:330,d:.12,type:'triangle',g:.03},{f:294,d:.12,type:'triangle',g:.03}
+  ];
+
+  const boss=[
+    {f:147,d:.13,g:.04},{f:196,d:.13,g:.04},{f:220,d:.13,g:.04},
+    {f:247,d:.13,g:.04},{f:294,d:.18,type:'sawtooth',g:.035},
+    {f:247,d:.12,type:'sawtooth',g:.035}
+  ];
+
+  function loop(){
+    playSeq(kind==='boss'?boss:battle);
+  }
+
+  loop();
+  soundState.bgmTimer=setInterval(loop,kind==='boss'?1100:1200);
+}
+
 function cloneEnemy(base){return JSON.parse(JSON.stringify(base));}
 function currentEnemy(){return state.enemy;}
 
@@ -147,6 +293,7 @@ function victoryEffect(){
 }
 
 function startGame(){
+  initAudio();
   document.getElementById('titleScreen').classList.add('hidden');
   document.getElementById('battleScreen').classList.remove('hidden');
   state.started=true;
@@ -173,6 +320,7 @@ function startBattle(index){
 
   if(state.enemy.boss) bossEntrance();
   setMessage(state.enemy.intro);
+  startBgm(state.enemy.boss?'boss':'battle');
 }
 
 function openSubMenu(kind){
@@ -240,6 +388,7 @@ function openEquipMenu(){
   });
 
   menu.classList.remove('hidden');
+  seTreasure();
 }
 
 function addEquipButton(label,handler){
@@ -292,6 +441,7 @@ async function playerAction(type){
     e.hp=Math.max(0,e.hp-damage);
     setMessage(`${e.name} に ${damage} ダメージ！`);
     showDamage(damage,'enemy');
+    seAttack();
     enemyFlash();
     updateUI();
     await sleep(700);
@@ -332,6 +482,7 @@ async function useMagic(kind){
     p.hp+=heal;
     setMessage(`おいしくなーれ！ HPが ${heal} 回復！`);
     showDamage(-heal,'player');
+    seHeal();
     updateUI();
     await sleep(750);
     await enemyTurn();
@@ -364,6 +515,7 @@ async function useItem(kind){
     p.hp+=heal;
     setMessage(`オムライスを食べた！ HPが ${heal} 回復！`);
     showDamage(-heal,'player');
+    seHeal();
     updateUI();
     await sleep(750);
     await enemyTurn();
@@ -403,6 +555,7 @@ async function damageEnemy(message,damage){
   e.hp=Math.max(0,e.hp-damage);
   setMessage(`${message} ${e.name} に ${damage} ダメージ！`);
   showDamage(damage,'enemy');
+  seMagic();
   enemyFlash();
   updateUI();
   await sleep(750);
@@ -423,6 +576,7 @@ async function enemyTurn(){
   p.hp=Math.max(0,p.hp-damage);
   setMessage(`${e.name} のこうげき！ ${damage} ダメージ！`);
   showDamage(damage,'player');
+  seHit();
   playerFlash();
   updateUI();
   await sleep(850);
@@ -536,6 +690,7 @@ async function winBattle(){
   const e=currentEnemy();
 
   victoryEffect();
+  seVictory();
   setMessage(`${e.name} を いやした！ EXP ${e.exp} 獲得！`);
   p.exp+=e.exp;
   updateUI();
@@ -551,6 +706,7 @@ async function winBattle(){
     p.baseDef+=1;
     p.hp=p.maxHp;
     p.mp=p.maxMp;
+    seLevelUp();
     setMessage(`${p.name} は レベル ${p.lv} に あがった！`);
     updateUI();
     await sleep(1200);
@@ -577,6 +733,7 @@ async function winBattle(){
 
 
 async function showEnding(){
+  stopBgm();
   setButtonsDisabled(true);
   state.busy=true;
   setMessage('ご主人王をいやした！ ポ・トロに平和がもどった！');
@@ -594,6 +751,7 @@ async function showEnding(){
   if(drop){
     document.getElementById('endingMessage').textContent='ご主人王がチェキ券を落とした！';
     cheki.classList.remove('hidden');
+    seCheki();
   }else{
     document.getElementById('endingMessage').textContent='ご主人王をいやした！ 一人前のメイドに近づいた！';
   }
@@ -613,3 +771,5 @@ document.getElementById('restartBtn').addEventListener('click',resetGame);
 document.getElementById('equipBtn').addEventListener('click',openEquipMenu);
 
 document.getElementById('endingRestartBtn').addEventListener('click',restartFromEnding);
+
+document.getElementById('soundBtn').addEventListener('click',toggleSound);
