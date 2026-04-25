@@ -582,3 +582,94 @@ margin:.5em 0;
 color:#fde68a;
 font-weight:700;
 }
+
+
+/* ===== v12 公開前仕上げ ===== */
+.loading-screen{
+position:fixed;
+inset:0;
+z-index:999;
+display:flex;
+align-items:center;
+justify-content:center;
+background:radial-gradient(circle at top,#1e293b,#020617 70%);
+color:#fff;
+}
+
+.loading-card{
+text-align:center;
+padding:24px;
+}
+
+.loading-logo{
+font-size:22px;
+font-weight:900;
+letter-spacing:.12em;
+color:#ff7ad6;
+margin-bottom:12px;
+}
+
+.loading-text{
+font-size:14px;
+color:#dbeafe;
+animation:loadingPulse 1s ease-in-out infinite;
+}
+
+@keyframes loadingPulse{
+0%,100%{opacity:.45;}
+50%{opacity:1;}
+}
+
+.version-label{
+margin-top:12px;
+font-size:11px;
+color:#93c5fd;
+opacity:.9;
+}
+
+#enemyImage.image-error{
+display:none;
+}
+
+.enemy-area::after{
+content:"";
+display:none;
+}
+
+.enemy-area:has(#enemyImage.image-error)::after{
+content:"画像を読み込めません";
+display:block;
+color:#fca5a5;
+font-size:13px;
+font-weight:700;
+}
+
+.ending-card{
+position:relative;
+overflow:hidden;
+}
+
+.ending-card::before{
+content:"";
+position:absolute;
+inset:-40%;
+background:radial-gradient(circle,rgba(250,204,21,.18),transparent 55%);
+animation:endingGlow 3s linear infinite;
+pointer-events:none;
+}
+
+@keyframes endingGlow{
+0%{transform:rotate(0deg);}
+100%{transform:rotate(360deg);}
+}
+
+.ending-card > *{
+position:relative;
+z-index:1;
+}
+
+@supports not selector(:has(*)){
+.enemy-area .image-error + *{
+display:none;
+}
+}
