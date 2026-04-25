@@ -131,3 +131,45 @@ transform:scale(1);
 opacity:1;
 }
 }
+
+/* ===== 戦闘システム v2 追加 ===== */
+
+.command-panel button:disabled{
+  opacity:.45;
+  filter:grayscale(0.4);
+}
+
+.status-panel{
+  position:relative;
+  overflow:hidden;
+}
+
+.player-damage{
+  top:8px;
+  left:50%;
+  color:#ff6b6b;
+  text-shadow:0 0 8px rgba(255,0,0,.85);
+}
+
+.status-panel.player-hit{
+  animation:playerHit .35s ease;
+}
+
+@keyframes playerHit{
+  0%{transform:translateX(0);}
+  20%{transform:translateX(-6px);}
+  40%{transform:translateX(6px);}
+  60%{transform:translateX(-4px);}
+  80%{transform:translateX(4px);}
+  100%{transform:translateX(0);}
+}
+
+.enemy-panel.victory-flash{
+  animation:victoryFlash .8s ease;
+}
+
+@keyframes victoryFlash{
+  0%{filter:brightness(1);}
+  30%{filter:brightness(1.8);}
+  100%{filter:brightness(1);}
+}
