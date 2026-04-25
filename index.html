@@ -3,17 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ポ・トロクエスト（ランダム迷路版）</title>
+<title>ポ・トロクエスト（スマホ版）</title>
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
+<section id="loadingScreen" class="loading-screen">
+  <div class="loading-card">
+    <div class="loading-logo">PO・TORO QUEST</div>
+    <div class="loading-text">読み込み中...</div>
+  </div>
+</section>
+
 <section id="titleScreen" class="title-screen">
   <div class="title-card">
     <h1>ポ・トロクエスト</h1>
-    <p>ランダムに変化するお屋敷を探索し、ご主人王を目指そう！</p>
+    <p>ランダムに変化するお屋敷を探索し、ご主人様たちをいやして、ポ・トロに平和を取り戻そう！</p>
     <button id="startBtn" class="start-btn">冒険をはじめる</button>
-    <div class="version-label">スマホ版 v16 / Random Maze</div>
+    <div class="version-label">スマホ版 v17 / v15 + Random Maze</div>
+    <div class="release-note">スマートフォン推奨</div>
   </div>
 </section>
 
@@ -46,7 +54,7 @@
 <div class="hp-bar"><div id="enemyHpFill" class="hp-fill"></div></div>
 </div>
 <div class="enemy-area">
-<img id="enemyImage" src="img/enemies/teiji.png?v=16" alt="enemy">
+<img id="enemyImage" src="img/enemies/teiji.png?v=17" alt="enemy" onerror="this.classList.add('image-error');">
 </div>
 </section>
 
@@ -62,14 +70,72 @@
 <p id="playerExp">EXP 0 / 20</p>
 </div>
 
-<div class="command-panel">
+<div class="command-panel" id="commandPanel">
 <button onclick="playerAction('attack')">たたかう</button>
-<button onclick="playerAction('magic')">おまじない</button>
+<button onclick="openSubMenu('magic')">おまじない</button>
 <button onclick="playerAction('guard')">ぼうぎょ</button>
-<button onclick="playerAction('item')">どうぐ</button>
+<button onclick="openSubMenu('item')">どうぐ</button>
 </div>
 </section>
+
+<section id="subMenu" class="sub-menu hidden">
+  <div class="sub-menu-head">
+    <strong id="subMenuTitle">メニュー</strong>
+    <button onclick="closeSubMenu()" class="mini-btn">戻る</button>
+  </div>
+  <div id="subMenuBody" class="sub-menu-body"></div>
+</section>
+
+<section id="equipMenu" class="sub-menu hidden">
+  <div class="sub-menu-head">
+    <strong>装備</strong>
+    <button onclick="closeEquipMenu()" class="mini-btn">閉じる</button>
+  </div>
+  <div id="equipMenuBody" class="sub-menu-body"></div>
+</section>
+
+<section id="treasureMenu" class="sub-menu hidden">
+  <div class="sub-menu-head">
+    <strong>宝箱発見！</strong>
+    <button onclick="closeTreasureMenu()" class="mini-btn">閉じる</button>
+  </div>
+  <div id="treasureMenuBody" class="sub-menu-body"></div>
+</section>
+
+<section class="utility-panel utility-grid">
+<button id="guideBtn" class="sub-btn">説明</button>
+<button id="equipBtn" class="sub-btn">装備</button>
+<button id="soundBtn" class="sub-btn">音: ON</button>
+<button id="restartBtn" class="sub-btn danger">最初から</button>
+</section>
 </main>
+
+<section id="guideModal" class="guide-modal hidden">
+  <div class="guide-card">
+    <div class="guide-head">
+      <strong>遊び方</strong>
+      <button id="guideCloseBtn" class="mini-btn">閉じる</button>
+    </div>
+    <div class="guide-body">
+      <p><b>目的：</b>ランダム迷路のお屋敷を探索し、ご主人王を目指しましょう。</p>
+      <p><b>マップ：</b>矢印キーまたはスマホ十字キーで移動します。</p>
+      <p><b>戦闘：</b>敵に遭遇すると戦闘画面へ移動します。</p>
+      <p><b>おまじない：</b>MPを使って大きな効果を出します。</p>
+      <p><b>どうぐ：</b>オムライス・紅茶・くろれきしを使えます。</p>
+      <p><b>装備：</b>勝利報酬や宝箱で装備を入手できます。</p>
+      <p class="guide-note">チェキ券が出たら、発行時刻入りの画面をスクリーンショットしてお屋敷でご提示ください。</p>
+    </div>
+  </div>
+</section>
+
+<div id="screenFx" class="screen-fx hidden"></div>
+
+<section id="cutinOverlay" class="cutin-overlay hidden">
+  <div class="cutin-card">
+    <div class="cutin-title" id="cutinTitle">おまじない</div>
+    <div class="cutin-text" id="cutinText">もえもえぎゅー！！</div>
+  </div>
+</section>
 
 <section id="endingScreen" class="ending-screen hidden">
   <div class="ending-card">
