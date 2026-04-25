@@ -1,91 +1,54 @@
 const enemies=[
-  {
-    id:'teiji',
-    name:'定時のご主人様',
-    hp:42,
-    maxHp:42,
-    atk:5,
-    exp:12,
-    image:'img/enemies/teiji.png'
-  },
-  {
-    id:'zangyo',
-    name:'残業のご主人様',
-    hp:70,
-    maxHp:70,
-    atk:8,
-    exp:20,
-    image:'img/enemies/zangyo.png'
-  },
-  {
-    id:'shisseki',
-    name:'叱責のご主人様',
-    hp:95,
-    maxHp:95,
-    atk:11,
-    exp:32,
-    image:'img/enemies/shisseki.png'
-  },
-  {
-    id:'boss',
-    name:'ご主人王',
-    hp:160,
-    maxHp:160,
-    atk:16,
-    exp:100,
-    image:'img/enemies/boss.png',
-    boss:true
-  }
+  {id:'teiji',name:'定時のご主人様',hp:42,maxHp:42,atk:5,exp:12,image:'img/enemies/teiji.png',intro:'定時のご主人様が あらわれた！'},
+  {id:'zangyo',name:'残業のご主人様',hp:70,maxHp:70,atk:8,exp:20,image:'img/enemies/zangyo.png',intro:'残業のご主人様が つかれた顔で あらわれた！'},
+  {id:'shisseki',name:'叱責のご主人様',hp:95,maxHp:95,atk:11,exp:32,image:'img/enemies/shisseki.png',intro:'叱責のご主人様が ふるえながら あらわれた！'},
+  {id:'boss',name:'ご主人王',hp:160,maxHp:160,atk:16,exp:100,image:'img/enemies/boss.png',boss:true,intro:'ご主人王が あらわれた！！'}
 ];
 
-const state={
-  player:{
-    name:'まろ',
-    lv:1,
-    hp:24,
-    maxHp:24,
-    mp:8,
-    maxMp:8,
-    atk:8,
-    def:2,
-    exp:0,
-    nextExp:20,
-    guarding:false,
-    items:{
-      omurice:2,
-      tea:1
-    }
-  },
-  enemyIndex:0,
-  enemy:null,
-  busy:false
+const initialPlayer={
+  name:'まろ',
+  lv:1,
+  hp:24,
+  maxHp:24,
+  mp:8,
+  maxMp:8,
+  atk:8,
+  def:2,
+  exp:0,
+  nextExp:20,
+  guarding:false,
+  items:{omurice:2,tea:1}
 };
 
-function cloneEnemy(base){
-  return JSON.parse(JSON.stringify(base));
-}
+const state={
+  player:{...initialPlayer,items:{...initialPlayer.items}},
+  enemyIndex:0,
+  enemy:null,
+  busy:false,
+  started:false
+};
 
-function currentEnemy(){
-  return state.enemy;
-}
+function cloneEnemy(base){return JSON.parse(JSON.stringify(base));}
+function currentEnemy(){return state.enemy;}
 
 function updateUI(){
   const e=currentEnemy();
   const p=state.player;
+  if(!e) return;
 
   document.getElementById('enemyName').textContent=e.name;
   document.getElementById('enemyImage').src=e.image;
-
   document.getElementById('playerHp').textContent=`HP ${p.hp} / ${p.maxHp}`;
   document.getElementById('playerMp').textContent=`MP ${p.mp} / ${p.maxMp}`;
+  document.getElementById('playerExp').textContent=`EXP ${p.exp} / ${p.nextExp}`;
 
   const hpPercent=Math.max(0,(e.hp/e.maxHp)*100);
   document.getElementById('enemyHpFill').style.width=`${hpPercent}%`;
 
   const status=document.querySelector('.status-panel h2');
-  if(status){
-    status.textContent=`${p.name} Lv.${p.lv}`;
-  }
+  if(status) status.textContent=`${p.name} Lv.${p.lv}`;
+
+  document.body.classList.toggle('boss-battle',!!e.boss);
 }
 
 function setMessage(text){
@@ -93,30 +56,19 @@ function setMessage(text){
 }
 
 function setButtonsDisabled(disabled){
-  document.querySelectorAll('.command-panel button').forEach(btn=>{
-    btn.disabled=disabled;
-  });
+  document.querySelectorAll('.command-panel button').forEach(btn=>btn.disabled=disabled);
 }
 
-function sleep(ms){
-  return new Promise(resolve=>setTimeout(resolve,ms));
-}
+function sleep(ms){return new Promise(resolve=>setTimeout(resolve,ms));}
 
 function showDamage(value,target){
-  const area = target==='player'
-    ? document.querySelector('.status-panel')
-    : document.querySelector('.enemy-area');
-
-  let damage=document.createElement('div');
+  const area=target==='player'?document.querySelector('.status-panel'):document.querySelector('.enemy-area');
+  const damage=document.createElement('div');
   damage.className=target==='player'?'damage-text player-damage':'damage-text';
   damage.textContent=value>0?`-${value}`:`+${Math.abs(value)}`;
   area.appendChild(damage);
-
   damage.classList.add('show');
-
-  setTimeout(()=>{
-    damage.remove();
-  },850);
+  setTimeout(()=>damage.remove(),850);
 }
 
 function enemyFlash(){
@@ -147,6 +99,21 @@ function victoryEffect(){
   panel.classList.add('victory-flash');
 }
 
+function startGame(){
+  document.getElementById('titleScreen').classList.add('hidden');
+  document.getElementById('battleScreen').classList.remove('hidden');
+  state.started=true;
+  resetGame();
+}
+
+function resetGame(){
+  state.player={...initialPlayer,items:{...initialPlayer.items}};
+  state.enemyIndex=0;
+  state.busy=false;
+  setButtonsDisabled(false);
+  startBattle(0);
+}
+
 function startBattle(index){
   state.enemyIndex=index;
   state.enemy=cloneEnemy(enemies[index]);
@@ -155,10 +122,8 @@ function startBattle(index){
 
   if(state.enemy.boss){
     bossEntrance();
-    setMessage('ご主人王が あらわれた！！');
-  }else{
-    setMessage(`${state.enemy.name} が あらわれた！`);
   }
+  setMessage(state.enemy.intro);
 }
 
 async function playerAction(type){
@@ -176,12 +141,8 @@ async function playerAction(type){
     showDamage(damage,'enemy');
     enemyFlash();
     updateUI();
-
     await sleep(700);
-    if(e.hp<=0){
-      await winBattle();
-      return;
-    }
+    if(e.hp<=0){await winBattle();return;}
     await enemyTurn();
 
   }else if(type==='magic'){
@@ -196,12 +157,8 @@ async function playerAction(type){
       showDamage(damage,'enemy');
       enemyFlash();
       updateUI();
-
       await sleep(700);
-      if(e.hp<=0){
-        await winBattle();
-        return;
-      }
+      if(e.hp<=0){await winBattle();return;}
       await enemyTurn();
     }
 
@@ -218,6 +175,14 @@ async function playerAction(type){
       p.hp+=heal;
       setMessage(`オムライスを食べた！ HPが ${heal} 回復！`);
       showDamage(-heal,'player');
+      updateUI();
+      await sleep(700);
+      await enemyTurn();
+    }else if(p.items.tea>0 && p.mp<p.maxMp){
+      p.items.tea--;
+      const healMp=Math.min(10,p.maxMp-p.mp);
+      p.mp+=healMp;
+      setMessage(`紅茶を飲んだ！ MPが ${healMp} 回復！`);
       updateUI();
       await sleep(700);
       await enemyTurn();
@@ -247,11 +212,10 @@ async function enemyTurn(){
   showDamage(damage,'player');
   playerFlash();
   updateUI();
-
   await sleep(850);
 
   if(p.hp<=0){
-    setMessage(`${p.name} は たおれてしまった…`);
+    setMessage(`${p.name} は たおれてしまった… 「最初から」で再挑戦できます。`);
     setButtonsDisabled(true);
     state.busy=true;
   }
@@ -265,7 +229,6 @@ async function winBattle(){
   setMessage(`${e.name} を いやした！ EXP ${e.exp} 獲得！`);
   p.exp+=e.exp;
   updateUI();
-
   await sleep(1000);
 
   if(p.exp>=p.nextExp){
@@ -294,4 +257,5 @@ async function winBattle(){
   }
 }
 
-startBattle(0);
+document.getElementById('startBtn').addEventListener('click',startGame);
+document.getElementById('restartBtn').addEventListener('click',resetGame);
