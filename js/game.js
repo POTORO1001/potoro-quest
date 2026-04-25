@@ -434,6 +434,82 @@ async function enemyTurn(){
   }
 }
 
+
+
+function openTreasureMenu(rewardText){
+  const menu=document.getElementById('treasureMenu');
+  const body=document.getElementById('treasureMenuBody');
+  if(!menu || !body) return;
+
+  body.innerHTML='';
+  const box=document.createElement('div');
+  box.className='equip-current treasure-box';
+  box.innerHTML=`<div class="treasure-rare">${rewardText}</div>`;
+  body.appendChild(box);
+
+  const btn=document.createElement('button');
+  btn.className='treasure-btn';
+  btn.textContent='受け取る';
+  btn.onclick=closeTreasureMenu;
+  body.appendChild(btn);
+
+  menu.classList.remove('hidden');
+}
+
+function closeTreasureMenu(){
+  const menu=document.getElementById('treasureMenu');
+  if(menu) menu.classList.add('hidden');
+}
+
+function treasureDrop(enemyId){
+  const p=state.player;
+
+  // ボス前の特別宝箱
+  if(enemyId==='shisseki'){
+    if(!p.inventory.uniforms.includes('real6')){
+      p.inventory.uniforms.push('real6');
+      equipmentData.uniforms.push({
+        id:'real6',
+        slot:'body',
+        name:'六代目メイド服（本物）',
+        def:24
+      });
+      openTreasureMenu('六代目メイド服（本物） を発見した！ 防御 +24');
+      setMessage('伝説の宝箱を開けた！');
+      return true;
+    }
+  }
+
+  // 通常宝箱（約1/4）
+  const roll=Math.floor(Math.random()*4);
+  if(roll!==0) return false;
+
+  // レア枠
+  const rareRoll=Math.floor(Math.random()*8);
+
+  if(rareRoll===0){
+    if(!p.inventory.weapons.includes('vacuum')){
+      p.inventory.weapons.push('vacuum');
+      openTreasureMenu('異国の掃除機 を発見した！ 攻撃 +9');
+      setMessage('宝箱からレア装備が出た！');
+      return true;
+    }
+  }
+
+  if(rareRoll<=2){
+    p.items.horse += 1;
+    openTreasureMenu('くろれきし を発見した！');
+    setMessage('宝箱から特殊アイテムを入手！');
+    return true;
+  }
+
+  p.items.omurice += 1;
+  openTreasureMenu('オムライス を発見した！');
+  setMessage('宝箱から回復アイテムを入手！');
+  return true;
+}
+
+
 function giveReward(enemyId){
   const p=state.player;
   if(enemyId==='teiji'){
@@ -483,6 +559,11 @@ async function winBattle(){
   if(giveReward(e.id)){
     updateUI();
     await sleep(1300);
+  }
+
+  if(treasureDrop(e.id)){
+    updateUI();
+    await sleep(1200);
   }
 
   if(state.enemyIndex+1<enemies.length){
