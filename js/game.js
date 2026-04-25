@@ -17,7 +17,7 @@ const initialPlayer={
   exp:0,
   nextExp:20,
   guarding:false,
-  items:{omurice:2,tea:1}
+  items:{omurice:2,tea:1,horse:1}
 };
 
 const state={
@@ -56,7 +56,7 @@ function setMessage(text){
 }
 
 function setButtonsDisabled(disabled){
-  document.querySelectorAll('.command-panel button').forEach(btn=>btn.disabled=disabled);
+  document.querySelectorAll('.command-panel button,.sub-menu-body button,.mini-btn').forEach(btn=>btn.disabled=disabled);
 }
 
 function sleep(ms){return new Promise(resolve=>setTimeout(resolve,ms));}
@@ -110,6 +110,7 @@ function resetGame(){
   state.player={...initialPlayer,items:{...initialPlayer.items}};
   state.enemyIndex=0;
   state.busy=false;
+  closeSubMenu();
   setButtonsDisabled(false);
   startBattle(0);
 }
@@ -118,6 +119,7 @@ function startBattle(index){
   state.enemyIndex=index;
   state.enemy=cloneEnemy(enemies[index]);
   state.player.guarding=false;
+  closeSubMenu();
   updateUI();
 
   if(state.enemy.boss){
@@ -126,8 +128,43 @@ function startBattle(index){
   setMessage(state.enemy.intro);
 }
 
+function openSubMenu(kind){
+  if(state.busy) return;
+  const sub=document.getElementById('subMenu');
+  const title=document.getElementById('subMenuTitle');
+  const body=document.getElementById('subMenuBody');
+  body.innerHTML='';
+
+  if(kind==='magic'){
+    title.textContent='おまじない';
+    addSubButton('もえもえぎゅー　MP5 / 敵に18〜22ダメージ',()=>useMagic('moe'));
+    if(state.player.lv>=2) addSubButton('おいしくなーれ　MP8 / HP回復',()=>useMagic('heal'));
+    if(state.player.lv>=3) addSubButton('にしきぬやまー　MP12 / 大ダメージ',()=>useMagic('nishiki'));
+  }else if(kind==='item'){
+    title.textContent='どうぐ';
+    addSubButton(`オムライス　HP30回復　残り${state.player.items.omurice}`,()=>useItem('omurice'));
+    addSubButton(`紅茶　MP10回復　残り${state.player.items.tea}`,()=>useItem('tea'));
+    addSubButton(`くろれきし　大ダメージ　残り${state.player.items.horse}`,()=>useItem('horse'));
+  }
+
+  sub.classList.remove('hidden');
+}
+
+function addSubButton(label,handler){
+  const btn=document.createElement('button');
+  btn.textContent=label;
+  btn.onclick=handler;
+  document.getElementById('subMenuBody').appendChild(btn);
+}
+
+function closeSubMenu(){
+  const sub=document.getElementById('subMenu');
+  if(sub) sub.classList.add('hidden');
+}
+
 async function playerAction(type){
   if(state.busy) return;
+  closeSubMenu();
   state.busy=true;
   setButtonsDisabled(true);
 
@@ -145,56 +182,114 @@ async function playerAction(type){
     if(e.hp<=0){await winBattle();return;}
     await enemyTurn();
 
-  }else if(type==='magic'){
-    if(p.mp<5){
-      setMessage('MPがたりない！');
-      await sleep(650);
-    }else{
-      p.mp-=5;
-      const damage=18+Math.floor(Math.random()*5);
-      e.hp=Math.max(0,e.hp-damage);
-      setMessage('もえもえぎゅー！！');
-      showDamage(damage,'enemy');
-      enemyFlash();
-      updateUI();
-      await sleep(700);
-      if(e.hp<=0){await winBattle();return;}
-      await enemyTurn();
-    }
-
   }else if(type==='guard'){
     p.guarding=true;
     setMessage(`${p.name} は みをまもった！`);
     await sleep(650);
     await enemyTurn();
-
-  }else if(type==='item'){
-    if(p.items.omurice>0 && p.hp<p.maxHp){
-      p.items.omurice--;
-      const heal=Math.min(30,p.maxHp-p.hp);
-      p.hp+=heal;
-      setMessage(`オムライスを食べた！ HPが ${heal} 回復！`);
-      showDamage(-heal,'player');
-      updateUI();
-      await sleep(700);
-      await enemyTurn();
-    }else if(p.items.tea>0 && p.mp<p.maxMp){
-      p.items.tea--;
-      const healMp=Math.min(10,p.maxMp-p.mp);
-      p.mp+=healMp;
-      setMessage(`紅茶を飲んだ！ MPが ${healMp} 回復！`);
-      updateUI();
-      await sleep(700);
-      await enemyTurn();
-    }else{
-      setMessage('使えるどうぐがない！');
-      await sleep(650);
-    }
   }
 
   state.busy=false;
   setButtonsDisabled(false);
   updateUI();
+}
+
+async function useMagic(kind){
+  if(state.busy) return;
+  closeSubMenu();
+  state.busy=true;
+  setButtonsDisabled(true);
+
+  const p=state.player;
+  const e=currentEnemy();
+
+  if(kind==='moe'){
+    if(p.mp<5){ await failAction('MPがたりない！'); return; }
+    p.mp-=5;
+    const damage=18+Math.floor(Math.random()*5);
+    await damageEnemy(`もえもえぎゅー！！`,damage);
+  }else if(kind==='heal'){
+    if(p.mp<8){ await failAction('MPがたりない！'); return; }
+    p.mp-=8;
+    const heal=Math.min(35,p.maxHp-p.hp);
+    p.hp+=heal;
+    setMessage(`おいしくなーれ！ HPが ${heal} 回復！`);
+    showDamage(-heal,'player');
+    updateUI();
+    await sleep(750);
+    await enemyTurn();
+  }else if(kind==='nishiki'){
+    if(p.mp<12){ await failAction('MPがたりない！'); return; }
+    p.mp-=12;
+    const damage=e.boss?45:65;
+    await damageEnemy(`にしきぬやまー！！`,damage);
+  }
+
+  state.busy=false;
+  setButtonsDisabled(false);
+  updateUI();
+}
+
+async function useItem(kind){
+  if(state.busy) return;
+  closeSubMenu();
+  state.busy=true;
+  setButtonsDisabled(true);
+
+  const p=state.player;
+  const e=currentEnemy();
+
+  if(kind==='omurice'){
+    if(p.items.omurice<=0 || p.hp>=p.maxHp){ await failAction('オムライスは使えない！'); return; }
+    p.items.omurice--;
+    const heal=Math.min(30,p.maxHp-p.hp);
+    p.hp+=heal;
+    setMessage(`オムライスを食べた！ HPが ${heal} 回復！`);
+    showDamage(-heal,'player');
+    updateUI();
+    await sleep(750);
+    await enemyTurn();
+
+  }else if(kind==='tea'){
+    if(p.items.tea<=0 || p.mp>=p.maxMp){ await failAction('紅茶は使えない！'); return; }
+    p.items.tea--;
+    const healMp=Math.min(10,p.maxMp-p.mp);
+    p.mp+=healMp;
+    setMessage(`紅茶を飲んだ！ MPが ${healMp} 回復！`);
+    updateUI();
+    await sleep(750);
+    await enemyTurn();
+
+  }else if(kind==='horse'){
+    if(p.items.horse<=0){ await failAction('くろれきしは持っていない！'); return; }
+    p.items.horse--;
+    const damage=e.boss?55:999;
+    await damageEnemy('くろれきしを召喚した！',damage);
+  }
+
+  state.busy=false;
+  setButtonsDisabled(false);
+  updateUI();
+}
+
+async function failAction(message){
+  setMessage(message);
+  await sleep(700);
+  state.busy=false;
+  setButtonsDisabled(false);
+  updateUI();
+}
+
+async function damageEnemy(message,damage){
+  const e=currentEnemy();
+  e.hp=Math.max(0,e.hp-damage);
+  setMessage(`${message} ${e.name} に ${damage} ダメージ！`);
+  showDamage(damage,'enemy');
+  enemyFlash();
+  updateUI();
+  await sleep(750);
+  if(e.hp<=0){ await winBattle(); return; }
+  await enemyTurn();
 }
 
 async function enemyTurn(){
@@ -231,7 +326,7 @@ async function winBattle(){
   updateUI();
   await sleep(1000);
 
-  if(p.exp>=p.nextExp){
+  while(p.exp>=p.nextExp){
     p.exp-=p.nextExp;
     p.lv++;
     p.nextExp=Math.floor(p.nextExp*1.5);
