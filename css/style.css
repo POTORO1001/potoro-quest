@@ -59,7 +59,7 @@ padding:12px;
 gap:12px;
 background:
 linear-gradient(180deg,rgba(15,23,42,.92),rgba(17,24,39,.98)),
-url("../img/backgrounds/battle_room.png");
+url("../img/backgrounds/battle_room.png?v=13");
 background-size:cover;
 background-position:center;
 }
@@ -386,7 +386,7 @@ opacity:.8;
 body.boss-battle .battle-screen{
 background:
 linear-gradient(180deg,rgba(20,10,30,.86),rgba(5,5,12,.98)),
-url("../img/backgrounds/battle_boss_room.png");
+url("../img/backgrounds/battle_boss_room.png?v=13");
 background-size:cover;
 background-position:center;
 }
@@ -672,4 +672,57 @@ z-index:1;
 .enemy-area .image-error + *{
 display:none;
 }
+}
+
+
+/* ===== v13 公開前最終確認 ===== */
+:root{
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.battle-screen{
+  padding-bottom: calc(12px + var(--safe-bottom));
+}
+
+.utility-grid{
+  grid-template-columns: repeat(5, 1fr);
+}
+
+.test-only{
+  background:#581c87;
+}
+
+@media (max-width:420px){
+  .utility-grid{
+    grid-template-columns:1fr 1fr 1fr;
+  }
+}
+
+@media (max-width:340px){
+  .title-card h1{
+    font-size:27px;
+  }
+  .bottom-ui{
+    grid-template-columns:1fr;
+  }
+  .enemy-area{
+    min-height:170px;
+  }
+  .enemy-area img{
+    max-width:165px;
+    max-height:165px;
+  }
+}
+
+.start-btn:active,
+.sub-btn:active,
+.command-panel button:active,
+.sub-menu-body button:active{
+  transform:scale(.97);
+}
+
+.final-check-note{
+  margin-top:8px;
+  font-size:11px;
+  color:#bfdbfe;
 }
