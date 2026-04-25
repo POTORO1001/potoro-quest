@@ -372,3 +372,10 @@ font-size:13px;
 70%{transform:scale(1.05) rotate(1deg);opacity:1;}
 100%{transform:scale(1) rotate(0);}
 }
+
+
+/* ===== v9 BGM・SE ===== */
+.sound-off{
+filter:grayscale(.6);
+opacity:.8;
+}
