@@ -59,7 +59,7 @@ padding:12px;
 gap:12px;
 background:
 linear-gradient(180deg,rgba(15,23,42,.92),rgba(17,24,39,.98)),
-url("../img/backgrounds/battle_room.png?v=13");
+url("../img/backgrounds/battle_room.png?v=14");
 background-size:cover;
 background-position:center;
 }
@@ -386,7 +386,7 @@ opacity:.8;
 body.boss-battle .battle-screen{
 background:
 linear-gradient(180deg,rgba(20,10,30,.86),rgba(5,5,12,.98)),
-url("../img/backgrounds/battle_boss_room.png?v=13");
+url("../img/backgrounds/battle_boss_room.png?v=14");
 background-size:cover;
 background-position:center;
 }
@@ -685,11 +685,7 @@ display:none;
 }
 
 .utility-grid{
-  grid-template-columns: repeat(5, 1fr);
-}
-
-.test-only{
-  background:#581c87;
+  grid-template-columns: repeat(4, 1fr);
 }
 
 @media (max-width:420px){
@@ -725,4 +721,23 @@ display:none;
   margin-top:8px;
   font-size:11px;
   color:#bfdbfe;
+}
+
+
+/* ===== v14 正式公開版 ===== */
+.release-note{
+  margin-top:6px;
+  font-size:12px;
+  color:#fef3c7;
+  opacity:.95;
+}
+
+.utility-grid{
+  grid-template-columns:repeat(4,1fr);
+}
+
+@media (max-width:420px){
+  .utility-grid{
+    grid-template-columns:1fr 1fr;
+  }
 }
