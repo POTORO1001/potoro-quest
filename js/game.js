@@ -2,10 +2,10 @@ const MAZE_W=17;
 const MAZE_H=17;
 
 const enemies=[
-  {id:'teiji',name:'定時のご主人様',hp:38,maxHp:38,atk:5,exp:14,image:'img/enemies/teiji.png?v=17',intro:'定時のご主人様が あらわれた！'},
-  {id:'zangyo',name:'残業のご主人様',hp:66,maxHp:66,atk:8,exp:22,image:'img/enemies/zangyo.png?v=17',intro:'残業のご主人様が つかれた顔で あらわれた！'},
-  {id:'shisseki',name:'叱責のご主人様',hp:92,maxHp:92,atk:11,exp:34,image:'img/enemies/shisseki.png?v=17',intro:'叱責のご主人様が ふるえながら あらわれた！'},
-  {id:'boss',name:'ご主人王',hp:155,maxHp:155,atk:15,exp:100,image:'img/enemies/boss.png?v=17',boss:true,intro:'ご主人王が あらわれた！！'}
+  {id:'teiji',name:'定時のご主人様',hp:38,maxHp:38,atk:5,exp:14,image:'img/enemies/teiji.png?v=18',intro:'定時のご主人様が あらわれた！'},
+  {id:'zangyo',name:'残業のご主人様',hp:66,maxHp:66,atk:8,exp:22,image:'img/enemies/zangyo.png?v=18',intro:'残業のご主人様が つかれた顔で あらわれた！'},
+  {id:'shisseki',name:'叱責のご主人様',hp:92,maxHp:92,atk:11,exp:34,image:'img/enemies/shisseki.png?v=18',intro:'叱責のご主人様が ふるえながら あらわれた！'},
+  {id:'boss',name:'ご主人王',hp:155,maxHp:155,atk:15,exp:100,image:'img/enemies/boss.png?v=18',boss:true,intro:'ご主人王が あらわれた！！'}
 ];
 
 const equipmentData={
@@ -119,12 +119,12 @@ function startBgm(kind){
 
 /* ===== Assets ===== */
 const ASSETS_TO_PRELOAD=[
-  'img/enemies/teiji.png?v=17',
-  'img/enemies/zangyo.png?v=17',
-  'img/enemies/shisseki.png?v=17',
-  'img/enemies/boss.png?v=17',
-  'img/backgrounds/battle_room.png?v=17',
-  'img/backgrounds/battle_boss_room.png?v=17'
+  'img/enemies/teiji.png?v=18',
+  'img/enemies/zangyo.png?v=18',
+  'img/enemies/shisseki.png?v=18',
+  'img/enemies/boss.png?v=18',
+  'img/backgrounds/battle_room.png?v=18',
+  'img/backgrounds/battle_boss_room.png?v=18'
 ];
 function preloadImage(src){return new Promise(resolve=>{const img=new Image();img.onload=()=>resolve({src,ok:true});img.onerror=()=>resolve({src,ok:false});img.src=src;});}
 async function preloadAssets(){
@@ -647,6 +647,13 @@ function restartFromEnding(){
   state.busy=false;state.started=false;state.inBattle=false;stopBgm();
 }
 
+
+function getOshiName(){
+  const input=document.getElementById('oshiNameInput');
+  const raw=input ? input.value.trim() : '';
+  return raw ? raw.slice(0,12) : 'まろ';
+}
+
 /* ===== Start / Reset ===== */
 function startGame(){
   initAudio();
@@ -655,6 +662,7 @@ function startGame(){
   document.getElementById('battleScreen').classList.add('hidden');
   document.getElementById('mapScreen').classList.remove('hidden');
   state.player=makePlayer();
+  state.player.name=getOshiName();
   state.busy=false;state.started=true;state.inBattle=false;
   setButtonsDisabled(false);
   makeMaze();
@@ -692,3 +700,19 @@ document.addEventListener('keydown',e=>{
   if(e.key==='ArrowLeft'){e.preventDefault();movePlayer(-1,0);}
   if(e.key==='ArrowRight'){e.preventDefault();movePlayer(1,0);}
 });
+
+
+/* ダブルタップ拡大抑制 */
+let lastTouchEnd=0;
+document.addEventListener('touchend',function(e){
+  const now=Date.now();
+  if(now-lastTouchEnd<=300){
+    e.preventDefault();
+  }
+  lastTouchEnd=now;
+},{passive:false});
+
+document.addEventListener('gesturestart',function(e){
+  e.preventDefault();
+});
+
