@@ -1,8 +1,8 @@
 const enemies=[
-  {id:'teiji',name:'定時のご主人様',hp:38,maxHp:38,atk:5,exp:14,image:'img/enemies/teiji.png?v=14',intro:'定時のご主人様が あらわれた！'},
-  {id:'zangyo',name:'残業のご主人様',hp:66,maxHp:66,atk:8,exp:22,image:'img/enemies/zangyo.png?v=14',intro:'残業のご主人様が つかれた顔で あらわれた！'},
-  {id:'shisseki',name:'叱責のご主人様',hp:92,maxHp:92,atk:11,exp:34,image:'img/enemies/shisseki.png?v=14',intro:'叱責のご主人様が ふるえながら あらわれた！'},
-  {id:'boss',name:'ご主人王',hp:155,maxHp:155,atk:15,exp:100,image:'img/enemies/boss.png?v=14',boss:true,intro:'ご主人王が あらわれた！！'}
+  {id:'teiji',name:'定時のご主人様',hp:38,maxHp:38,atk:5,exp:14,image:'img/enemies/teiji.png?v=15',intro:'定時のご主人様が あらわれた！'},
+  {id:'zangyo',name:'残業のご主人様',hp:66,maxHp:66,atk:8,exp:22,image:'img/enemies/zangyo.png?v=15',intro:'残業のご主人様が つかれた顔で あらわれた！'},
+  {id:'shisseki',name:'叱責のご主人様',hp:92,maxHp:92,atk:11,exp:34,image:'img/enemies/shisseki.png?v=15',intro:'叱責のご主人様が ふるえながら あらわれた！'},
+  {id:'boss',name:'ご主人王',hp:155,maxHp:155,atk:15,exp:100,image:'img/enemies/boss.png?v=15',boss:true,intro:'ご主人王が あらわれた！！'}
 ];
 
 const equipmentData={
@@ -786,6 +786,17 @@ async function winBattle(){
 }
 
 
+
+function formatChekiIssuedAt(date){
+  const y=date.getFullYear();
+  const m=String(date.getMonth()+1).padStart(2,'0');
+  const d=String(date.getDate()).padStart(2,'0');
+  const hh=String(date.getHours()).padStart(2,'0');
+  const mm=String(date.getMinutes()).padStart(2,'0');
+  const ss=String(date.getSeconds()).padStart(2,'0');
+  return `${y}/${m}/${d} ${hh}:${mm}:${ss}`;
+}
+
 async function showEnding(){
   stopBgm();
   setButtonsDisabled(true);
@@ -804,6 +815,8 @@ async function showEnding(){
 
   if(drop){
     document.getElementById('endingMessage').textContent='ご主人王がチェキ券を落とした！';
+    const issuedAt=document.getElementById('chekiIssuedAt');
+    if(issuedAt) issuedAt.textContent=formatChekiIssuedAt(new Date());
     cheki.classList.remove('hidden');
     seCheki();
   }else{
@@ -816,6 +829,8 @@ function restartFromEnding(){
   document.getElementById('battleScreen').classList.add('hidden');
   document.getElementById('titleScreen').classList.remove('hidden');
   document.getElementById('chekiTicket').classList.add('hidden');
+  const issuedAt=document.getElementById('chekiIssuedAt');
+  if(issuedAt) issuedAt.textContent='--:--';
   state.busy=false;
   state.started=false;
   stopBgm();
@@ -825,12 +840,12 @@ function restartFromEnding(){
 
 
 const ASSETS_TO_PRELOAD=[
-  'img/enemies/teiji.png?v=14',
-  'img/enemies/zangyo.png?v=14',
-  'img/enemies/shisseki.png?v=14',
-  'img/enemies/boss.png?v=14',
-  'img/backgrounds/battle_room.png?v=14',
-  'img/backgrounds/battle_boss_room.png?v=14'
+  'img/enemies/teiji.png?v=15',
+  'img/enemies/zangyo.png?v=15',
+  'img/enemies/shisseki.png?v=15',
+  'img/enemies/boss.png?v=15',
+  'img/backgrounds/battle_room.png?v=15',
+  'img/backgrounds/battle_boss_room.png?v=15'
 ];
 
 function preloadImage(src){
