@@ -63,3 +63,71 @@ border-radius:10px;
 background:#2563eb;
 color:white;
 }
+
+
+/* ===== 戦闘演出強化 ===== */
+
+.enemy-area{
+position:relative;
+overflow:hidden;
+}
+
+.damage-text{
+position:absolute;
+top:30px;
+left:50%;
+transform:translateX(-50%) translateY(20px);
+font-size:28px;
+font-weight:bold;
+color:#ffffff;
+text-shadow:0 0 8px rgba(255,0,0,0.8);
+opacity:0;
+pointer-events:none;
+}
+
+.damage-text.show{
+animation:damagePop 0.8s ease;
+}
+
+@keyframes damagePop{
+0%{
+opacity:0;
+transform:translateX(-50%) translateY(20px) scale(0.8);
+}
+20%{
+opacity:1;
+transform:translateX(-50%) translateY(0px) scale(1.2);
+}
+100%{
+opacity:0;
+transform:translateX(-50%) translateY(-40px) scale(1);
+}
+}
+
+#enemyImage.hit{
+animation:enemyHit 0.35s ease;
+}
+
+@keyframes enemyHit{
+0%{transform:translateX(0);}
+20%{transform:translateX(-8px);}
+40%{transform:translateX(8px);}
+60%{transform:translateX(-6px);}
+80%{transform:translateX(6px);}
+100%{transform:translateX(0);}
+}
+
+.enemy-panel.boss-enter{
+animation:bossEnter 0.8s ease;
+}
+
+@keyframes bossEnter{
+0%{
+transform:scale(0.92);
+opacity:0.4;
+}
+100%{
+transform:scale(1);
+opacity:1;
+}
+}
