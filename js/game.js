@@ -1,8 +1,8 @@
 const enemies=[
-  {id:'teiji',name:'定時のご主人様',hp:42,maxHp:42,atk:5,exp:12,image:'img/enemies/teiji.png',intro:'定時のご主人様が あらわれた！'},
-  {id:'zangyo',name:'残業のご主人様',hp:70,maxHp:70,atk:8,exp:20,image:'img/enemies/zangyo.png',intro:'残業のご主人様が つかれた顔で あらわれた！'},
-  {id:'shisseki',name:'叱責のご主人様',hp:95,maxHp:95,atk:11,exp:32,image:'img/enemies/shisseki.png',intro:'叱責のご主人様が ふるえながら あらわれた！'},
-  {id:'boss',name:'ご主人王',hp:160,maxHp:160,atk:16,exp:100,image:'img/enemies/boss.png',boss:true,intro:'ご主人王が あらわれた！！'}
+  {id:'teiji',name:'定時のご主人様',hp:38,maxHp:38,atk:5,exp:14,image:'img/enemies/teiji.png',intro:'定時のご主人様が あらわれた！'},
+  {id:'zangyo',name:'残業のご主人様',hp:66,maxHp:66,atk:8,exp:22,image:'img/enemies/zangyo.png',intro:'残業のご主人様が つかれた顔で あらわれた！'},
+  {id:'shisseki',name:'叱責のご主人様',hp:92,maxHp:92,atk:11,exp:34,image:'img/enemies/shisseki.png',intro:'叱責のご主人様が ふるえながら あらわれた！'},
+  {id:'boss',name:'ご主人王',hp:155,maxHp:155,atk:15,exp:100,image:'img/enemies/boss.png',boss:true,intro:'ご主人王が あらわれた！！'}
 ];
 
 const equipmentData={
@@ -22,12 +22,12 @@ const equipmentData={
 const initialPlayer={
   name:'まろ',
   lv:1,
-  hp:24,
-  maxHp:24,
-  mp:8,
-  maxMp:8,
-  baseAtk:8,
-  baseDef:2,
+  hp:28,
+  maxHp:28,
+  mp:10,
+  maxMp:10,
+  baseAtk:9,
+  baseDef:3,
   exp:0,
   nextExp:20,
   guarding:false,
@@ -820,6 +820,18 @@ function restartFromEnding(){
 }
 
 
+
+function openGuide(){
+  const modal=document.getElementById('guideModal');
+  if(modal) modal.classList.remove('hidden');
+}
+
+function closeGuide(){
+  const modal=document.getElementById('guideModal');
+  if(modal) modal.classList.add('hidden');
+}
+
+
 document.getElementById('startBtn').addEventListener('click',startGame);
 document.getElementById('restartBtn').addEventListener('click',resetGame);
 document.getElementById('equipBtn').addEventListener('click',openEquipMenu);
@@ -827,3 +839,9 @@ document.getElementById('equipBtn').addEventListener('click',openEquipMenu);
 document.getElementById('endingRestartBtn').addEventListener('click',restartFromEnding);
 
 document.getElementById('soundBtn').addEventListener('click',toggleSound);
+
+document.getElementById('guideBtn').addEventListener('click',openGuide);
+document.getElementById('guideCloseBtn').addEventListener('click',closeGuide);
+document.getElementById('guideModal').addEventListener('click',function(e){
+  if(e.target===this) closeGuide();
+});
