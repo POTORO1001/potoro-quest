@@ -39,12 +39,20 @@
 <p id="playerExp">EXP 0 / 20</p>
 </div>
 
-<div class="command-panel">
+<div class="command-panel" id="commandPanel">
 <button onclick="playerAction('attack')">たたかう</button>
-<button onclick="playerAction('magic')">おまじない</button>
+<button onclick="openSubMenu('magic')">おまじない</button>
 <button onclick="playerAction('guard')">ぼうぎょ</button>
-<button onclick="playerAction('item')">どうぐ</button>
+<button onclick="openSubMenu('item')">どうぐ</button>
 </div>
+</section>
+
+<section id="subMenu" class="sub-menu hidden">
+  <div class="sub-menu-head">
+    <strong id="subMenuTitle">メニュー</strong>
+    <button onclick="closeSubMenu()" class="mini-btn">戻る</button>
+  </div>
+  <div id="subMenuBody" class="sub-menu-body"></div>
 </section>
 
 <section class="utility-panel">
