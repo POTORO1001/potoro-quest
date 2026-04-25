@@ -301,3 +301,74 @@ border:2px solid #facc15;
 .sub-menu-body .treasure-btn{
 background:#92400e;
 }
+
+
+/* ===== v8 エンディング・チェキ券 ===== */
+.ending-screen{
+min-height:100vh;
+display:flex;
+align-items:center;
+justify-content:center;
+padding:20px;
+background:
+radial-gradient(circle at top,#7c2d12 0,#111827 54%,#020617 100%);
+}
+
+.ending-card{
+width:100%;
+max-width:430px;
+padding:24px 18px;
+background:rgba(11,16,32,.96);
+border:2px solid #fef3c7;
+border-radius:18px;
+text-align:center;
+box-shadow:0 24px 70px rgba(0,0,0,.5);
+}
+
+.ending-card h1{
+font-size:25px;
+line-height:1.35;
+margin:0 0 14px;
+color:#fde68a;
+}
+
+.ending-card p{
+line-height:1.7;
+color:#f8fafc;
+}
+
+.cheki-ticket{
+margin:18px 0;
+padding:18px 14px;
+border:3px double #facc15;
+border-radius:16px;
+background:
+linear-gradient(135deg,rgba(255,255,255,.96),rgba(255,245,214,.96));
+color:#78350f;
+box-shadow:0 0 24px rgba(250,204,21,.35);
+animation:ticketPop .8s ease;
+}
+
+.cheki-ticket .ticket-label{
+font-size:12px;
+font-weight:900;
+letter-spacing:.12em;
+color:#be123c;
+}
+
+.cheki-ticket h2{
+font-size:34px;
+margin:8px 0;
+}
+
+.cheki-ticket p{
+color:#78350f;
+font-weight:700;
+font-size:13px;
+}
+
+@keyframes ticketPop{
+0%{transform:scale(.8) rotate(-2deg);opacity:0;}
+70%{transform:scale(1.05) rotate(1deg);opacity:1;}
+100%{transform:scale(1) rotate(0);}
+}
