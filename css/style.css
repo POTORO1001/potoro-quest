@@ -132,14 +132,14 @@ padding:12px;
 padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));
 background:
 linear-gradient(180deg,rgba(15,23,42,.92),rgba(17,24,39,.98)),
-url("../img/backgrounds/battle_room.png?v=18");
+url("../img/backgrounds/battle_room.png?v=19");
 background-size:cover;
 background-position:center;
 }
 body.boss-battle .battle-screen{
 background:
 linear-gradient(180deg,rgba(20,10,30,.86),rgba(5,5,12,.98)),
-url("../img/backgrounds/battle_boss_room.png?v=18");
+url("../img/backgrounds/battle_boss_room.png?v=19");
 background-size:cover;
 background-position:center;
 }
