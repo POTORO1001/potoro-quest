@@ -813,13 +813,46 @@ async function showEnding(){
 
 function restartFromEnding(){
   document.getElementById('endingScreen').classList.add('hidden');
+  document.getElementById('battleScreen').classList.add('hidden');
   document.getElementById('titleScreen').classList.remove('hidden');
   document.getElementById('chekiTicket').classList.add('hidden');
   state.busy=false;
   state.started=false;
+  stopBgm();
 }
 
 
+
+
+const ASSETS_TO_PRELOAD=[
+  'img/enemies/teiji.png',
+  'img/enemies/zangyo.png',
+  'img/enemies/shisseki.png',
+  'img/enemies/boss.png',
+  'img/backgrounds/battle_room.png',
+  'img/backgrounds/battle_boss_room.png'
+];
+
+function preloadImage(src){
+  return new Promise(resolve=>{
+    const img=new Image();
+    img.onload=()=>resolve({src,ok:true});
+    img.onerror=()=>resolve({src,ok:false});
+    img.src=src;
+  });
+}
+
+async function preloadAssets(){
+  const loading=document.getElementById('loadingScreen');
+  await Promise.all(ASSETS_TO_PRELOAD.map(preloadImage));
+  if(loading){
+    loading.style.opacity='0';
+    loading.style.transition='opacity .35s ease';
+    setTimeout(()=>loading.remove(),380);
+  }
+}
+
+window.addEventListener('load',preloadAssets);
 
 function openGuide(){
   const modal=document.getElementById('guideModal');
