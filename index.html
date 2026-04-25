@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>ポ・トロクエスト（スマホ版）</title>
 <link rel="stylesheet" href="css/style.css">
 </head>
@@ -19,8 +19,10 @@
   <div class="title-card">
     <h1>ポ・トロクエスト</h1>
     <p>ランダムに変化するお屋敷を探索し、ご主人様たちをいやして、ポ・トロに平和を取り戻そう！</p>
+    <label class="name-label" for="oshiNameInput">推しの名前を入力してください</label>
+    <input id="oshiNameInput" class="name-input" type="text" maxlength="12" placeholder="例：まろ">
     <button id="startBtn" class="start-btn">冒険をはじめる</button>
-    <div class="version-label">スマホ版 v17 / v15 + Random Maze</div>
+    <div class="version-label">スマホ版 v18 / Name + Zoom Fix</div>
     <div class="release-note">スマートフォン推奨</div>
   </div>
 </section>
@@ -54,7 +56,7 @@
 <div class="hp-bar"><div id="enemyHpFill" class="hp-fill"></div></div>
 </div>
 <div class="enemy-area">
-<img id="enemyImage" src="img/enemies/teiji.png?v=17" alt="enemy" onerror="this.classList.add('image-error');">
+<img id="enemyImage" src="img/enemies/teiji.png?v=18" alt="enemy" onerror="this.classList.add('image-error');">
 </div>
 </section>
 
