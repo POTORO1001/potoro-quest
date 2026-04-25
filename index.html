@@ -7,7 +7,16 @@
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<main class="battle-screen">
+
+<section id="titleScreen" class="title-screen">
+  <div class="title-card">
+    <h1>ポ・トロクエスト</h1>
+    <p>ご主人様たちをいやして、ポ・トロに平和を取り戻そう！</p>
+    <button id="startBtn" class="start-btn">冒険をはじめる</button>
+  </div>
+</section>
+
+<main id="battleScreen" class="battle-screen hidden">
 <section class="enemy-panel">
 <div class="enemy-header">
 <h1 id="enemyName">定時のご主人様</h1>
@@ -24,9 +33,10 @@
 
 <section class="bottom-ui">
 <div class="status-panel">
-<h2>まろ</h2>
+<h2>まろ Lv.1</h2>
 <p id="playerHp">HP 24 / 24</p>
 <p id="playerMp">MP 8 / 8</p>
+<p id="playerExp">EXP 0 / 20</p>
 </div>
 
 <div class="command-panel">
@@ -35,6 +45,10 @@
 <button onclick="playerAction('guard')">ぼうぎょ</button>
 <button onclick="playerAction('item')">どうぐ</button>
 </div>
+</section>
+
+<section class="utility-panel">
+<button id="restartBtn" class="sub-btn">最初から</button>
 </section>
 </main>
 
