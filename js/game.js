@@ -5,6 +5,20 @@ const enemies=[
   {id:'boss',name:'ご主人王',hp:160,maxHp:160,atk:16,exp:100,image:'img/enemies/boss.png',boss:true,intro:'ご主人王が あらわれた！！'}
 ];
 
+const equipmentData={
+  weapons:[
+    {id:'duster',name:'フェザーダスター',atk:2},
+    {id:'broom',name:'マジカルホーキ',atk:5},
+    {id:'vacuum',name:'異国の掃除機',atk:9}
+  ],
+  uniforms:[
+    {id:'stocking',slot:'legs',name:'黒のストッキング',def:2},
+    {id:'apron',slot:'body',name:'純白エプロン',def:4},
+    {id:'headband',slot:'head',name:'メイドカチューシャ',def:3},
+    {id:'replica6',slot:'body',name:'六代目メイド服(レプリカ)',def:12}
+  ]
+};
+
 const initialPlayer={
   name:'まろ',
   lv:1,
@@ -12,24 +26,57 @@ const initialPlayer={
   maxHp:24,
   mp:8,
   maxMp:8,
-  atk:8,
-  def:2,
+  baseAtk:8,
+  baseDef:2,
   exp:0,
   nextExp:20,
   guarding:false,
-  items:{omurice:2,tea:1,horse:1}
+  items:{omurice:2,tea:1,horse:1},
+  inventory:{
+    weapons:['duster'],
+    uniforms:['stocking']
+  },
+  equip:{
+    weapon:'duster',
+    head:null,
+    body:null,
+    legs:'stocking'
+  }
 };
 
 const state={
-  player:{...initialPlayer,items:{...initialPlayer.items}},
+  player:makePlayer(),
   enemyIndex:0,
   enemy:null,
   busy:false,
   started:false
 };
 
+function makePlayer(){
+  return JSON.parse(JSON.stringify(initialPlayer));
+}
+
 function cloneEnemy(base){return JSON.parse(JSON.stringify(base));}
 function currentEnemy(){return state.enemy;}
+
+function findWeapon(id){return equipmentData.weapons.find(x=>x.id===id)||null;}
+function findUniform(id){return equipmentData.uniforms.find(x=>x.id===id)||null;}
+
+function totalAtk(){
+  const p=state.player;
+  const w=findWeapon(p.equip.weapon);
+  return p.baseAtk+(w?w.atk:0);
+}
+
+function totalDef(){
+  const p=state.player;
+  let def=p.baseDef;
+  ['head','body','legs'].forEach(slot=>{
+    const u=findUniform(p.equip[slot]);
+    if(u) def+=u.def;
+  });
+  return def;
+}
 
 function updateUI(){
   const e=currentEnemy();
@@ -46,17 +93,17 @@ function updateUI(){
   document.getElementById('enemyHpFill').style.width=`${hpPercent}%`;
 
   const status=document.querySelector('.status-panel h2');
-  if(status) status.textContent=`${p.name} Lv.${p.lv}`;
+  if(status) status.textContent=`${p.name} Lv.${p.lv}  攻${totalAtk()} 防${totalDef()}`;
 
   document.body.classList.toggle('boss-battle',!!e.boss);
 }
 
-function setMessage(text){
-  document.getElementById('messageText').textContent=text;
-}
+function setMessage(text){document.getElementById('messageText').textContent=text;}
 
 function setButtonsDisabled(disabled){
-  document.querySelectorAll('.command-panel button,.sub-menu-body button,.mini-btn').forEach(btn=>btn.disabled=disabled);
+  document.querySelectorAll('.command-panel button,.sub-menu-body button,.mini-btn,.sub-btn').forEach(btn=>{
+    if(btn.id!=='restartBtn') btn.disabled=disabled;
+  });
 }
 
 function sleep(ms){return new Promise(resolve=>setTimeout(resolve,ms));}
@@ -107,10 +154,11 @@ function startGame(){
 }
 
 function resetGame(){
-  state.player={...initialPlayer,items:{...initialPlayer.items}};
+  state.player=makePlayer();
   state.enemyIndex=0;
   state.busy=false;
   closeSubMenu();
+  closeEquipMenu();
   setButtonsDisabled(false);
   startBattle(0);
 }
@@ -120,16 +168,16 @@ function startBattle(index){
   state.enemy=cloneEnemy(enemies[index]);
   state.player.guarding=false;
   closeSubMenu();
+  closeEquipMenu();
   updateUI();
 
-  if(state.enemy.boss){
-    bossEntrance();
-  }
+  if(state.enemy.boss) bossEntrance();
   setMessage(state.enemy.intro);
 }
 
 function openSubMenu(kind){
   if(state.busy) return;
+  closeEquipMenu();
   const sub=document.getElementById('subMenu');
   const title=document.getElementById('subMenuTitle');
   const body=document.getElementById('subMenuBody');
@@ -162,9 +210,77 @@ function closeSubMenu(){
   if(sub) sub.classList.add('hidden');
 }
 
+function openEquipMenu(){
+  if(state.busy) return;
+  closeSubMenu();
+  const menu=document.getElementById('equipMenu');
+  const body=document.getElementById('equipMenuBody');
+  const p=state.player;
+  body.innerHTML='';
+
+  const current=document.createElement('div');
+  current.className='equip-current';
+  current.innerHTML=
+    `現在の装備<br>`+
+    `武器：${findWeapon(p.equip.weapon)?.name||'なし'}<br>`+
+    `頭：${findUniform(p.equip.head)?.name||'なし'}<br>`+
+    `胴：${findUniform(p.equip.body)?.name||'なし'}<br>`+
+    `脚：${findUniform(p.equip.legs)?.name||'なし'}<br>`+
+    `<span class="equip-stat">攻撃 ${totalAtk()} / 防御 ${totalDef()}</span>`;
+  body.appendChild(current);
+
+  p.inventory.weapons.forEach(id=>{
+    const w=findWeapon(id);
+    if(w) addEquipButton(`武器：${w.name}　攻+${w.atk}`,()=>equipWeapon(w.id));
+  });
+
+  p.inventory.uniforms.forEach(id=>{
+    const u=findUniform(id);
+    if(u) addEquipButton(`${slotName(u.slot)}：${u.name}　防+${u.def}`,()=>equipUniform(u.id));
+  });
+
+  menu.classList.remove('hidden');
+}
+
+function addEquipButton(label,handler){
+  const btn=document.createElement('button');
+  btn.textContent=label;
+  btn.onclick=handler;
+  document.getElementById('equipMenuBody').appendChild(btn);
+}
+
+function closeEquipMenu(){
+  const menu=document.getElementById('equipMenu');
+  if(menu) menu.classList.add('hidden');
+}
+
+function slotName(slot){
+  if(slot==='head') return '頭';
+  if(slot==='body') return '胴';
+  if(slot==='legs') return '脚';
+  return slot;
+}
+
+function equipWeapon(id){
+  state.player.equip.weapon=id;
+  setMessage(`${findWeapon(id).name} を装備した！`);
+  openEquipMenu();
+  updateUI();
+}
+
+function equipUniform(id){
+  const item=findUniform(id);
+  if(!item) return;
+  state.player.equip[item.slot]=id;
+  setMessage(`${item.name} を装備した！`);
+  openEquipMenu();
+  updateUI();
+}
+
 async function playerAction(type){
   if(state.busy) return;
   closeSubMenu();
+  closeEquipMenu();
   state.busy=true;
   setButtonsDisabled(true);
 
@@ -172,7 +288,7 @@ async function playerAction(type){
   const e=currentEnemy();
 
   if(type==='attack'){
-    const damage=Math.max(1,p.atk+Math.floor(Math.random()*4));
+    const damage=Math.max(1,totalAtk()+Math.floor(Math.random()*4));
     e.hp=Math.max(0,e.hp-damage);
     setMessage(`${e.name} に ${damage} ダメージ！`);
     showDamage(damage,'enemy');
@@ -197,6 +313,7 @@ async function playerAction(type){
 async function useMagic(kind){
   if(state.busy) return;
   closeSubMenu();
+  closeEquipMenu();
   state.busy=true;
   setButtonsDisabled(true);
 
@@ -233,6 +350,7 @@ async function useMagic(kind){
 async function useItem(kind){
   if(state.busy) return;
   closeSubMenu();
+  closeEquipMenu();
   state.busy=true;
   setButtonsDisabled(true);
 
@@ -296,7 +414,7 @@ async function enemyTurn(){
   const p=state.player;
   const e=currentEnemy();
 
-  let damage=Math.max(1,e.atk-p.def+Math.floor(Math.random()*3));
+  let damage=Math.max(1,e.atk-totalDef()+Math.floor(Math.random()*3));
   if(p.guarding){
     damage=Math.max(1,Math.floor(damage/2));
     p.guarding=false;
@@ -316,6 +434,27 @@ async function enemyTurn(){
   }
 }
 
+function giveReward(enemyId){
+  const p=state.player;
+  if(enemyId==='teiji'){
+    if(!p.inventory.weapons.includes('broom')) p.inventory.weapons.push('broom');
+    setMessage('マジカルホーキを手に入れた！');
+    return true;
+  }
+  if(enemyId==='zangyo'){
+    if(!p.inventory.uniforms.includes('apron')) p.inventory.uniforms.push('apron');
+    setMessage('純白エプロンを手に入れた！');
+    return true;
+  }
+  if(enemyId==='shisseki'){
+    if(!p.inventory.uniforms.includes('headband')) p.inventory.uniforms.push('headband');
+    if(!p.inventory.uniforms.includes('replica6')) p.inventory.uniforms.push('replica6');
+    setMessage('メイドカチューシャと六代目メイド服(レプリカ)を手に入れた！');
+    return true;
+  }
+  return false;
+}
+
 async function winBattle(){
   const p=state.player;
   const e=currentEnemy();
@@ -332,13 +471,18 @@ async function winBattle(){
     p.nextExp=Math.floor(p.nextExp*1.5);
     p.maxHp+=6;
     p.maxMp+=3;
-    p.atk+=2;
-    p.def+=1;
+    p.baseAtk+=2;
+    p.baseDef+=1;
     p.hp=p.maxHp;
     p.mp=p.maxMp;
     setMessage(`${p.name} は レベル ${p.lv} に あがった！`);
     updateUI();
     await sleep(1200);
+  }
+
+  if(giveReward(e.id)){
+    updateUI();
+    await sleep(1300);
   }
 
   if(state.enemyIndex+1<enemies.length){
@@ -354,3 +498,4 @@ async function winBattle(){
 
 document.getElementById('startBtn').addEventListener('click',startGame);
 document.getElementById('restartBtn').addEventListener('click',resetGame);
+document.getElementById('equipBtn').addEventListener('click',openEquipMenu);
