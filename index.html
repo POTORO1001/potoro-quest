@@ -8,11 +8,19 @@
 </head>
 <body>
 
+<section id="loadingScreen" class="loading-screen">
+  <div class="loading-card">
+    <div class="loading-logo">PO・TORO QUEST</div>
+    <div class="loading-text">読み込み中...</div>
+  </div>
+</section>
+
 <section id="titleScreen" class="title-screen">
   <div class="title-card">
     <h1>ポ・トロクエスト</h1>
     <p>ご主人様たちをいやして、ポ・トロに平和を取り戻そう！</p>
     <button id="startBtn" class="start-btn">冒険をはじめる</button>
+    <div class="version-label">スマホ版 v12 / Release Candidate</div>
   </div>
 </section>
 
@@ -23,7 +31,7 @@
 <div class="hp-bar"><div id="enemyHpFill" class="hp-fill"></div></div>
 </div>
 <div class="enemy-area">
-<img id="enemyImage" src="img/enemies/teiji.png" alt="enemy">
+<img id="enemyImage" src="img/enemies/teiji.png" alt="enemy" onerror="this.classList.add('image-error');">
 </div>
 </section>
 
