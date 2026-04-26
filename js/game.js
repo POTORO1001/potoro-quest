@@ -8,10 +8,10 @@ const enemies=[
      叱責 → Lv8前後
      ボス → Lv10前後
   */
-  {id:'teiji',name:'定時のご主人様',hp:72,maxHp:72,atk:8,exp:28,image:'img/enemies/teiji.png?v=21',intro:'定時のご主人様が あらわれた！'},
-  {id:'zangyo',name:'残業のご主人様',hp:128,maxHp:128,atk:13,exp:48,image:'img/enemies/zangyo.png?v=21',intro:'残業のご主人様が つかれた顔で あらわれた！'},
-  {id:'shisseki',name:'叱責のご主人様',hp:188,maxHp:188,atk:18,exp:78,image:'img/enemies/shisseki.png?v=21',intro:'叱責のご主人様が ふるえながら あらわれた！'},
-  {id:'boss',name:'ご主人王',hp:320,maxHp:320,atk:24,exp:180,image:'img/enemies/boss.png?v=21',boss:true,intro:'ご主人王が あらわれた！！'}
+  {id:'teiji',name:'定時のご主人様',hp:72,maxHp:72,atk:8,exp:28,image:'img/enemies/teiji.png?v=22',intro:'定時のご主人様が あらわれた！'},
+  {id:'zangyo',name:'残業のご主人様',hp:128,maxHp:128,atk:13,exp:48,image:'img/enemies/zangyo.png?v=22',intro:'残業のご主人様が つかれた顔で あらわれた！'},
+  {id:'shisseki',name:'叱責のご主人様',hp:188,maxHp:188,atk:18,exp:78,image:'img/enemies/shisseki.png?v=22',intro:'叱責のご主人様が ふるえながら あらわれた！'},
+  {id:'boss',name:'ご主人王',hp:320,maxHp:320,atk:24,exp:180,image:'img/enemies/boss.png?v=22',boss:true,intro:'ご主人王が あらわれた！！'}
 ];
 
 const equipmentData={
@@ -125,12 +125,12 @@ function startBgm(kind){
 
 /* ===== Assets ===== */
 const ASSETS_TO_PRELOAD=[
-  'img/enemies/teiji.png?v=21',
-  'img/enemies/zangyo.png?v=21',
-  'img/enemies/shisseki.png?v=21',
-  'img/enemies/boss.png?v=21',
-  'img/backgrounds/battle_room.png?v=21',
-  'img/backgrounds/battle_boss_room.png?v=21'
+  'img/enemies/teiji.png?v=22',
+  'img/enemies/zangyo.png?v=22',
+  'img/enemies/shisseki.png?v=22',
+  'img/enemies/boss.png?v=22',
+  'img/backgrounds/battle_room.png?v=22',
+  'img/backgrounds/battle_boss_room.png?v=22'
 ];
 function preloadImage(src){return new Promise(resolve=>{const img=new Image();img.onload=()=>resolve({src,ok:true});img.onerror=()=>resolve({src,ok:false});img.src=src;});}
 async function preloadAssets(){
@@ -717,6 +717,7 @@ function getOshiName(){
 function startGame(){
   initAudio();
   document.getElementById('titleScreen').classList.add('hidden');
+  document.getElementById('openingScreen').classList.add('hidden');
   document.getElementById('endingScreen').classList.add('hidden');
   document.getElementById('battleScreen').classList.add('hidden');
   document.getElementById('mapScreen').classList.remove('hidden');
@@ -731,8 +732,87 @@ function resetGame(){
   startGame();
 }
 
+
+/* ===== Opening ===== */
+let openingTimer=null;
+let openingCurrentIndex=0;
+const OPENING_FADE_MS=600;
+const OPENING_SHOW_MS=2800;
+
+function getOpeningLines(){
+  const source=document.getElementById('openingCrawlSource');
+  if(!source) return [];
+  const lines=[];
+  const titleBlock=source.querySelector('.opening-title-block');
+  if(titleBlock) lines.push(titleBlock.innerHTML);
+  Array.from(source.querySelectorAll('p')).forEach(p=>lines.push(p.innerHTML));
+  return lines;
+}
+
+function showOpeningLine(lines,index){
+  const active=document.getElementById('openingStoryActive');
+  if(!active || index<0 || index>=lines.length) return;
+  active.style.opacity=0;
+  setTimeout(()=>{
+    active.innerHTML=lines[index];
+    active.style.opacity=1;
+  },OPENING_FADE_MS);
+}
+
+function startOpeningStory(){
+  const lines=getOpeningLines();
+  if(!lines.length) return;
+  openingCurrentIndex=0;
+  showOpeningLine(lines,0);
+  const interval=OPENING_FADE_MS+OPENING_SHOW_MS;
+  openingTimer=setInterval(()=>{
+    openingCurrentIndex++;
+    if(openingCurrentIndex>=lines.length){
+      clearInterval(openingTimer);
+      openingTimer=null;
+      return;
+    }
+    showOpeningLine(lines,openingCurrentIndex);
+  },interval);
+}
+
+function openOpening(){
+  const title=document.getElementById('titleScreen');
+  const opening=document.getElementById('openingScreen');
+  const active=document.getElementById('openingStoryActive');
+  if(openingTimer){
+    clearInterval(openingTimer);
+    openingTimer=null;
+  }
+  if(active){
+    active.innerHTML='';
+    active.style.opacity=0;
+  }
+  if(title) title.classList.add('hidden');
+  if(opening) opening.classList.remove('hidden');
+  setTimeout(startOpeningStory,4000);
+}
+
+function closeOpening(){
+  const title=document.getElementById('titleScreen');
+  const opening=document.getElementById('openingScreen');
+  const active=document.getElementById('openingStoryActive');
+  if(openingTimer){
+    clearInterval(openingTimer);
+    openingTimer=null;
+  }
+  if(active){
+    active.innerHTML='';
+    active.style.opacity=0;
+  }
+  if(opening) opening.classList.add('hidden');
+  if(title) title.classList.remove('hidden');
+}
+
 /* ===== Events ===== */
 document.getElementById('startBtn').addEventListener('click',startGame);
+document.getElementById('openingBtn').addEventListener('click',openOpening);
+document.getElementById('openingSkipBtn').addEventListener('click',closeOpening);
 document.getElementById('restartBtn').addEventListener('click',resetGame);
 document.getElementById('equipBtn').addEventListener('click',openEquipMenu);
 document.getElementById('soundBtn').addEventListener('click',toggleSound);
