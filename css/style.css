@@ -132,14 +132,14 @@ padding:12px;
 padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));
 background:
 linear-gradient(180deg,rgba(15,23,42,.92),rgba(17,24,39,.98)),
-url("../img/backgrounds/battle_room.png?v=24");
+url("../img/backgrounds/battle_room.png?v=25");
 background-size:cover;
 background-position:center;
 }
 body.boss-battle .battle-screen{
 background:
 linear-gradient(180deg,rgba(20,10,30,.86),rgba(5,5,12,.98)),
-url("../img/backgrounds/battle_boss_room.png?v=24");
+url("../img/backgrounds/battle_boss_room.png?v=25");
 background-size:cover;
 background-position:center;
 }
@@ -816,4 +816,79 @@ body.critical-flash .battle-screen{animation:criticalFlash .45s ease;}
   font-weight:900;
   color:#cbd5e1;
   margin-bottom:4px;
+}
+
+
+/* ===== v25 2体敵レイアウト調整 ===== */
+.enemy-area{
+  min-height:210px;
+}
+
+.enemy-slots{
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0, 1fr));
+  align-items:end;
+  justify-items:center;
+  gap:8px;
+  width:100%;
+  min-height:200px;
+}
+
+.enemy-slot{
+  width:100%;
+  max-width:132px;
+  min-width:0;
+  padding:6px 3px 0;
+}
+
+.enemy-slot img{
+  max-width:92px;
+  max-height:126px;
+}
+
+.enemy-slot-name{
+  font-size:10px;
+  min-height:26px;
+}
+
+.enemy-target-marker{
+  font-size:10px;
+  min-height:16px;
+}
+
+.enemy-slot-index{
+  font-size:10px;
+}
+
+.enemy-slot-hp{
+  height:8px;
+  margin-top:6px;
+}
+
+/* 敵が1体だけのときは中央に大きめ表示 */
+.enemy-slots.single-enemy{
+  grid-template-columns:1fr;
+}
+
+.enemy-slots.single-enemy .enemy-slot{
+  max-width:180px;
+}
+
+.enemy-slots.single-enemy .enemy-slot img{
+  max-width:150px;
+  max-height:180px;
+}
+
+/* 極小スマホでは2列のままさらに圧縮 */
+@media (max-width:360px){
+  .enemy-slots{
+    gap:4px;
+  }
+  .enemy-slot img{
+    max-width:78px;
+    max-height:112px;
+  }
+  .enemy-slot-name{
+    font-size:9px;
+  }
 }
