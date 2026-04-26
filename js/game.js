@@ -8,10 +8,10 @@ const enemies=[
      叱責 → Lv8前後
      ボス → Lv10前後
   */
-  {id:'teiji',name:'定時のご主人様',hp:72,maxHp:72,atk:8,exp:28,image:'img/enemies/teiji.png?v=23',intro:'定時のご主人様が あらわれた！'},
-  {id:'zangyo',name:'残業のご主人様',hp:128,maxHp:128,atk:13,exp:48,image:'img/enemies/zangyo.png?v=23',intro:'残業のご主人様が つかれた顔で あらわれた！'},
-  {id:'shisseki',name:'叱責のご主人様',hp:188,maxHp:188,atk:18,exp:78,image:'img/enemies/shisseki.png?v=23',intro:'叱責のご主人様が ふるえながら あらわれた！'},
-  {id:'boss',name:'ご主人王',hp:320,maxHp:320,atk:24,exp:180,image:'img/enemies/boss.png?v=23',boss:true,intro:'ご主人王が あらわれた！！'}
+  {id:'teiji',name:'定時のご主人様',hp:72,maxHp:72,atk:8,exp:28,image:'img/enemies/teiji.png?v=24',intro:'定時のご主人様が あらわれた！'},
+  {id:'zangyo',name:'残業のご主人様',hp:128,maxHp:128,atk:13,exp:48,image:'img/enemies/zangyo.png?v=24',intro:'残業のご主人様が つかれた顔で あらわれた！'},
+  {id:'shisseki',name:'叱責のご主人様',hp:188,maxHp:188,atk:18,exp:78,image:'img/enemies/shisseki.png?v=24',intro:'叱責のご主人様が ふるえながら あらわれた！'},
+  {id:'boss',name:'ご主人王',hp:320,maxHp:320,atk:24,exp:180,image:'img/enemies/boss.png?v=24',boss:true,intro:'ご主人王が あらわれた！！'}
 ];
 
 const equipmentData={
@@ -166,12 +166,12 @@ function startBgm(kind){
 
 /* ===== Assets ===== */
 const ASSETS_TO_PRELOAD=[
-  'img/enemies/teiji.png?v=23',
-  'img/enemies/zangyo.png?v=23',
-  'img/enemies/shisseki.png?v=23',
-  'img/enemies/boss.png?v=23',
-  'img/backgrounds/battle_room.png?v=23',
-  'img/backgrounds/battle_boss_room.png?v=23'
+  'img/enemies/teiji.png?v=24',
+  'img/enemies/zangyo.png?v=24',
+  'img/enemies/shisseki.png?v=24',
+  'img/enemies/boss.png?v=24',
+  'img/backgrounds/battle_room.png?v=24',
+  'img/backgrounds/battle_boss_room.png?v=24'
 ];
 function preloadImage(src){return new Promise(resolve=>{const img=new Image();img.onload=()=>resolve({src,ok:true});img.onerror=()=>resolve({src,ok:false});img.src=src;});}
 async function preloadAssets(){
@@ -358,6 +358,10 @@ function renderEnemySlots(){
     if(index===state.targetIndex && enemy.hp>0) slot.classList.add('selected');
     if(enemy.hp<=0) slot.classList.add('defeated');
 
+    const indexLabel=document.createElement('div');
+    indexLabel.className='enemy-slot-index';
+    indexLabel.textContent=`敵${index+1}`;
+
     const marker=document.createElement('div');
     marker.className='enemy-target-marker';
     marker.textContent=(index===state.targetIndex && enemy.hp>0)?'▼ TARGET':'';
@@ -371,9 +375,21 @@ function renderEnemySlots(){
     name.className='enemy-slot-name';
     name.textContent=enemy.hp>0 ? enemy.name : '撃破';
 
+    const hpBar=document.createElement('div');
+    hpBar.className='enemy-slot-hp';
+
+    const hpFill=document.createElement('div');
+    hpFill.className='enemy-slot-hp-fill';
+    const hpPercent=Math.max(0,(enemy.hp/enemy.maxHp)*100);
+    hpFill.style.width=`${hpPercent}%`;
+
+    hpBar.appendChild(hpFill);
+
+    slot.appendChild(indexLabel);
     slot.appendChild(marker);
     slot.appendChild(img);
     slot.appendChild(name);
+    slot.appendChild(hpBar);
 
     if(enemy.hp>0){
       slot.addEventListener('click',()=>selectTarget(index));
@@ -542,7 +558,7 @@ function openSubMenu(kind){
     addSubButton('もえもえぎゅー　MP5 / 敵に18〜22ダメージ',()=>useMagic('moe'));
     if(state.player.lv>=2) addSubButton('おいしくなーれ　MP8 / HP回復',()=>useMagic('heal'));
     if(state.player.lv>=3) addSubButton('にしきぬやまー　MP12 / 大ダメージ',()=>useMagic('nishiki'));
-    if(state.player.lv>=5) addSubButton('ポトロシャワー　MP16 / 敵全体ダメージ',()=>useMagic('shower'));
+    if(state.player.lv>=5) addSubButton('おいしくな〜れ　MP16 / 敵全体ダメージ',()=>useMagic('shower'));
   }else if(kind==='item'){
     title.textContent='どうぐ';
     addSubButton(`オムライス　HP30回復　残り${state.player.items.omurice}`,()=>useItem('omurice'));
@@ -662,8 +678,8 @@ async function useMagic(kind){
     await damageEnemy('にしきぬやまー！！',damage);
   }else if(kind==='shower'){
     if(p.mp<16){await failAction('MPがたりない！');return;}
-    p.mp-=16;await showCutin('全体おまじない','ポトロシャワー！！');screenFlash();
-    await damageAllEnemies('ポトロシャワー！！',34);
+    p.mp-=16;await showCutin('全体おまじない','おいしくな〜れ！！');screenFlash();
+    await damageAllEnemies('おいしくな〜れ！！',34);
   }
   state.busy=false;setButtonsDisabled(false);updateUI();
 }
