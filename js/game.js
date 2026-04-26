@@ -8,10 +8,10 @@ const enemies=[
      叱責 → Lv8前後
      ボス → Lv10前後
   */
-  {id:'teiji',name:'定時のご主人様',hp:72,maxHp:72,atk:8,exp:28,image:'img/enemies/teiji.png?v=20',intro:'定時のご主人様が あらわれた！'},
-  {id:'zangyo',name:'残業のご主人様',hp:128,maxHp:128,atk:13,exp:48,image:'img/enemies/zangyo.png?v=20',intro:'残業のご主人様が つかれた顔で あらわれた！'},
-  {id:'shisseki',name:'叱責のご主人様',hp:188,maxHp:188,atk:18,exp:78,image:'img/enemies/shisseki.png?v=20',intro:'叱責のご主人様が ふるえながら あらわれた！'},
-  {id:'boss',name:'ご主人王',hp:320,maxHp:320,atk:24,exp:180,image:'img/enemies/boss.png?v=20',boss:true,intro:'ご主人王が あらわれた！！'}
+  {id:'teiji',name:'定時のご主人様',hp:72,maxHp:72,atk:8,exp:28,image:'img/enemies/teiji.png?v=21',intro:'定時のご主人様が あらわれた！'},
+  {id:'zangyo',name:'残業のご主人様',hp:128,maxHp:128,atk:13,exp:48,image:'img/enemies/zangyo.png?v=21',intro:'残業のご主人様が つかれた顔で あらわれた！'},
+  {id:'shisseki',name:'叱責のご主人様',hp:188,maxHp:188,atk:18,exp:78,image:'img/enemies/shisseki.png?v=21',intro:'叱責のご主人様が ふるえながら あらわれた！'},
+  {id:'boss',name:'ご主人王',hp:320,maxHp:320,atk:24,exp:180,image:'img/enemies/boss.png?v=21',boss:true,intro:'ご主人王が あらわれた！！'}
 ];
 
 const equipmentData={
@@ -25,7 +25,7 @@ const equipmentData={
     {id:'apron',slot:'body',name:'純白エプロン',def:4},
     {id:'headband',slot:'head',name:'メイドカチューシャ',def:3},
     {id:'replica6',slot:'body',name:'六代目メイド服(レプリカ)',def:12},
-    {id:'real6',slot:'body',name:'六代目メイド服（本物）',def:24}
+    {id:'real6',slot:'body',name:'初代メイド服',def:24}
   ]
 };
 
@@ -125,12 +125,12 @@ function startBgm(kind){
 
 /* ===== Assets ===== */
 const ASSETS_TO_PRELOAD=[
-  'img/enemies/teiji.png?v=20',
-  'img/enemies/zangyo.png?v=20',
-  'img/enemies/shisseki.png?v=20',
-  'img/enemies/boss.png?v=20',
-  'img/backgrounds/battle_room.png?v=20',
-  'img/backgrounds/battle_boss_room.png?v=20'
+  'img/enemies/teiji.png?v=21',
+  'img/enemies/zangyo.png?v=21',
+  'img/enemies/shisseki.png?v=21',
+  'img/enemies/boss.png?v=21',
+  'img/backgrounds/battle_room.png?v=21',
+  'img/backgrounds/battle_boss_room.png?v=21'
 ];
 function preloadImage(src){return new Promise(resolve=>{const img=new Image();img.onload=()=>resolve({src,ok:true});img.onerror=()=>resolve({src,ok:false});img.src=src;});}
 async function preloadAssets(){
@@ -231,14 +231,34 @@ function movePlayer(dx,dy){
   checkTileEvent();
 }
 
+function giveMapChestEquipment(){
+  const p=state.player;
+  const candidates=[];
+  if(!p.inventory.weapons.includes('broom')) candidates.push({type:'weapon',id:'broom',text:'マジカルホーキ'});
+  if(!p.inventory.weapons.includes('vacuum')) candidates.push({type:'weapon',id:'vacuum',text:'異国の掃除機'});
+  if(!p.inventory.uniforms.includes('apron')) candidates.push({type:'uniform',id:'apron',text:'純白エプロン'});
+  if(!p.inventory.uniforms.includes('headband')) candidates.push({type:'uniform',id:'headband',text:'メイドカチューシャ'});
+  if(!p.inventory.uniforms.includes('replica6')) candidates.push({type:'uniform',id:'replica6',text:'六代目メイド服(レプリカ)'});
+  if(!p.inventory.uniforms.includes('real6')) candidates.push({type:'uniform',id:'real6',text:'初代メイド服'});
+
+  if(!candidates.length){
+    setMapMessage('宝箱を開けた！ しかし、すでに装備品は揃っていた。');
+    return;
+  }
+
+  const reward=candidates[Math.floor(Math.random()*candidates.length)];
+  if(reward.type==='weapon') p.inventory.weapons.push(reward.id);
+  if(reward.type==='uniform') p.inventory.uniforms.push(reward.id);
+  setMapMessage(`宝箱を開けた！ ${reward.text} を手に入れた！`);
+}
+
 function checkTileEvent(){
   const p=state.player;
   const chest=state.chests.find(c=>!c.opened&&c.x===p.mapX&&c.y===p.mapY);
   if(chest){
     chest.opened=true;
-    p.items.omurice++;
+    giveMapChestEquipment();
     seTreasure();
-    setMapMessage('宝箱を開けた！ オムライスを手に入れた！');
     drawMaze();
     return;
   }
@@ -279,10 +299,11 @@ function setButtonsDisabled(disabled){
   });
 }
 function sleep(ms){return new Promise(resolve=>setTimeout(resolve,ms));}
-function showDamage(value,target){
+function showDamage(value,target,extraClass){
   const area=target==='player'?document.querySelector('.status-panel'):document.querySelector('.enemy-area');
   const damage=document.createElement('div');
   damage.className=target==='player'?'damage-text player-damage':'damage-text';
+  if(extraClass) damage.classList.add(extraClass);
   damage.textContent=value>0?`-${value}`:`+${Math.abs(value)}`;
   area.appendChild(damage);
   damage.classList.add('show');
@@ -312,6 +333,13 @@ function showCutin(title,text){
   void overlay.offsetWidth;
   return new Promise(resolve=>setTimeout(()=>{overlay.classList.add('hidden');resolve();},760));
 }
+function criticalFlash(){
+  document.body.classList.remove('critical-flash');
+  void document.body.offsetWidth;
+  document.body.classList.add('critical-flash');
+  setTimeout(()=>document.body.classList.remove('critical-flash'),480);
+}
+
 function showLevelToast(text){
   const old=document.querySelector('.level-toast');
   if(old) old.remove();
@@ -447,11 +475,20 @@ async function playerAction(type){
   state.busy=true;setButtonsDisabled(true);
   const p=state.player;const e=currentEnemy();
   if(type==='attack'){
-    const damage=Math.max(1,totalAtk()+Math.floor(Math.random()*4));
+    const isCritical=Math.random()<0.10;
+    const baseDamage=Math.max(1,totalAtk()+Math.floor(Math.random()*4));
+    const damage=isCritical ? Math.floor(baseDamage*2.2) : baseDamage;
     e.hp=Math.max(0,e.hp-damage);
-    setMessage(`${e.name} に ${damage} ダメージ！`);
-    showDamage(damage,'enemy');seAttack();enemyFlash();updateUI();
-    await sleep(700);if(e.hp<=0){await winBattle();return;}await enemyTurn();
+    if(isCritical){
+      setMessage(`会心の癒し！ ${e.name} に ${damage} ダメージ！`);
+      criticalFlash();
+      showDamage(damage,'enemy','critical-text');
+    }else{
+      setMessage(`${e.name} に ${damage} ダメージ！`);
+      showDamage(damage,'enemy');
+    }
+    seAttack();enemyFlash();updateUI();
+    await sleep(isCritical?950:700);if(e.hp<=0){await winBattle();return;}await enemyTurn();
   }else if(type==='guard'){
     p.guarding=true;
     setMessage(`${p.name} は みをまもった！`);
@@ -531,11 +568,20 @@ async function damageEnemy(message,damage){
 async function enemyTurn(){
   const p=state.player;const e=currentEnemy();
   let damage=Math.max(1,e.atk-totalDef()+Math.floor(Math.random()*3));
+  const isCritical=Math.random()<0.08;
+  if(isCritical) damage=Math.floor(damage*2.0);
   if(p.guarding){damage=Math.max(1,Math.floor(damage/2));p.guarding=false;}
   p.hp=Math.max(0,p.hp-damage);
-  setMessage(`${e.name} のこうげき！ ${damage} ダメージ！`);
-  showDamage(damage,'player');seHit();playerFlash();updateUI();
-  await sleep(850);
+  if(isCritical){
+    setMessage(`${e.name} の会心の一撃！ ${damage} ダメージ！`);
+    criticalFlash();
+    showDamage(damage,'player','enemy-critical-text');
+  }else{
+    setMessage(`${e.name} のこうげき！ ${damage} ダメージ！`);
+    showDamage(damage,'player');
+  }
+  seHit();playerFlash();updateUI();
+  await sleep(isCritical?1050:850);
   if(p.hp<=0){
     setMessage(`${p.name} は たおれてしまった… 「最初から」で再挑戦できます。`);
     setButtonsDisabled(true);state.busy=true;
@@ -544,49 +590,56 @@ async function enemyTurn(){
 
 function giveReward(enemyId){
   const p=state.player;
+
+  // v21：敵からのドロップは「どうぐ」のみ
   if(enemyId==='teiji'){
-    if(!p.inventory.weapons.includes('broom')) p.inventory.weapons.push('broom');
-    setMessage('マジカルホーキを手に入れた！');return true;
+    p.items.omurice += 1;
+    setMessage('定時のご主人様が オムライス を落とした！');
+    return true;
   }
   if(enemyId==='zangyo'){
-    if(!p.inventory.uniforms.includes('apron')) p.inventory.uniforms.push('apron');
-    setMessage('純白エプロンを手に入れた！');return true;
+    p.items.tea += 1;
+    setMessage('残業のご主人様が 紅茶 を落とした！');
+    return true;
   }
   if(enemyId==='shisseki'){
-    if(!p.inventory.uniforms.includes('headband')) p.inventory.uniforms.push('headband');
-    if(!p.inventory.uniforms.includes('replica6')) p.inventory.uniforms.push('replica6');
-    setMessage('メイドカチューシャと六代目メイド服(レプリカ)を手に入れた！');return true;
+    p.items.horse += 1;
+    setMessage('叱責のご主人様が くろれきし を落とした！');
+    return true;
   }
   return false;
 }
 
 function treasureDrop(enemyId){
   const p=state.player;
+
+  // v21：宝箱からのドロップは「装備品」のみ
   if(enemyId==='shisseki'){
     if(!p.inventory.uniforms.includes('real6')){
       p.inventory.uniforms.push('real6');
-      openTreasureMenu('六代目メイド服（本物） を発見した！ 防御 +24');
+      openTreasureMenu('初代メイド服 を発見した！ 防御 +24');
       setMessage('伝説の宝箱を開けた！');
       return true;
     }
   }
+
   if(Math.floor(Math.random()*4)!==0) return false;
-  const rareRoll=Math.floor(Math.random()*8);
-  if(rareRoll===0 && !p.inventory.weapons.includes('vacuum')){
-    p.inventory.weapons.push('vacuum');
-    openTreasureMenu('異国の掃除機 を発見した！ 攻撃 +9');
-    setMessage('宝箱からレア装備が出た！');
-    return true;
-  }
-  if(rareRoll<=2){
-    p.items.horse+=1;
-    openTreasureMenu('くろれきし を発見した！');
-    setMessage('宝箱から特殊アイテムを入手！');
-    return true;
-  }
-  p.items.omurice+=1;
-  openTreasureMenu('オムライス を発見した！');
-  setMessage('宝箱から回復アイテムを入手！');
+
+  const candidates=[];
+  if(!p.inventory.weapons.includes('broom')) candidates.push({type:'weapon',id:'broom',text:'マジカルホーキ を発見した！ 攻撃 +5'});
+  if(!p.inventory.weapons.includes('vacuum')) candidates.push({type:'weapon',id:'vacuum',text:'異国の掃除機 を発見した！ 攻撃 +9'});
+  if(!p.inventory.uniforms.includes('apron')) candidates.push({type:'uniform',id:'apron',text:'純白エプロン を発見した！ 防御 +4'});
+  if(!p.inventory.uniforms.includes('headband')) candidates.push({type:'uniform',id:'headband',text:'メイドカチューシャ を発見した！ 防御 +3'});
+  if(!p.inventory.uniforms.includes('replica6')) candidates.push({type:'uniform',id:'replica6',text:'六代目メイド服(レプリカ) を発見した！ 防御 +12'});
+
+  if(!candidates.length) return false;
+
+  const reward=candidates[Math.floor(Math.random()*candidates.length)];
+  if(reward.type==='weapon') p.inventory.weapons.push(reward.id);
+  if(reward.type==='uniform') p.inventory.uniforms.push(reward.id);
+
+  openTreasureMenu(reward.text);
+  setMessage('宝箱から装備品を入手！');
   return true;
 }
 
