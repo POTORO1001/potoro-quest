@@ -8,10 +8,10 @@ const enemies=[
      叱責 → Lv8前後
      ボス → Lv10前後
   */
-  {id:'teiji',name:'定時のご主人様',hp:72,maxHp:72,atk:8,exp:28,image:'img/enemies/teiji.png?v=25',intro:'定時のご主人様が あらわれた！'},
-  {id:'zangyo',name:'残業のご主人様',hp:128,maxHp:128,atk:13,exp:48,image:'img/enemies/zangyo.png?v=25',intro:'残業のご主人様が つかれた顔で あらわれた！'},
-  {id:'shisseki',name:'叱責のご主人様',hp:188,maxHp:188,atk:18,exp:78,image:'img/enemies/shisseki.png?v=25',intro:'叱責のご主人様が ふるえながら あらわれた！'},
-  {id:'boss',name:'ご主人王',hp:320,maxHp:320,atk:24,exp:180,image:'img/enemies/boss.png?v=25',boss:true,intro:'ご主人王が あらわれた！！'}
+  {id:'teiji',name:'定時のご主人様',hp:72,maxHp:72,atk:8,exp:28,image:'img/enemies/teiji.png?v=26',intro:'定時のご主人様が あらわれた！'},
+  {id:'zangyo',name:'残業のご主人様',hp:128,maxHp:128,atk:13,exp:48,image:'img/enemies/zangyo.png?v=26',intro:'残業のご主人様が つかれた顔で あらわれた！'},
+  {id:'shisseki',name:'叱責のご主人様',hp:188,maxHp:188,atk:18,exp:78,image:'img/enemies/shisseki.png?v=26',intro:'叱責のご主人様が ふるえながら あらわれた！'},
+  {id:'boss',name:'ご主人王',hp:320,maxHp:320,atk:24,exp:180,image:'img/enemies/boss.png?v=26',boss:true,intro:'ご主人王が あらわれた！！'}
 ];
 
 const equipmentData={
@@ -24,7 +24,6 @@ const equipmentData={
     {id:'stocking',slot:'legs',name:'黒のストッキング',def:2},
     {id:'apron',slot:'body',name:'純白エプロン',def:4},
     {id:'headband',slot:'head',name:'メイドカチューシャ',def:3},
-    {id:'replica6',slot:'body',name:'六代目メイド服(レプリカ)',def:12},
     {id:'real6',slot:'body',name:'初代メイド服',def:24}
   ]
 };
@@ -166,12 +165,12 @@ function startBgm(kind){
 
 /* ===== Assets ===== */
 const ASSETS_TO_PRELOAD=[
-  'img/enemies/teiji.png?v=25',
-  'img/enemies/zangyo.png?v=25',
-  'img/enemies/shisseki.png?v=25',
-  'img/enemies/boss.png?v=25',
-  'img/backgrounds/battle_room.png?v=25',
-  'img/backgrounds/battle_boss_room.png?v=25'
+  'img/enemies/teiji.png?v=26',
+  'img/enemies/zangyo.png?v=26',
+  'img/enemies/shisseki.png?v=26',
+  'img/enemies/boss.png?v=26',
+  'img/backgrounds/battle_room.png?v=26',
+  'img/backgrounds/battle_boss_room.png?v=26'
 ];
 function preloadImage(src){return new Promise(resolve=>{const img=new Image();img.onload=()=>resolve({src,ok:true});img.onerror=()=>resolve({src,ok:false});img.src=src;});}
 async function preloadAssets(){
@@ -278,9 +277,7 @@ function giveMapChestEquipment(){
   if(!p.inventory.weapons.includes('broom')) candidates.push({type:'weapon',id:'broom',text:'マジカルホーキ'});
   if(!p.inventory.weapons.includes('vacuum')) candidates.push({type:'weapon',id:'vacuum',text:'異国の掃除機'});
   if(!p.inventory.uniforms.includes('apron')) candidates.push({type:'uniform',id:'apron',text:'純白エプロン'});
-  if(!p.inventory.uniforms.includes('headband')) candidates.push({type:'uniform',id:'headband',text:'メイドカチューシャ'});
-  if(!p.inventory.uniforms.includes('replica6')) candidates.push({type:'uniform',id:'replica6',text:'六代目メイド服(レプリカ)'});
-  if(!p.inventory.uniforms.includes('real6')) candidates.push({type:'uniform',id:'real6',text:'初代メイド服'});
+  if(!p.inventory.uniforms.includes('headband')) candidates.push({type:'uniform',id:'headband',text:'メイドカチューシャ'});  if(!p.inventory.uniforms.includes('real6')) candidates.push({type:'uniform',id:'real6',text:'初代メイド服'});
 
   if(!candidates.length){
     setMapMessage('宝箱を開けた！ しかし、すでに装備品は揃っていた。');
@@ -819,8 +816,6 @@ function treasureDrop(enemyId){
   if(!p.inventory.weapons.includes('vacuum')) candidates.push({type:'weapon',id:'vacuum',text:'異国の掃除機 を発見した！ 攻撃 +9'});
   if(!p.inventory.uniforms.includes('apron')) candidates.push({type:'uniform',id:'apron',text:'純白エプロン を発見した！ 防御 +4'});
   if(!p.inventory.uniforms.includes('headband')) candidates.push({type:'uniform',id:'headband',text:'メイドカチューシャ を発見した！ 防御 +3'});
-  if(!p.inventory.uniforms.includes('replica6')) candidates.push({type:'uniform',id:'replica6',text:'六代目メイド服(レプリカ) を発見した！ 防御 +12'});
-
   if(!candidates.length) return false;
 
   const reward=candidates[Math.floor(Math.random()*candidates.length)];
