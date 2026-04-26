@@ -2,16 +2,16 @@ const MAZE_W=17;
 const MAZE_H=17;
 
 const enemies=[
-  /* 初期装備あり基準：
-     定時 → Lv4前後
-     残業 → Lv6前後
-     叱責 → Lv8前後
-     ボス → Lv10前後
+  /* v28 初期装備基準
+     定時 → Lv3
+     残業 → Lv5
+     叱責 → Lv8
+     ボス → Lv15
   */
-  {id:'teiji',name:'定時のご主人様',hp:72,maxHp:72,atk:8,exp:28,image:'img/enemies/teiji.png?v=27',intro:'定時のご主人様が あらわれた！'},
-  {id:'zangyo',name:'残業のご主人様',hp:128,maxHp:128,atk:13,exp:48,image:'img/enemies/zangyo.png?v=27',intro:'残業のご主人様が つかれた顔で あらわれた！'},
-  {id:'shisseki',name:'叱責のご主人様',hp:188,maxHp:188,atk:18,exp:78,image:'img/enemies/shisseki.png?v=27',intro:'叱責のご主人様が ふるえながら あらわれた！'},
-  {id:'boss',name:'ご主人王',hp:320,maxHp:320,atk:24,exp:180,image:'img/enemies/boss.png?v=27',boss:true,intro:'ご主人王が あらわれた！！'}
+  {id:'teiji',name:'定時のご主人様',hp:58,maxHp:58,atk:7,exp:22,image:'img/enemies/teiji.png?v=28',intro:'定時のご主人様が あらわれた！'},
+  {id:'zangyo',name:'残業のご主人様',hp:108,maxHp:108,atk:11,exp:42,image:'img/enemies/zangyo.png?v=28',intro:'残業のご主人様が つかれた顔で あらわれた！'},
+  {id:'shisseki',name:'叱責のご主人様',hp:178,maxHp:178,atk:17,exp:78,image:'img/enemies/shisseki.png?v=28',intro:'叱責のご主人様が ふるえながら あらわれた！'},
+  {id:'boss',name:'ご主人王',hp:420,maxHp:420,atk:28,exp:260,image:'img/enemies/boss.png?v=28',boss:true,intro:'ご主人王が あらわれた！！'}
 ];
 
 const equipmentData={
@@ -165,12 +165,12 @@ function startBgm(kind){
 
 /* ===== Assets ===== */
 const ASSETS_TO_PRELOAD=[
-  'img/enemies/teiji.png?v=27',
-  'img/enemies/zangyo.png?v=27',
-  'img/enemies/shisseki.png?v=27',
-  'img/enemies/boss.png?v=27',
-  'img/backgrounds/battle_room.png?v=27',
-  'img/backgrounds/battle_boss_room.png?v=27'
+  'img/enemies/teiji.png?v=28',
+  'img/enemies/zangyo.png?v=28',
+  'img/enemies/shisseki.png?v=28',
+  'img/enemies/boss.png?v=28',
+  'img/backgrounds/battle_room.png?v=28',
+  'img/backgrounds/battle_boss_room.png?v=28'
 ];
 function preloadImage(src){return new Promise(resolve=>{const img=new Image();img.onload=()=>resolve({src,ok:true});img.onerror=()=>resolve({src,ok:false});img.src=src;});}
 async function preloadAssets(){
@@ -565,9 +565,9 @@ function openSubMenu(kind){
   if(kind==='magic'){
     title.textContent='おまじない';
     addSubButton('もえもえぎゅー　MP5 / 敵に18〜22ダメージ',()=>useMagic('moe'));
-    if(state.player.lv>=2) addSubButton('おいしくなーれ　MP8 / HP回復',()=>useMagic('heal'));
-    if(state.player.lv>=3) addSubButton('にしきぬやまー　MP12 / 大ダメージ',()=>useMagic('nishiki'));
-    if(state.player.lv>=5) addSubButton('おいしくな〜れ　MP16 / 敵全体ダメージ',()=>useMagic('shower'));
+    if(state.player.lv>=3) addSubButton('おいしくなーれ　MP8 / HP回復',()=>useMagic('heal'));
+    if(state.player.lv>=10) addSubButton('にしきぬやまー　MP16 / 大ダメージ',()=>useMagic('nishiki'));
+    if(state.player.lv>=6) addSubButton('しゅわしゅわー　MP12 / 敵全体ダメージ',()=>useMagic('shower'));
   }else if(kind==='item'){
     title.textContent='どうぐ';
     addSubButton(`オムライス　HP30回復　残り${state.player.items.omurice}`,()=>useItem('omurice'));
@@ -670,7 +670,7 @@ async function useMagic(kind){
   if(kind==='moe'){
     if(p.mp<5){await failAction('MPがたりない！');return;}
     p.mp-=5;await showCutin('おまじない','もえもえぎゅー！！');
-    const damage=18+Math.floor(Math.random()*5);
+    const damage=25+Math.floor(Math.random()*6);
     await damageEnemy('もえもえぎゅー！！',damage);
   }else if(kind==='heal'){
     if(p.mp<8){await failAction('MPがたりない！');return;}
@@ -680,15 +680,15 @@ async function useMagic(kind){
     showDamage(-heal,'player');seHeal();updateUI();
     await sleep(750);await enemyTurn();
   }else if(kind==='nishiki'){
-    if(p.mp<12){await failAction('MPがたりない！');return;}
+    if(p.mp<16){await failAction('MPがたりない！');return;}
     p.mp-=12;await showCutin('必殺おまじない','にしきぬやまー！！');screenFlash();
     const target=currentEnemy();
-    const damage=target.boss?45:65;
+    const damage=target.boss?58:82;
     await damageEnemy('にしきぬやまー！！',damage);
   }else if(kind==='shower'){
-    if(p.mp<16){await failAction('MPがたりない！');return;}
-    p.mp-=16;await showCutin('全体おまじない','おいしくな〜れ！！');screenFlash();
-    await damageAllEnemies('おいしくな〜れ！！',34);
+    if(p.mp<12){await failAction('MPがたりない！');return;}
+    p.mp-=16;await showCutin('全体おまじない','しゅわしゅわー！！');screenFlash();
+    await damageAllEnemies('しゅわしゅわー！！',38);
   }
   state.busy=false;setButtonsDisabled(false);updateUI();
 }
