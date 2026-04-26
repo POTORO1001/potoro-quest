@@ -8,10 +8,10 @@ const enemies=[
      叱責 → Lv8
      ボス → Lv15
   */
-  {id:'teiji',name:'定時のご主人様',hp:58,maxHp:58,atk:7,exp:22,image:'img/enemies/teiji.png?v=28',intro:'定時のご主人様が あらわれた！'},
-  {id:'zangyo',name:'残業のご主人様',hp:108,maxHp:108,atk:11,exp:42,image:'img/enemies/zangyo.png?v=28',intro:'残業のご主人様が つかれた顔で あらわれた！'},
-  {id:'shisseki',name:'叱責のご主人様',hp:178,maxHp:178,atk:17,exp:78,image:'img/enemies/shisseki.png?v=28',intro:'叱責のご主人様が ふるえながら あらわれた！'},
-  {id:'boss',name:'ご主人王',hp:420,maxHp:420,atk:28,exp:260,image:'img/enemies/boss.png?v=28',boss:true,intro:'ご主人王が あらわれた！！'}
+  {id:'teiji',name:'定時のご主人様',hp:58,maxHp:58,atk:7,exp:22,image:'img/enemies/teiji.png?v=29',intro:'定時のご主人様が あらわれた！'},
+  {id:'zangyo',name:'残業のご主人様',hp:108,maxHp:108,atk:11,exp:42,image:'img/enemies/zangyo.png?v=29',intro:'残業のご主人様が つかれた顔で あらわれた！'},
+  {id:'shisseki',name:'叱責のご主人様',hp:178,maxHp:178,atk:17,exp:78,image:'img/enemies/shisseki.png?v=29',intro:'叱責のご主人様が ふるえながら あらわれた！'},
+  {id:'boss',name:'ご主人王',hp:420,maxHp:420,atk:28,exp:260,image:'img/enemies/boss.png?v=29',boss:true,intro:'ご主人王が あらわれた！！'}
 ];
 
 const equipmentData={
@@ -165,12 +165,12 @@ function startBgm(kind){
 
 /* ===== Assets ===== */
 const ASSETS_TO_PRELOAD=[
-  'img/enemies/teiji.png?v=28',
-  'img/enemies/zangyo.png?v=28',
-  'img/enemies/shisseki.png?v=28',
-  'img/enemies/boss.png?v=28',
-  'img/backgrounds/battle_room.png?v=28',
-  'img/backgrounds/battle_boss_room.png?v=28'
+  'img/enemies/teiji.png?v=29',
+  'img/enemies/zangyo.png?v=29',
+  'img/enemies/shisseki.png?v=29',
+  'img/enemies/boss.png?v=29',
+  'img/backgrounds/battle_room.png?v=29',
+  'img/backgrounds/battle_boss_room.png?v=29'
 ];
 function preloadImage(src){return new Promise(resolve=>{const img=new Image();img.onload=()=>resolve({src,ok:true});img.onerror=()=>resolve({src,ok:false});img.src=src;});}
 async function preloadAssets(){
@@ -953,7 +953,7 @@ function resetGame(){
 let openingTimer=null;
 let openingCurrentIndex=0;
 const OPENING_FADE_MS=600;
-const OPENING_SHOW_MS=2800;
+const OPENING_SHOW_MS=4000;
 
 function getOpeningLines(){
   const source=document.getElementById('openingCrawlSource');
