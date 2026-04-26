@@ -132,14 +132,14 @@ padding:12px;
 padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));
 background:
 linear-gradient(180deg,rgba(15,23,42,.92),rgba(17,24,39,.98)),
-url("../img/backgrounds/battle_room.png?v=20");
+url("../img/backgrounds/battle_room.png?v=21");
 background-size:cover;
 background-position:center;
 }
 body.boss-battle .battle-screen{
 background:
 linear-gradient(180deg,rgba(20,10,30,.86),rgba(5,5,12,.98)),
-url("../img/backgrounds/battle_boss_room.png?v=20");
+url("../img/backgrounds/battle_boss_room.png?v=21");
 background-size:cover;
 background-position:center;
 }
@@ -541,3 +541,9 @@ input {
   border-color:#ff7ad6;
   box-shadow:0 0 0 3px rgba(255,122,214,.22);
 }
+
+/* ===== v21 会心・ドロップ調整 ===== */
+.critical-text{color:#fde68a!important;text-shadow:0 0 8px rgba(250,204,21,.95),0 0 18px rgba(255,122,214,.7)!important;font-size:34px!important;}
+.enemy-critical-text{color:#fca5a5!important;text-shadow:0 0 8px rgba(239,68,68,.95),0 0 18px rgba(127,29,29,.8)!important;}
+body.critical-flash .battle-screen{animation:criticalFlash .45s ease;}
+@keyframes criticalFlash{0%{filter:brightness(1);}30%{filter:brightness(1.7) saturate(1.8);}100%{filter:brightness(1);}}
