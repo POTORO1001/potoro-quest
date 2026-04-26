@@ -8,10 +8,10 @@ const enemies=[
      叱責 → Lv8前後
      ボス → Lv10前後
   */
-  {id:'teiji',name:'定時のご主人様',hp:72,maxHp:72,atk:8,exp:28,image:'img/enemies/teiji.png?v=26',intro:'定時のご主人様が あらわれた！'},
-  {id:'zangyo',name:'残業のご主人様',hp:128,maxHp:128,atk:13,exp:48,image:'img/enemies/zangyo.png?v=26',intro:'残業のご主人様が つかれた顔で あらわれた！'},
-  {id:'shisseki',name:'叱責のご主人様',hp:188,maxHp:188,atk:18,exp:78,image:'img/enemies/shisseki.png?v=26',intro:'叱責のご主人様が ふるえながら あらわれた！'},
-  {id:'boss',name:'ご主人王',hp:320,maxHp:320,atk:24,exp:180,image:'img/enemies/boss.png?v=26',boss:true,intro:'ご主人王が あらわれた！！'}
+  {id:'teiji',name:'定時のご主人様',hp:72,maxHp:72,atk:8,exp:28,image:'img/enemies/teiji.png?v=27',intro:'定時のご主人様が あらわれた！'},
+  {id:'zangyo',name:'残業のご主人様',hp:128,maxHp:128,atk:13,exp:48,image:'img/enemies/zangyo.png?v=27',intro:'残業のご主人様が つかれた顔で あらわれた！'},
+  {id:'shisseki',name:'叱責のご主人様',hp:188,maxHp:188,atk:18,exp:78,image:'img/enemies/shisseki.png?v=27',intro:'叱責のご主人様が ふるえながら あらわれた！'},
+  {id:'boss',name:'ご主人王',hp:320,maxHp:320,atk:24,exp:180,image:'img/enemies/boss.png?v=27',boss:true,intro:'ご主人王が あらわれた！！'}
 ];
 
 const equipmentData={
@@ -165,12 +165,12 @@ function startBgm(kind){
 
 /* ===== Assets ===== */
 const ASSETS_TO_PRELOAD=[
-  'img/enemies/teiji.png?v=26',
-  'img/enemies/zangyo.png?v=26',
-  'img/enemies/shisseki.png?v=26',
-  'img/enemies/boss.png?v=26',
-  'img/backgrounds/battle_room.png?v=26',
-  'img/backgrounds/battle_boss_room.png?v=26'
+  'img/enemies/teiji.png?v=27',
+  'img/enemies/zangyo.png?v=27',
+  'img/enemies/shisseki.png?v=27',
+  'img/enemies/boss.png?v=27',
+  'img/backgrounds/battle_room.png?v=27',
+  'img/backgrounds/battle_boss_room.png?v=27'
 ];
 function preloadImage(src){return new Promise(resolve=>{const img=new Image();img.onload=()=>resolve({src,ok:true});img.onerror=()=>resolve({src,ok:false});img.src=src;});}
 async function preloadAssets(){
@@ -273,11 +273,21 @@ function movePlayer(dx,dy){
 
 function giveMapChestEquipment(){
   const p=state.player;
+
+  // マップ上の宝箱も「装備品のみ」
+  // 初代メイド服はレア装備
+  const rareFirstMaid = Math.random() < 0.15;
+  if(rareFirstMaid && !p.inventory.uniforms.includes('real6')){
+    p.inventory.uniforms.push('real6');
+    setMapMessage('宝箱を開けた！ レア装備 初代メイド服 を手に入れた！');
+    return;
+  }
+
   const candidates=[];
   if(!p.inventory.weapons.includes('broom')) candidates.push({type:'weapon',id:'broom',text:'マジカルホーキ'});
   if(!p.inventory.weapons.includes('vacuum')) candidates.push({type:'weapon',id:'vacuum',text:'異国の掃除機'});
   if(!p.inventory.uniforms.includes('apron')) candidates.push({type:'uniform',id:'apron',text:'純白エプロン'});
-  if(!p.inventory.uniforms.includes('headband')) candidates.push({type:'uniform',id:'headband',text:'メイドカチューシャ'});  if(!p.inventory.uniforms.includes('real6')) candidates.push({type:'uniform',id:'real6',text:'初代メイド服'});
+  if(!p.inventory.uniforms.includes('headband')) candidates.push({type:'uniform',id:'headband',text:'メイドカチューシャ'});
 
   if(!candidates.length){
     setMapMessage('宝箱を開けた！ しかし、すでに装備品は揃っていた。');
@@ -777,45 +787,58 @@ async function enemyTurn(){
 function giveReward(enemyId){
   const p=state.player;
 
-  // v21：敵からのドロップは「どうぐ」のみ
+  // v27：敵からのドロップは「どうぐ」のみ
+  // くろれきしはどうぐ扱いのレアドロップ
+  const rareKurorekishi = Math.random() < 0.12;
+
+  if(rareKurorekishi){
+    p.items.horse += 1;
+    setMessage('レアドロップ！ くろれきし を手に入れた！');
+    return true;
+  }
+
   if(enemyId==='teiji'){
     p.items.omurice += 1;
     setMessage('定時のご主人様が オムライス を落とした！');
     return true;
   }
+
   if(enemyId==='zangyo'){
     p.items.tea += 1;
     setMessage('残業のご主人様が 紅茶 を落とした！');
     return true;
   }
+
   if(enemyId==='shisseki'){
-    p.items.horse += 1;
-    setMessage('叱責のご主人様が くろれきし を落とした！');
+    p.items.omurice += 1;
+    setMessage('叱責のご主人様が オムライス を落とした！');
     return true;
   }
+
   return false;
 }
 
 function treasureDrop(enemyId){
   const p=state.player;
 
-  // v21：宝箱からのドロップは「装備品」のみ
-  if(enemyId==='shisseki'){
-    if(!p.inventory.uniforms.includes('real6')){
-      p.inventory.uniforms.push('real6');
-      openTreasureMenu('初代メイド服 を発見した！ 防御 +24');
-      setMessage('伝説の宝箱を開けた！');
-      return true;
-    }
-  }
-
+  // v27：宝箱からのドロップは「装備品」のみ
+  // 初代メイド服は装備品扱いのレアドロップ
   if(Math.floor(Math.random()*4)!==0) return false;
+
+  const rareFirstMaid = Math.random() < 0.15;
+  if(rareFirstMaid && !p.inventory.uniforms.includes('real6')){
+    p.inventory.uniforms.push('real6');
+    openTreasureMenu('レア装備！ 初代メイド服 を発見した！ 防御 +24');
+    setMessage('宝箱からレア装備を入手！');
+    return true;
+  }
 
   const candidates=[];
   if(!p.inventory.weapons.includes('broom')) candidates.push({type:'weapon',id:'broom',text:'マジカルホーキ を発見した！ 攻撃 +5'});
   if(!p.inventory.weapons.includes('vacuum')) candidates.push({type:'weapon',id:'vacuum',text:'異国の掃除機 を発見した！ 攻撃 +9'});
   if(!p.inventory.uniforms.includes('apron')) candidates.push({type:'uniform',id:'apron',text:'純白エプロン を発見した！ 防御 +4'});
   if(!p.inventory.uniforms.includes('headband')) candidates.push({type:'uniform',id:'headband',text:'メイドカチューシャ を発見した！ 防御 +3'});
+
   if(!candidates.length) return false;
 
   const reward=candidates[Math.floor(Math.random()*candidates.length)];
