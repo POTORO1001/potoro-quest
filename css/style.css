@@ -132,14 +132,14 @@ padding:12px;
 padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));
 background:
 linear-gradient(180deg,rgba(15,23,42,.92),rgba(17,24,39,.98)),
-url("../img/backgrounds/battle_room.png?v=21");
+url("../img/backgrounds/battle_room.png?v=22");
 background-size:cover;
 background-position:center;
 }
 body.boss-battle .battle-screen{
 background:
 linear-gradient(180deg,rgba(20,10,30,.86),rgba(5,5,12,.98)),
-url("../img/backgrounds/battle_boss_room.png?v=21");
+url("../img/backgrounds/battle_boss_room.png?v=22");
 background-size:cover;
 background-position:center;
 }
@@ -547,3 +547,136 @@ input {
 .enemy-critical-text{color:#fca5a5!important;text-shadow:0 0 8px rgba(239,68,68,.95),0 0 18px rgba(127,29,29,.8)!important;}
 body.critical-flash .battle-screen{animation:criticalFlash .45s ease;}
 @keyframes criticalFlash{0%{filter:brightness(1);}30%{filter:brightness(1.7) saturate(1.8);}100%{filter:brightness(1);}}
+
+
+/* ===== v22 オープニング画面 ===== */
+.opening-btn{
+  width:100%;
+  margin-top:10px;
+  padding:13px;
+  border:none;
+  border-radius:12px;
+  background:#7c3aed;
+  color:#fff;
+  font-weight:900;
+}
+
+.opening-screen{
+  position:fixed;
+  inset:0;
+  z-index:120;
+  background:radial-gradient(circle at top,#111 0%,#000 55%,#000 100%);
+  overflow:hidden;
+  color:#ffe81f;
+  letter-spacing:.08em;
+  font-family:"Yu Gothic","Hiragino Sans",system-ui,sans-serif;
+}
+
+.opening-stars{
+  position:fixed;
+  inset:0;
+  background-image:
+    radial-gradient(#fff 1px, transparent 1px),
+    radial-gradient(#fff 1px, transparent 1px);
+  background-size:250px 250px,320px 320px;
+  background-position:0 0,80px 120px;
+  opacity:.18;
+  pointer-events:none;
+  animation:openingStarMove 45s linear infinite;
+}
+
+@keyframes openingStarMove{
+  from{transform:translateY(0);}
+  to{transform:translateY(300px);}
+}
+
+.opening-skip-btn{
+  position:absolute;
+  top:calc(12px + env(safe-area-inset-top,0px));
+  right:12px;
+  z-index:8;
+  border:none;
+  border-radius:999px;
+  background:rgba(15,23,42,.86);
+  color:#fff;
+  font-weight:900;
+  padding:10px 14px;
+  font-size:12px;
+}
+
+.opening-intro{
+  position:absolute;
+  top:35%;
+  width:100%;
+  padding:0 18px;
+  text-align:center;
+  font-size:1.05rem;
+  line-height:1.8;
+  opacity:0;
+  animation:openingIntroFade 4s ease-out 0s forwards;
+  z-index:5;
+}
+
+@keyframes openingIntroFade{
+  0%{opacity:0;}
+  5%{opacity:1;}
+  75%{opacity:1;}
+  100%{opacity:0;}
+}
+
+.opening-story{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:0 9vw;
+  text-align:center;
+}
+
+.opening-crawl-source{
+  display:none;
+}
+
+.opening-title-block{
+  text-align:center;
+  margin-bottom:2.5rem;
+}
+
+.opening-title-block .episode{
+  font-size:1rem;
+  letter-spacing:.25em;
+  text-transform:uppercase;
+  margin-bottom:1rem;
+}
+
+.opening-title-block h1{
+  font-size:2.05rem;
+  margin:0;
+}
+
+#openingStoryActive{
+  max-width:720px;
+  font-size:1.18rem;
+  line-height:1.75;
+  text-shadow:0 0 8px rgba(0,0,0,.8);
+  opacity:0;
+  transition:opacity .6s ease;
+}
+
+#openingStoryActive strong{
+  color:#fff6a6;
+}
+
+@media (max-width:380px){
+  #openingStoryActive{
+    font-size:1.02rem;
+    line-height:1.7;
+  }
+  .opening-title-block h1{
+    font-size:1.65rem;
+  }
+  .opening-intro{
+    font-size:.95rem;
+  }
+}
