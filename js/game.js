@@ -8,10 +8,10 @@ const enemies=[
      叱責 → Lv8前後
      ボス → Lv10前後
   */
-  {id:'teiji',name:'定時のご主人様',hp:72,maxHp:72,atk:8,exp:28,image:'img/enemies/teiji.png?v=24',intro:'定時のご主人様が あらわれた！'},
-  {id:'zangyo',name:'残業のご主人様',hp:128,maxHp:128,atk:13,exp:48,image:'img/enemies/zangyo.png?v=24',intro:'残業のご主人様が つかれた顔で あらわれた！'},
-  {id:'shisseki',name:'叱責のご主人様',hp:188,maxHp:188,atk:18,exp:78,image:'img/enemies/shisseki.png?v=24',intro:'叱責のご主人様が ふるえながら あらわれた！'},
-  {id:'boss',name:'ご主人王',hp:320,maxHp:320,atk:24,exp:180,image:'img/enemies/boss.png?v=24',boss:true,intro:'ご主人王が あらわれた！！'}
+  {id:'teiji',name:'定時のご主人様',hp:72,maxHp:72,atk:8,exp:28,image:'img/enemies/teiji.png?v=25',intro:'定時のご主人様が あらわれた！'},
+  {id:'zangyo',name:'残業のご主人様',hp:128,maxHp:128,atk:13,exp:48,image:'img/enemies/zangyo.png?v=25',intro:'残業のご主人様が つかれた顔で あらわれた！'},
+  {id:'shisseki',name:'叱責のご主人様',hp:188,maxHp:188,atk:18,exp:78,image:'img/enemies/shisseki.png?v=25',intro:'叱責のご主人様が ふるえながら あらわれた！'},
+  {id:'boss',name:'ご主人王',hp:320,maxHp:320,atk:24,exp:180,image:'img/enemies/boss.png?v=25',boss:true,intro:'ご主人王が あらわれた！！'}
 ];
 
 const equipmentData={
@@ -166,12 +166,12 @@ function startBgm(kind){
 
 /* ===== Assets ===== */
 const ASSETS_TO_PRELOAD=[
-  'img/enemies/teiji.png?v=24',
-  'img/enemies/zangyo.png?v=24',
-  'img/enemies/shisseki.png?v=24',
-  'img/enemies/boss.png?v=24',
-  'img/backgrounds/battle_room.png?v=24',
-  'img/backgrounds/battle_boss_room.png?v=24'
+  'img/enemies/teiji.png?v=25',
+  'img/enemies/zangyo.png?v=25',
+  'img/enemies/shisseki.png?v=25',
+  'img/enemies/boss.png?v=25',
+  'img/backgrounds/battle_room.png?v=25',
+  'img/backgrounds/battle_boss_room.png?v=25'
 ];
 function preloadImage(src){return new Promise(resolve=>{const img=new Image();img.onload=()=>resolve({src,ok:true});img.onerror=()=>resolve({src,ok:false});img.src=src;});}
 async function preloadAssets(){
@@ -351,6 +351,8 @@ function renderEnemySlots(){
   const wrap=document.getElementById('enemySlots');
   if(!wrap) return;
   wrap.innerHTML='';
+  wrap.classList.toggle('single-enemy',(state.enemiesInBattle||[]).length===1);
+  wrap.classList.toggle('multi-enemy',(state.enemiesInBattle||[]).length>=2);
 
   (state.enemiesInBattle||[]).forEach((enemy,index)=>{
     const slot=document.createElement('div');
