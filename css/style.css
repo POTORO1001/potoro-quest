@@ -132,14 +132,14 @@ padding:12px;
 padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));
 background:
 linear-gradient(180deg,rgba(15,23,42,.92),rgba(17,24,39,.98)),
-url("../img/backgrounds/battle_room.png?v=25");
+url("../img/backgrounds/battle_room.png?v=26");
 background-size:cover;
 background-position:center;
 }
 body.boss-battle .battle-screen{
 background:
 linear-gradient(180deg,rgba(20,10,30,.86),rgba(5,5,12,.98)),
-url("../img/backgrounds/battle_boss_room.png?v=25");
+url("../img/backgrounds/battle_boss_room.png?v=26");
 background-size:cover;
 background-position:center;
 }
@@ -158,8 +158,8 @@ max-height:210px;
 object-fit:contain;
 filter:drop-shadow(0 18px 18px rgba(0,0,0,.45));
 }
-#enemyImage.image-error{display:none;}
-.enemy-area:has(#enemyImage.image-error)::after{
+.enemy-slot img.image-error{display:none;}
+.enemy-area:has(.enemy-slot img.image-error)::after{
 content:"画像を読み込めません";
 display:block;
 color:#fca5a5;
@@ -891,4 +891,46 @@ body.critical-flash .battle-screen{animation:criticalFlash .45s ease;}
   .enemy-slot-name{
     font-size:9px;
   }
+}
+
+
+/* ===== v26 Enemy Slots Fix ===== */
+.enemy-area{
+  min-height:210px;
+}
+
+.enemy-slots{
+  width:100%;
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  align-items:end;
+  justify-items:center;
+  gap:8px;
+}
+
+.enemy-slots.single-enemy{
+  grid-template-columns:1fr;
+}
+
+.enemy-slot{
+  width:100%;
+  max-width:132px;
+  min-width:0;
+}
+
+.enemy-slot img{
+  max-width:92px;
+  max-height:126px;
+  width:auto;
+  height:auto;
+  object-fit:contain;
+}
+
+.enemy-slots.single-enemy .enemy-slot{
+  max-width:180px;
+}
+
+.enemy-slots.single-enemy .enemy-slot img{
+  max-width:150px;
+  max-height:180px;
 }
