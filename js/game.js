@@ -8,10 +8,10 @@ const enemies=[
      叱責 → Lv8前後
      ボス → Lv10前後
   */
-  {id:'teiji',name:'定時のご主人様',hp:72,maxHp:72,atk:8,exp:28,image:'img/enemies/teiji.png?v=22',intro:'定時のご主人様が あらわれた！'},
-  {id:'zangyo',name:'残業のご主人様',hp:128,maxHp:128,atk:13,exp:48,image:'img/enemies/zangyo.png?v=22',intro:'残業のご主人様が つかれた顔で あらわれた！'},
-  {id:'shisseki',name:'叱責のご主人様',hp:188,maxHp:188,atk:18,exp:78,image:'img/enemies/shisseki.png?v=22',intro:'叱責のご主人様が ふるえながら あらわれた！'},
-  {id:'boss',name:'ご主人王',hp:320,maxHp:320,atk:24,exp:180,image:'img/enemies/boss.png?v=22',boss:true,intro:'ご主人王が あらわれた！！'}
+  {id:'teiji',name:'定時のご主人様',hp:72,maxHp:72,atk:8,exp:28,image:'img/enemies/teiji.png?v=23',intro:'定時のご主人様が あらわれた！'},
+  {id:'zangyo',name:'残業のご主人様',hp:128,maxHp:128,atk:13,exp:48,image:'img/enemies/zangyo.png?v=23',intro:'残業のご主人様が つかれた顔で あらわれた！'},
+  {id:'shisseki',name:'叱責のご主人様',hp:188,maxHp:188,atk:18,exp:78,image:'img/enemies/shisseki.png?v=23',intro:'叱責のご主人様が ふるえながら あらわれた！'},
+  {id:'boss',name:'ご主人王',hp:320,maxHp:320,atk:24,exp:180,image:'img/enemies/boss.png?v=23',boss:true,intro:'ご主人王が あらわれた！！'}
 ];
 
 const equipmentData={
@@ -50,6 +50,9 @@ const state={
   player:makePlayer(),
   enemyIndex:0,
   enemy:null,
+  enemiesInBattle:[],
+  targetIndex:0,
+  lastDefeatedEnemy:null,
   busy:false,
   started:false,
   maze:[],
@@ -60,7 +63,45 @@ const state={
 
 function makePlayer(){return JSON.parse(JSON.stringify(initialPlayer));}
 function cloneEnemy(base){return JSON.parse(JSON.stringify(base));}
-function currentEnemy(){return state.enemy;}
+function currentEnemy(){
+  if(state.enemiesInBattle && state.enemiesInBattle.length){
+    if(!state.enemiesInBattle[state.targetIndex] || state.enemiesInBattle[state.targetIndex].hp<=0){
+      const next=state.enemiesInBattle.findIndex(e=>e.hp>0);
+      state.targetIndex=next>=0?next:0;
+    }
+    return state.enemiesInBattle[state.targetIndex] || state.enemy;
+  }
+  return state.enemy;
+}
+
+function aliveEnemies(){
+  return (state.enemiesInBattle||[]).filter(e=>e.hp>0);
+}
+
+function allEnemiesDefeated(){
+  return aliveEnemies().length===0;
+}
+
+function selectTarget(index){
+  if(state.busy) return;
+  if(!state.enemiesInBattle[index] || state.enemiesInBattle[index].hp<=0) return;
+  state.targetIndex=index;
+  updateUI();
+  setMessage(`${state.enemiesInBattle[index].name}を対象にした！`);
+}
+
+function buildEnemyParty(enemyBase){
+  const main=cloneEnemy(enemyBase);
+  if(main.boss) return [main];
+
+  // 最大2体まで。通常敵は一定確率で2体出現。
+  if(Math.random()<0.42){
+    const candidates=enemies.filter(e=>!e.boss);
+    const sub=cloneEnemy(candidates[Math.floor(Math.random()*candidates.length)]);
+    return [main,sub];
+  }
+  return [main];
+}
 function findWeapon(id){return equipmentData.weapons.find(x=>x.id===id)||null;}
 function findUniform(id){return equipmentData.uniforms.find(x=>x.id===id)||null;}
 
@@ -125,12 +166,12 @@ function startBgm(kind){
 
 /* ===== Assets ===== */
 const ASSETS_TO_PRELOAD=[
-  'img/enemies/teiji.png?v=22',
-  'img/enemies/zangyo.png?v=22',
-  'img/enemies/shisseki.png?v=22',
-  'img/enemies/boss.png?v=22',
-  'img/backgrounds/battle_room.png?v=22',
-  'img/backgrounds/battle_boss_room.png?v=22'
+  'img/enemies/teiji.png?v=23',
+  'img/enemies/zangyo.png?v=23',
+  'img/enemies/shisseki.png?v=23',
+  'img/enemies/boss.png?v=23',
+  'img/backgrounds/battle_room.png?v=23',
+  'img/backgrounds/battle_boss_room.png?v=23'
 ];
 function preloadImage(src){return new Promise(resolve=>{const img=new Image();img.onload=()=>resolve({src,ok:true});img.onerror=()=>resolve({src,ok:false});img.src=src;});}
 async function preloadAssets(){
@@ -280,21 +321,102 @@ function updateUI(){
   const e=currentEnemy();
   const p=state.player;
   if(!e) return;
-  document.getElementById('enemyName').textContent=e.name;
-  document.getElementById('enemyImage').src=e.image;
+
+  const alive=aliveEnemies();
+  const displayName=alive.length>1 ? `${alive.length}体のご主人様` : e.name;
+  document.getElementById('enemyName').textContent=displayName;
+
+  renderEnemySlots();
+
+  const totalHp=state.enemiesInBattle.length
+    ? state.enemiesInBattle.reduce((sum,en)=>sum+Math.max(0,en.hp),0)
+    : Math.max(0,e.hp);
+  const totalMaxHp=state.enemiesInBattle.length
+    ? state.enemiesInBattle.reduce((sum,en)=>sum+en.maxHp,0)
+    : e.maxHp;
+  const hpPercent=Math.max(0,(totalHp/totalMaxHp)*100);
+  document.getElementById('enemyHpFill').style.width=`${hpPercent}%`;
+
   document.getElementById('playerHp').textContent=`HP ${p.hp} / ${p.maxHp}`;
   document.getElementById('playerMp').textContent=`MP ${p.mp} / ${p.maxMp}`;
   document.getElementById('playerExp').textContent=`EXP ${p.exp} / ${p.nextExp}`;
-  const hpPercent=Math.max(0,(e.hp/e.maxHp)*100);
-  document.getElementById('enemyHpFill').style.width=`${hpPercent}%`;
+
   const status=document.querySelector('.status-panel h2');
   if(status) status.textContent=`${p.name} Lv.${p.lv}  攻${totalAtk()} 防${totalDef()}`;
-  document.body.classList.toggle('boss-battle',!!e.boss);
+
+  document.body.classList.toggle('boss-battle',!!(state.enemiesInBattle||[]).some(en=>en.boss));
+}
+
+function renderEnemySlots(){
+  const wrap=document.getElementById('enemySlots');
+  if(!wrap) return;
+  wrap.innerHTML='';
+
+  (state.enemiesInBattle||[]).forEach((enemy,index)=>{
+    const slot=document.createElement('div');
+    slot.className='enemy-slot';
+    if(index===state.targetIndex && enemy.hp>0) slot.classList.add('selected');
+    if(enemy.hp<=0) slot.classList.add('defeated');
+
+    const marker=document.createElement('div');
+    marker.className='enemy-target-marker';
+    marker.textContent=(index===state.targetIndex && enemy.hp>0)?'▼ TARGET':'';
+
+    const img=document.createElement('img');
+    img.src=enemy.image;
+    img.alt=enemy.name;
+    img.onerror=function(){this.classList.add('image-error');};
+
+    const name=document.createElement('div');
+    name.className='enemy-slot-name';
+    name.textContent=enemy.hp>0 ? enemy.name : '撃破';
+
+    slot.appendChild(marker);
+    slot.appendChild(img);
+    slot.appendChild(name);
+
+    if(enemy.hp>0){
+      slot.addEventListener('click',()=>selectTarget(index));
+    }
+
+    wrap.appendChild(slot);
+  });
+
+  renderTargetButtons();
+}
+
+function renderTargetButtons(){
+  let panel=document.getElementById('targetPanel');
+  const command=document.getElementById('commandPanel');
+  if(!command) return;
+
+  if(!panel){
+    panel=document.createElement('div');
+    panel.id='targetPanel';
+    panel.className='target-panel';
+    command.insertAdjacentElement('afterend',panel);
+  }
+
+  panel.innerHTML='';
+  if(!state.enemiesInBattle || state.enemiesInBattle.length<=1){
+    panel.classList.add('hidden');
+    return;
+  }
+
+  panel.classList.remove('hidden');
+  state.enemiesInBattle.forEach((enemy,index)=>{
+    const btn=document.createElement('button');
+    btn.textContent=enemy.hp>0 ? `対象${index+1}` : `撃破`;
+    if(index===state.targetIndex) btn.classList.add('selected-target');
+    btn.disabled=enemy.hp<=0 || state.busy;
+    btn.onclick=()=>selectTarget(index);
+    panel.appendChild(btn);
+  });
 }
 
 function setMessage(text){document.getElementById('messageText').textContent=text;}
 function setButtonsDisabled(disabled){
-  document.querySelectorAll('.command-panel button,.sub-menu-body button,.mini-btn,.sub-btn').forEach(btn=>{
+  document.querySelectorAll('.command-panel button,.sub-menu-body button,.mini-btn,.sub-btn,.target-panel button').forEach(btn=>{
     if(btn.id!=='restartBtn') btn.disabled=disabled;
   });
 }
@@ -351,10 +473,11 @@ function showLevelToast(text){
 }
 function enemyFlash(){
   screenShake();
-  const img=document.getElementById('enemyImage');
-  img.classList.remove('hit');
-  void img.offsetWidth;
-  img.classList.add('hit');
+  const selected=document.querySelector('.enemy-slot.selected img') || document.querySelector('.enemy-slot img');
+  if(!selected) return;
+  selected.classList.remove('hit');
+  void selected.offsetWidth;
+  selected.classList.add('hit');
 }
 function playerFlash(){
   screenShake();
@@ -373,20 +496,31 @@ function victoryEffect(){
 
 function startBattle(enemy,fromMap){
   state.inBattle=true;
-  state.enemy=enemy;
+  state.enemiesInBattle=buildEnemyParty(enemy);
+  state.targetIndex=0;
+  state.lastDefeatedEnemy=null;
+  state.enemy=state.enemiesInBattle[0];
   state.player.guarding=false;
   closeSubMenu();closeEquipMenu();closeTreasureMenu();
   document.getElementById('mapScreen').classList.add('hidden');
   document.getElementById('battleScreen').classList.remove('hidden');
-  if(enemy.boss) bossEntrance();
+  if(state.enemiesInBattle.some(e=>e.boss)) bossEntrance();
   updateUI();
-  setMessage(enemy.intro||`${enemy.name} が あらわれた！`);
-  startBgm(enemy.boss?'boss':'battle');
+
+  if(state.enemiesInBattle.length>1){
+    setMessage(`${state.enemiesInBattle[0].name}たちが あらわれた！`);
+  }else{
+    setMessage(state.enemy.intro||`${state.enemy.name} が あらわれた！`);
+  }
+
+  startBgm(state.enemiesInBattle.some(e=>e.boss)?'boss':'battle');
 }
 
 function endBattleToMap(){
   state.inBattle=false;
   state.enemy=null;
+  state.enemiesInBattle=[];
+  state.targetIndex=0;
   stopBgm();
   document.body.classList.remove('boss-battle');
   document.getElementById('battleScreen').classList.add('hidden');
@@ -408,6 +542,7 @@ function openSubMenu(kind){
     addSubButton('もえもえぎゅー　MP5 / 敵に18〜22ダメージ',()=>useMagic('moe'));
     if(state.player.lv>=2) addSubButton('おいしくなーれ　MP8 / HP回復',()=>useMagic('heal'));
     if(state.player.lv>=3) addSubButton('にしきぬやまー　MP12 / 大ダメージ',()=>useMagic('nishiki'));
+    if(state.player.lv>=5) addSubButton('ポトロシャワー　MP16 / 敵全体ダメージ',()=>useMagic('shower'));
   }else if(kind==='item'){
     title.textContent='どうぐ';
     addSubButton(`オムライス　HP30回復　残り${state.player.items.omurice}`,()=>useItem('omurice'));
@@ -475,20 +610,24 @@ async function playerAction(type){
   state.busy=true;setButtonsDisabled(true);
   const p=state.player;const e=currentEnemy();
   if(type==='attack'){
+    const target=currentEnemy();
     const isCritical=Math.random()<0.10;
     const baseDamage=Math.max(1,totalAtk()+Math.floor(Math.random()*4));
     const damage=isCritical ? Math.floor(baseDamage*2.2) : baseDamage;
-    e.hp=Math.max(0,e.hp-damage);
+    target.hp=Math.max(0,target.hp-damage);
+    if(target.hp<=0) state.lastDefeatedEnemy=target;
     if(isCritical){
-      setMessage(`会心の癒し！ ${e.name} に ${damage} ダメージ！`);
+      setMessage(`会心の癒し！ ${target.name} に ${damage} ダメージ！`);
       criticalFlash();
       showDamage(damage,'enemy','critical-text');
     }else{
-      setMessage(`${e.name} に ${damage} ダメージ！`);
+      setMessage(`${target.name} に ${damage} ダメージ！`);
       showDamage(damage,'enemy');
     }
     seAttack();enemyFlash();updateUI();
-    await sleep(isCritical?950:700);if(e.hp<=0){await winBattle();return;}await enemyTurn();
+    await sleep(isCritical?950:700);
+    if(allEnemiesDefeated()){await winBattle();return;}
+    await enemyTurn();
   }else if(type==='guard'){
     p.guarding=true;
     setMessage(`${p.name} は みをまもった！`);
@@ -501,7 +640,8 @@ async function useMagic(kind){
   if(state.busy) return;
   closeSubMenu();closeEquipMenu();
   state.busy=true;setButtonsDisabled(true);
-  const p=state.player;const e=currentEnemy();
+  const p=state.player;
+
   if(kind==='moe'){
     if(p.mp<5){await failAction('MPがたりない！');return;}
     p.mp-=5;await showCutin('おまじない','もえもえぎゅー！！');
@@ -517,8 +657,13 @@ async function useMagic(kind){
   }else if(kind==='nishiki'){
     if(p.mp<12){await failAction('MPがたりない！');return;}
     p.mp-=12;await showCutin('必殺おまじない','にしきぬやまー！！');screenFlash();
-    const damage=e.boss?45:65;
+    const target=currentEnemy();
+    const damage=target.boss?45:65;
     await damageEnemy('にしきぬやまー！！',damage);
+  }else if(kind==='shower'){
+    if(p.mp<16){await failAction('MPがたりない！');return;}
+    p.mp-=16;await showCutin('全体おまじない','ポトロシャワー！！');screenFlash();
+    await damageAllEnemies('ポトロシャワー！！',34);
   }
   state.busy=false;setButtonsDisabled(false);updateUI();
 }
@@ -556,36 +701,62 @@ async function failAction(message){
 }
 
 async function damageEnemy(message,damage){
-  const e=currentEnemy();
-  e.hp=Math.max(0,e.hp-damage);
-  setMessage(`${message} ${e.name} に ${damage} ダメージ！`);
+  const target=currentEnemy();
+  target.hp=Math.max(0,target.hp-damage);
+  if(target.hp<=0) state.lastDefeatedEnemy=target;
+  setMessage(`${message} ${target.name} に ${damage} ダメージ！`);
   showDamage(damage,'enemy');seMagic();enemyFlash();updateUI();
   await sleep(750);
-  if(e.hp<=0){await winBattle();return;}
+  if(allEnemiesDefeated()){ await winBattle(); return; }
+  await enemyTurn();
+}
+
+async function damageAllEnemies(message,baseDamage){
+  let defeated=null;
+  aliveEnemies().forEach(enemy=>{
+    const damage=enemy.boss ? Math.floor(baseDamage*0.8) : baseDamage;
+    enemy.hp=Math.max(0,enemy.hp-damage);
+    if(enemy.hp<=0) defeated=enemy;
+  });
+  if(defeated) state.lastDefeatedEnemy=defeated;
+  setMessage(`${message} 敵全体にダメージ！`);
+  showDamage(baseDamage,'enemy','critical-text');
+  seMagic();enemyFlash();updateUI();
+  await sleep(900);
+  if(allEnemiesDefeated()){ await winBattle(); return; }
   await enemyTurn();
 }
 
 async function enemyTurn(){
-  const p=state.player;const e=currentEnemy();
-  let damage=Math.max(1,e.atk-totalDef()+Math.floor(Math.random()*3));
-  const isCritical=Math.random()<0.08;
-  if(isCritical) damage=Math.floor(damage*2.0);
-  if(p.guarding){damage=Math.max(1,Math.floor(damage/2));p.guarding=false;}
-  p.hp=Math.max(0,p.hp-damage);
-  if(isCritical){
-    setMessage(`${e.name} の会心の一撃！ ${damage} ダメージ！`);
-    criticalFlash();
-    showDamage(damage,'player','enemy-critical-text');
-  }else{
-    setMessage(`${e.name} のこうげき！ ${damage} ダメージ！`);
-    showDamage(damage,'player');
+  const p=state.player;
+  const attackers=aliveEnemies();
+  if(!attackers.length) return;
+
+  for(const e of attackers){
+    let damage=Math.max(1,e.atk-totalDef()+Math.floor(Math.random()*3));
+    const isCritical=Math.random()<0.08;
+    if(isCritical) damage=Math.floor(damage*2.0);
+    if(p.guarding){damage=Math.max(1,Math.floor(damage/2));}
+
+    p.hp=Math.max(0,p.hp-damage);
+    if(isCritical){
+      setMessage(`${e.name} の会心の一撃！ ${damage} ダメージ！`);
+      criticalFlash();
+      showDamage(damage,'player','enemy-critical-text');
+    }else{
+      setMessage(`${e.name} のこうげき！ ${damage} ダメージ！`);
+      showDamage(damage,'player');
+    }
+    seHit();playerFlash();updateUI();
+    await sleep(isCritical?1050:850);
+
+    if(p.hp<=0){
+      setMessage(`${p.name} は たおれてしまった… 「最初から」で再挑戦できます。`);
+      setButtonsDisabled(true);state.busy=true;
+      return;
+    }
   }
-  seHit();playerFlash();updateUI();
-  await sleep(isCritical?1050:850);
-  if(p.hp<=0){
-    setMessage(`${p.name} は たおれてしまった… 「最初から」で再挑戦できます。`);
-    setButtonsDisabled(true);state.busy=true;
-  }
+  p.guarding=false;
 }
 
 function giveReward(enemyId){
@@ -644,11 +815,17 @@ function treasureDrop(enemyId){
 }
 
 async function winBattle(){
-  const p=state.player;const e=currentEnemy();
+  const p=state.player;
+  const defeatedEnemies=state.enemiesInBattle && state.enemiesInBattle.length ? state.enemiesInBattle : [currentEnemy()];
+  const dropTarget=state.lastDefeatedEnemy || defeatedEnemies[defeatedEnemies.length-1];
+  const totalExp=defeatedEnemies.reduce((sum,e)=>sum+(e.exp||0),0);
+  const hasBoss=defeatedEnemies.some(e=>e.boss);
+
   victoryEffect();seVictory();
-  setMessage(`${e.name} を いやした！ EXP ${e.exp} 獲得！`);
-  p.exp+=e.exp;updateUI();
+  setMessage(`ご主人様たちを いやした！ EXP ${totalExp} 獲得！`);
+  p.exp+=totalExp;updateUI();
   await sleep(1000);
+
   while(p.exp>=p.nextExp){
     p.exp-=p.nextExp;p.lv++;p.nextExp=Math.floor(p.nextExp*1.5);
     p.maxHp+=6;p.maxMp+=3;p.baseAtk+=2;p.baseDef+=1;p.hp=p.maxHp;p.mp=p.maxMp;
@@ -656,9 +833,12 @@ async function winBattle(){
     setMessage(`${p.name} は レベル ${p.lv} に あがった！`);
     updateUI();await sleep(1200);
   }
-  if(e.boss){await showEnding();return;}
-  if(giveReward(e.id)){updateUI();await sleep(1300);}
-  if(treasureDrop(e.id)){updateUI();await sleep(1200);}
+
+  if(hasBoss){await showEnding();return;}
+
+  // v23：ドロップ判定は「最後に倒した敵」が対象
+  if(dropTarget && giveReward(dropTarget.id)){updateUI();await sleep(1300);}
+  if(dropTarget && treasureDrop(dropTarget.id)){updateUI();await sleep(1200);}
   endBattleToMap();
 }
 
