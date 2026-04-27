@@ -8,10 +8,10 @@ const enemies=[
      叱責 → Lv8
      ボス → Lv15
   */
-  {id:'teiji',name:'定時のご主人様',hp:58,maxHp:58,atk:7,exp:22,image:'img/enemies/teiji.png?v=30',intro:'定時のご主人様が あらわれた！'},
-  {id:'zangyo',name:'残業のご主人様',hp:108,maxHp:108,atk:11,exp:42,image:'img/enemies/zangyo.png?v=30',intro:'残業のご主人様が つかれた顔で あらわれた！'},
-  {id:'shisseki',name:'叱責のご主人様',hp:178,maxHp:178,atk:17,exp:78,image:'img/enemies/shisseki.png?v=30',intro:'叱責のご主人様が ふるえながら あらわれた！'},
-  {id:'boss',name:'ご主人王',hp:420,maxHp:420,atk:28,exp:260,image:'img/enemies/boss.png?v=30',boss:true,intro:'ご主人王が あらわれた！！'}
+  {id:'teiji',name:'定時のご主人様',hp:58,maxHp:58,atk:7,exp:22,image:'img/enemies/teiji.png?v=31',intro:'定時のご主人様が あらわれた！'},
+  {id:'zangyo',name:'残業のご主人様',hp:108,maxHp:108,atk:11,exp:42,image:'img/enemies/zangyo.png?v=31',intro:'残業のご主人様が つかれた顔で あらわれた！'},
+  {id:'shisseki',name:'叱責のご主人様',hp:178,maxHp:178,atk:17,exp:78,image:'img/enemies/shisseki.png?v=31',intro:'叱責のご主人様が ふるえながら あらわれた！'},
+  {id:'boss',name:'ご主人王',hp:420,maxHp:420,atk:28,exp:260,image:'img/enemies/boss.png?v=31',boss:true,intro:'ご主人王が あらわれた！！'}
 ];
 
 const equipmentData={
@@ -165,12 +165,12 @@ function startBgm(kind){
 
 /* ===== Assets ===== */
 const ASSETS_TO_PRELOAD=[
-  'img/enemies/teiji.png?v=30',
-  'img/enemies/zangyo.png?v=30',
-  'img/enemies/shisseki.png?v=30',
-  'img/enemies/boss.png?v=30',
-  'img/backgrounds/battle_room.png?v=30',
-  'img/backgrounds/battle_boss_room.png?v=30'
+  'img/enemies/teiji.png?v=31',
+  'img/enemies/zangyo.png?v=31',
+  'img/enemies/shisseki.png?v=31',
+  'img/enemies/boss.png?v=31',
+  'img/backgrounds/battle_room.png?v=31',
+  'img/backgrounds/battle_boss_room.png?v=31'
 ];
 function preloadImage(src){return new Promise(resolve=>{const img=new Image();img.onload=()=>resolve({src,ok:true});img.onerror=()=>resolve({src,ok:false});img.src=src;});}
 async function preloadAssets(){
@@ -565,9 +565,11 @@ function openSubMenu(kind){
   if(kind==='magic'){
     title.textContent='おまじない';
     addSubButton('もえもえぎゅー　MP5 / 敵に18〜22ダメージ',()=>useMagic('moe'));
-    if(state.player.lv>=3) addSubButton('おいしくなーれ　MP8 / HP回復',()=>useMagic('heal'));
+    if(state.player.lv>=3) addSubButton('おいしくなーれ　MP8 / HP回復
+    if(state.player.lv>=4) addSubButton('おやすみなさい　MP4 / 眠り',()=>useMagic('sleep'));',()=>useMagic('heal'));
     if(state.player.lv>=10) addSubButton('にしきぬやまー　MP16 / 大ダメージ',()=>useMagic('nishiki'));
-    if(state.player.lv>=6) addSubButton('チェキフラッシュ　MP12 / 敵全体ダメージ',()=>useMagic('shower'));
+    if(state.player.lv>=6) addSubButton('チェキフラッシュ　MP12 / 敵全体ダメージ
+    if(state.player.lv>=7) addSubButton('萌えちゃーじ　MP0 / MP20回復',()=>useMagic('charge'));',()=>useMagic('shower'));
   }else if(kind==='item'){
     title.textContent='どうぐ';
     addSubButton(`オムライス　HP30回復　残り${state.player.items.omurice}`,()=>useItem('omurice'));
@@ -1070,3 +1072,13 @@ document.addEventListener('touchend',function(e){
 document.addEventListener('gesturestart',function(e){
   e.preventDefault();
 });
+
+/* ===== v31 additions =====
+新敵:
+- 激務のご主人様 img/enemies/gekimu.png
+- 泥酔のご主人様 img/enemies/deisui.png
+
+新おまじない:
+- おやすみなさい（Lv4 / MP4 / 1〜3ターン睡眠）
+- 萌えちゃーじ（Lv7 / MP0 / MP20回復）
+*/
