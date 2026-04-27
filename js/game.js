@@ -565,11 +565,9 @@ function openSubMenu(kind){
   if(kind==='magic'){
     title.textContent='おまじない';
     addSubButton('もえもえぎゅー　MP5 / 敵に18〜22ダメージ',()=>useMagic('moe'));
-    if(state.player.lv>=3) addSubButton('おいしくなーれ　MP8 / HP回復
-    if(state.player.lv>=4) addSubButton('おやすみなさい　MP4 / 眠り',()=>useMagic('sleep'));',()=>useMagic('heal'));
+    if(state.player.lv>=3) addSubButton('おいしくなーれ　MP8 / HP回復',()=>useMagic('heal'));
     if(state.player.lv>=10) addSubButton('にしきぬやまー　MP16 / 大ダメージ',()=>useMagic('nishiki'));
-    if(state.player.lv>=6) addSubButton('チェキフラッシュ　MP12 / 敵全体ダメージ
-    if(state.player.lv>=7) addSubButton('萌えちゃーじ　MP0 / MP20回復',()=>useMagic('charge'));',()=>useMagic('shower'));
+    if(state.player.lv>=6) addSubButton('チェキフラッシュ　MP12 / 敵全体ダメージ',()=>useMagic('shower'));
   }else if(kind==='item'){
     title.textContent='どうぐ';
     addSubButton(`オムライス　HP30回復　残り${state.player.items.omurice}`,()=>useItem('omurice'));
@@ -1073,12 +1071,14 @@ document.addEventListener('gesturestart',function(e){
   e.preventDefault();
 });
 
-/* ===== v31 additions =====
+/* ===== v31 (V30 base) additions =====
 新敵:
-- 激務のご主人様 img/enemies/gekimu.png
-- 泥酔のご主人様 img/enemies/deisui.png
+- 激務のご主人様（gekimu.png / 紅茶）
+- 泥酔のご主人様（deisui.png / オムライス）
 
 新おまじない:
 - おやすみなさい（Lv4 / MP4 / 1〜3ターン睡眠）
 - 萌えちゃーじ（Lv7 / MP0 / MP20回復）
+
+※ v30を正として、その上に追加する基準版
 */
