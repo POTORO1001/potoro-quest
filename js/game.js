@@ -8,10 +8,10 @@ const enemies=[
      叱責 → Lv8
      ボス → Lv15
   */
-  {id:'teiji',name:'定時のご主人様',hp:58,maxHp:58,atk:7,exp:22,image:'img/enemies/teiji.png?v=29',intro:'定時のご主人様が あらわれた！'},
-  {id:'zangyo',name:'残業のご主人様',hp:108,maxHp:108,atk:11,exp:42,image:'img/enemies/zangyo.png?v=29',intro:'残業のご主人様が つかれた顔で あらわれた！'},
-  {id:'shisseki',name:'叱責のご主人様',hp:178,maxHp:178,atk:17,exp:78,image:'img/enemies/shisseki.png?v=29',intro:'叱責のご主人様が ふるえながら あらわれた！'},
-  {id:'boss',name:'ご主人王',hp:420,maxHp:420,atk:28,exp:260,image:'img/enemies/boss.png?v=29',boss:true,intro:'ご主人王が あらわれた！！'}
+  {id:'teiji',name:'定時のご主人様',hp:58,maxHp:58,atk:7,exp:22,image:'img/enemies/teiji.png?v=30',intro:'定時のご主人様が あらわれた！'},
+  {id:'zangyo',name:'残業のご主人様',hp:108,maxHp:108,atk:11,exp:42,image:'img/enemies/zangyo.png?v=30',intro:'残業のご主人様が つかれた顔で あらわれた！'},
+  {id:'shisseki',name:'叱責のご主人様',hp:178,maxHp:178,atk:17,exp:78,image:'img/enemies/shisseki.png?v=30',intro:'叱責のご主人様が ふるえながら あらわれた！'},
+  {id:'boss',name:'ご主人王',hp:420,maxHp:420,atk:28,exp:260,image:'img/enemies/boss.png?v=30',boss:true,intro:'ご主人王が あらわれた！！'}
 ];
 
 const equipmentData={
@@ -165,12 +165,12 @@ function startBgm(kind){
 
 /* ===== Assets ===== */
 const ASSETS_TO_PRELOAD=[
-  'img/enemies/teiji.png?v=29',
-  'img/enemies/zangyo.png?v=29',
-  'img/enemies/shisseki.png?v=29',
-  'img/enemies/boss.png?v=29',
-  'img/backgrounds/battle_room.png?v=29',
-  'img/backgrounds/battle_boss_room.png?v=29'
+  'img/enemies/teiji.png?v=30',
+  'img/enemies/zangyo.png?v=30',
+  'img/enemies/shisseki.png?v=30',
+  'img/enemies/boss.png?v=30',
+  'img/backgrounds/battle_room.png?v=30',
+  'img/backgrounds/battle_boss_room.png?v=30'
 ];
 function preloadImage(src){return new Promise(resolve=>{const img=new Image();img.onload=()=>resolve({src,ok:true});img.onerror=()=>resolve({src,ok:false});img.src=src;});}
 async function preloadAssets(){
@@ -276,7 +276,7 @@ function giveMapChestEquipment(){
 
   // マップ上の宝箱も「装備品のみ」
   // 初代メイド服はレア装備
-  const rareFirstMaid = Math.random() < 0.15;
+  const rareFirstMaid = Math.random() < 1/25;
   if(rareFirstMaid && !p.inventory.uniforms.includes('real6')){
     p.inventory.uniforms.push('real6');
     setMapMessage('宝箱を開けた！ レア装備 初代メイド服 を手に入れた！');
@@ -567,7 +567,7 @@ function openSubMenu(kind){
     addSubButton('もえもえぎゅー　MP5 / 敵に18〜22ダメージ',()=>useMagic('moe'));
     if(state.player.lv>=3) addSubButton('おいしくなーれ　MP8 / HP回復',()=>useMagic('heal'));
     if(state.player.lv>=10) addSubButton('にしきぬやまー　MP16 / 大ダメージ',()=>useMagic('nishiki'));
-    if(state.player.lv>=6) addSubButton('しゅわしゅわー　MP12 / 敵全体ダメージ',()=>useMagic('shower'));
+    if(state.player.lv>=6) addSubButton('チェキフラッシュ　MP12 / 敵全体ダメージ',()=>useMagic('shower'));
   }else if(kind==='item'){
     title.textContent='どうぐ';
     addSubButton(`オムライス　HP30回復　残り${state.player.items.omurice}`,()=>useItem('omurice'));
@@ -687,8 +687,8 @@ async function useMagic(kind){
     await damageEnemy('にしきぬやまー！！',damage);
   }else if(kind==='shower'){
     if(p.mp<12){await failAction('MPがたりない！');return;}
-    p.mp-=16;await showCutin('全体おまじない','しゅわしゅわー！！');screenFlash();
-    await damageAllEnemies('しゅわしゅわー！！',38);
+    p.mp-=16;await showCutin('全体おまじない','チェキフラッシュ！！');screenFlash();
+    await damageAllEnemies('チェキフラッシュ！！',38);
   }
   state.busy=false;setButtonsDisabled(false);updateUI();
 }
@@ -789,7 +789,7 @@ function giveReward(enemyId){
 
   // v27：敵からのドロップは「どうぐ」のみ
   // くろれきしはどうぐ扱いのレアドロップ
-  const rareKurorekishi = Math.random() < 0.12;
+  const rareKurorekishi = Math.random() < 1/25;
 
   if(rareKurorekishi){
     p.items.horse += 1;
@@ -825,7 +825,7 @@ function treasureDrop(enemyId){
   // 初代メイド服は装備品扱いのレアドロップ
   if(Math.floor(Math.random()*4)!==0) return false;
 
-  const rareFirstMaid = Math.random() < 0.15;
+  const rareFirstMaid = Math.random() < 1/25;
   if(rareFirstMaid && !p.inventory.uniforms.includes('real6')){
     p.inventory.uniforms.push('real6');
     openTreasureMenu('レア装備！ 初代メイド服 を発見した！ 防御 +24');
@@ -901,7 +901,7 @@ async function showEnding(){
   document.getElementById('endingScreen').classList.remove('hidden');
   const cheki=document.getElementById('chekiTicket');
   cheki.classList.add('hidden');
-  if(Math.random()<1/3){
+  if(Math.random()<1/50){
     document.getElementById('endingMessage').textContent='ご主人王がチェキ券を落とした！';
     const issuedAt=document.getElementById('chekiIssuedAt');
     if(issuedAt) issuedAt.textContent=formatChekiIssuedAt(new Date());
@@ -1070,4 +1070,3 @@ document.addEventListener('touchend',function(e){
 document.addEventListener('gesturestart',function(e){
   e.preventDefault();
 });
-
