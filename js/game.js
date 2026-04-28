@@ -8,12 +8,12 @@ const enemies=[
      叱責 → Lv8
      ボス → Lv15
   */
-  {id:'teiji',name:'定時のご主人様',hp:58,maxHp:58,atk:7,exp:12,image:'img/enemies/teiji.png?v=29tb',intro:'定時のご主人様が あらわれた！'},
-  {id:'zangyo',name:'残業のご主人様',hp:108,maxHp:108,atk:11,exp:24,image:'img/enemies/zangyo.png?v=29tb',intro:'残業のご主人様が つかれた顔で あらわれた！'},
-  {id:'shisseki',name:'叱責のご主人様',hp:178,maxHp:178,atk:17,exp:45,image:'img/enemies/shisseki.png?v=29tb',intro:'叱責のご主人様が ふるえながら あらわれた！'},
-  {id:'boss',name:'鬼奴夜魔さん',hp:420,maxHp:420,atk:28,exp:120,image:'img/enemies/boss.png?v=29tb',
-  'img/enemies/tamachan.png?v=29tb',boss:true,intro:'鬼奴夜魔さんが あらわれた！！'},
-  {id:'tamachan',name:'たまちゃん',hp:1,maxHp:1,atk:0,exp:0,image:'img/enemies/tamachan.png?v=29tb',helper:true,intro:'たまちゃんが あらわれた！'}
+  {id:'teiji',name:'定時のご主人様',hp:58,maxHp:58,atk:7,exp:12,image:'img/enemies/teiji.png?v=29lf',intro:'定時のご主人様が あらわれた！'},
+  {id:'zangyo',name:'残業のご主人様',hp:108,maxHp:108,atk:11,exp:24,image:'img/enemies/zangyo.png?v=29lf',intro:'残業のご主人様が つかれた顔で あらわれた！'},
+  {id:'shisseki',name:'叱責のご主人様',hp:178,maxHp:178,atk:17,exp:45,image:'img/enemies/shisseki.png?v=29lf',intro:'叱責のご主人様が ふるえながら あらわれた！'},
+  {id:'boss',name:'鬼奴夜魔さん',hp:420,maxHp:420,atk:28,exp:120,image:'img/enemies/boss.png?v=29lf',
+  'img/enemies/tamachan.png?v=29lf',boss:true,intro:'鬼奴夜魔さんが あらわれた！！'},
+  {id:'tamachan',name:'たまちゃん',hp:1,maxHp:1,atk:0,exp:0,image:'img/enemies/tamachan.png?v=29lf',helper:true,intro:'たまちゃんが あらわれた！'}
 ];
 
 const equipmentData={
@@ -168,21 +168,42 @@ function startBgm(kind){
 
 /* ===== Assets ===== */
 const ASSETS_TO_PRELOAD=[
-  'img/enemies/teiji.png?v=29tb',
-  'img/enemies/zangyo.png?v=29tb',
-  'img/enemies/shisseki.png?v=29tb',
-  'img/enemies/boss.png?v=29tb',
-  'img/enemies/tamachan.png?v=29tb',
-  'img/backgrounds/battle_room.png?v=29tb',
-  'img/backgrounds/battle_boss_room.png?v=29tb'
+  'img/enemies/teiji.png?v=29lf',
+  'img/enemies/zangyo.png?v=29lf',
+  'img/enemies/shisseki.png?v=29lf',
+  'img/enemies/boss.png?v=29lf',
+  'img/enemies/tamachan.png?v=29lf',
+  'img/backgrounds/battle_room.png?v=29lf',
+  'img/backgrounds/battle_boss_room.png?v=29lf'
 ];
 function preloadImage(src){return new Promise(resolve=>{const img=new Image();img.onload=()=>resolve({src,ok:true});img.onerror=()=>resolve({src,ok:false});img.src=src;});}
-async function preloadAssets(){
+function hideLoadingScreen(){
   const loading=document.getElementById('loadingScreen');
-  await Promise.all(ASSETS_TO_PRELOAD.map(preloadImage));
-  if(loading){loading.style.opacity='0';loading.style.transition='opacity .35s ease';setTimeout(()=>loading.remove(),380);}
+  if(!loading) return;
+  loading.style.opacity='0';
+  loading.style.transition='opacity .35s ease';
+  setTimeout(()=>loading.remove(),420);
 }
-window.addEventListener('load',preloadAssets);
+
+async function preloadAssets(){
+  try{
+    await Promise.race([
+      Promise.all(ASSETS_TO_PRELOAD.map(preloadImage)),
+      new Promise(resolve=>setTimeout(resolve,2200))
+    ]);
+  }catch(e){
+  }finally{
+    hideLoadingScreen();
+  }
+}
+
+if(document.readyState==='complete' || document.readyState==='interactive'){
+  setTimeout(preloadAssets,0);
+}else{
+  window.addEventListener('DOMContentLoaded',preloadAssets,{once:true});
+}
+
+setTimeout(hideLoadingScreen,3500);
 
 /* ===== Map ===== */
 const cvs=document.getElementById('mapCanvas');
