@@ -8,12 +8,12 @@ const enemies=[
      叱責 → Lv8
      ボス → Lv15
   */
-  {id:'teiji',name:'定時のご主人様',hp:58,maxHp:58,atk:7,exp:12,image:'img/enemies/teiji.png?v=29t',intro:'定時のご主人様が あらわれた！'},
-  {id:'zangyo',name:'残業のご主人様',hp:108,maxHp:108,atk:11,exp:24,image:'img/enemies/zangyo.png?v=29t',intro:'残業のご主人様が つかれた顔で あらわれた！'},
-  {id:'shisseki',name:'叱責のご主人様',hp:178,maxHp:178,atk:17,exp:45,image:'img/enemies/shisseki.png?v=29t',intro:'叱責のご主人様が ふるえながら あらわれた！'},
-  {id:'boss',name:'ご主人王',hp:420,maxHp:420,atk:28,exp:120,image:'img/enemies/boss.png?v=29t',
-  'img/enemies/tamachan.png?v=29t',boss:true,intro:'ご主人王が あらわれた！！'},
-  {id:'tamachan',name:'たまちゃん',hp:1,maxHp:1,atk:0,exp:0,image:'img/enemies/tamachan.png?v=29t',helper:true,intro:'たまちゃんが あらわれた！'}
+  {id:'teiji',name:'定時のご主人様',hp:58,maxHp:58,atk:7,exp:12,image:'img/enemies/teiji.png?v=29tb',intro:'定時のご主人様が あらわれた！'},
+  {id:'zangyo',name:'残業のご主人様',hp:108,maxHp:108,atk:11,exp:24,image:'img/enemies/zangyo.png?v=29tb',intro:'残業のご主人様が つかれた顔で あらわれた！'},
+  {id:'shisseki',name:'叱責のご主人様',hp:178,maxHp:178,atk:17,exp:45,image:'img/enemies/shisseki.png?v=29tb',intro:'叱責のご主人様が ふるえながら あらわれた！'},
+  {id:'boss',name:'鬼奴夜魔さん',hp:420,maxHp:420,atk:28,exp:120,image:'img/enemies/boss.png?v=29tb',
+  'img/enemies/tamachan.png?v=29tb',boss:true,intro:'鬼奴夜魔さんが あらわれた！！'},
+  {id:'tamachan',name:'たまちゃん',hp:1,maxHp:1,atk:0,exp:0,image:'img/enemies/tamachan.png?v=29tb',helper:true,intro:'たまちゃんが あらわれた！'}
 ];
 
 const equipmentData={
@@ -43,6 +43,7 @@ const initialPlayer={
   nextExp:45,
   guarding:false,
   items:{omurice:2,tea:1,horse:1},
+  metTamachan:false,
   inventory:{weapons:['duster'],uniforms:['stocking']},
   equip:{weapon:'duster',head:null,body:null,legs:'stocking'}
 };
@@ -167,13 +168,13 @@ function startBgm(kind){
 
 /* ===== Assets ===== */
 const ASSETS_TO_PRELOAD=[
-  'img/enemies/teiji.png?v=29t',
-  'img/enemies/zangyo.png?v=29t',
-  'img/enemies/shisseki.png?v=29t',
-  'img/enemies/boss.png?v=29t',
-  'img/enemies/tamachan.png?v=29t',
-  'img/backgrounds/battle_room.png?v=29t',
-  'img/backgrounds/battle_boss_room.png?v=29t'
+  'img/enemies/teiji.png?v=29tb',
+  'img/enemies/zangyo.png?v=29tb',
+  'img/enemies/shisseki.png?v=29tb',
+  'img/enemies/boss.png?v=29tb',
+  'img/enemies/tamachan.png?v=29tb',
+  'img/backgrounds/battle_room.png?v=29tb',
+  'img/backgrounds/battle_boss_room.png?v=29tb'
 ];
 function preloadImage(src){return new Promise(resolve=>{const img=new Image();img.onload=()=>resolve({src,ok:true});img.onerror=()=>resolve({src,ok:false});img.src=src;});}
 async function preloadAssets(){
@@ -318,7 +319,7 @@ function checkTileEvent(){
     return;
   }
   // レア遭遇：お助けキャラ たまちゃん
-  if(Math.random()<1/80){
+  if(!state.player.metTamachan && Math.random()<1/80){
     startBattle(cloneEnemy(enemies.find(e=>e.id==='tamachan')),false);
     return;
   }
@@ -560,6 +561,7 @@ function startBattle(enemy,fromMap){
 
 function completeTamachanEvent(){
   const p=state.player;
+  p.metTamachan=true;
   if(!p.inventory.uniforms.includes('real6')){
     p.inventory.uniforms.push('real6');
     setMessage('初代メイド服をもらった！');
@@ -1123,4 +1125,11 @@ document.addEventListener('gesturestart',function(e){
 - たまちゃんは必ず単体で出現
 - セリフ：「いつもありがと♡お給仕頑張ってね♡」
 - イベント終了後、初代メイド服を装備品に追加
+*/
+
+
+/* ===== v29 Tamachan Once + Boss Rename =====
+- たまちゃんは一回の冒険で一度しか出会えない
+- 一度遭遇後はその冒険中は再出現しない
+- ボス名を「鬼奴夜魔さん」に変更
 */
