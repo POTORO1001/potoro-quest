@@ -1,3 +1,25 @@
+
+/* ===== BGM Control ===== */
+function stopAllBgm(){
+  ['bgmOpening','bgmMap','bgmBattle','bgmBoss'].forEach(id=>{
+    const a=document.getElementById(id);
+    if(a){
+      a.pause();
+      a.currentTime=0;
+    }
+  });
+}
+
+function playBgm(id){
+  if(state && state.soundOff) return;
+  stopAllBgm();
+  const a=document.getElementById(id);
+  if(a){
+    const p=a.play();
+    if(p && typeof p.catch==='function'){ p.catch(()=>{}); }
+  }
+}
+
 const MAZE_W=17;
 const MAZE_H=17;
 
@@ -10,13 +32,13 @@ const enemies=[
      叱責 Lv17 / 進行度4〜5
      鬼奴夜魔さん Lv20 / 最深部
   */
-  {id:'teiji',name:'定時のご主人様',hp:52,maxHp:52,atk:6,exp:12,image:'img/enemies/teiji.png?v=29root',intro:'定時のご主人様が あらわれた！'},
-  {id:'zangyo',name:'残業のご主人様',hp:92,maxHp:92,atk:10,exp:24,image:'img/enemies/zangyo.png?v=29root',intro:'残業のご主人様が つかれた顔で あらわれた！'},
-  {id:'gekimu',name:'激務のご主人様',hp:148,maxHp:148,atk:15,exp:45,image:'img/enemies/gekimu.png?v=29root',intro:'激務のご主人様が せわしなく あらわれた！'},
-  {id:'deisui',name:'泥酔のご主人様',hp:228,maxHp:228,atk:21,exp:70,image:'img/enemies/deisui.png?v=29root',intro:'泥酔のご主人様が ふらつきながら あらわれた！'},
-  {id:'shisseki',name:'叱責のご主人様',hp:340,maxHp:340,atk:28,exp:110,image:'img/enemies/shisseki.png?v=29root',intro:'叱責のご主人様が ふるえながら あらわれた！'},
-  {id:'boss',name:'鬼奴夜魔さん',hp:520,maxHp:520,atk:36,exp:160,image:'img/enemies/boss.png?v=29root',boss:true,intro:'鬼奴夜魔さんが あらわれた！！'},
-  {id:'tamachan',name:'たまちゃん',hp:1,maxHp:1,atk:0,exp:0,image:'img/enemies/tamachan.png?v=29root',helper:true,intro:'たまちゃんが あらわれた！'}
+  {id:'teiji',name:'定時のご主人様',hp:52,maxHp:52,atk:6,exp:12,image:'img/enemies/teiji.png?v=29bgm',intro:'定時のご主人様が あらわれた！'},
+  {id:'zangyo',name:'残業のご主人様',hp:92,maxHp:92,atk:10,exp:24,image:'img/enemies/zangyo.png?v=29bgm',intro:'残業のご主人様が つかれた顔で あらわれた！'},
+  {id:'gekimu',name:'激務のご主人様',hp:148,maxHp:148,atk:15,exp:45,image:'img/enemies/gekimu.png?v=29bgm',intro:'激務のご主人様が せわしなく あらわれた！'},
+  {id:'deisui',name:'泥酔のご主人様',hp:228,maxHp:228,atk:21,exp:70,image:'img/enemies/deisui.png?v=29bgm',intro:'泥酔のご主人様が ふらつきながら あらわれた！'},
+  {id:'shisseki',name:'叱責のご主人様',hp:340,maxHp:340,atk:28,exp:110,image:'img/enemies/shisseki.png?v=29bgm',intro:'叱責のご主人様が ふるえながら あらわれた！'},
+  {id:'boss',name:'鬼奴夜魔さん',hp:520,maxHp:520,atk:36,exp:160,image:'img/enemies/boss.png?v=29bgm',boss:true,intro:'鬼奴夜魔さんが あらわれた！！'},
+  {id:'tamachan',name:'たまちゃん',hp:1,maxHp:1,atk:0,exp:0,image:'img/enemies/tamachan.png?v=29bgm',helper:true,intro:'たまちゃんが あらわれた！'}
 ];
 
 const equipmentData={
@@ -176,15 +198,15 @@ function startBgm(kind){
 
 /* ===== Assets ===== */
 const ASSETS_TO_PRELOAD=[
-  'img/enemies/teiji.png?v=29root',
-  'img/enemies/zangyo.png?v=29root',
-  'img/enemies/gekimu.png?v=29root',
-  'img/enemies/deisui.png?v=29root',
-  'img/enemies/shisseki.png?v=29root',
-  'img/enemies/boss.png?v=29root',
-  'img/enemies/tamachan.png?v=29root',
-  'img/backgrounds/battle_room.png?v=29root',
-  'img/backgrounds/battle_boss_room.png?v=29root'
+  'img/enemies/teiji.png?v=29bgm',
+  'img/enemies/zangyo.png?v=29bgm',
+  'img/enemies/gekimu.png?v=29bgm',
+  'img/enemies/deisui.png?v=29bgm',
+  'img/enemies/shisseki.png?v=29bgm',
+  'img/enemies/boss.png?v=29bgm',
+  'img/enemies/tamachan.png?v=29bgm',
+  'img/backgrounds/battle_room.png?v=29bgm',
+  'img/backgrounds/battle_boss_room.png?v=29bgm'
 ];
 function preloadImage(src){return new Promise(resolve=>{const img=new Image();img.onload=()=>resolve({src,ok:true});img.onerror=()=>resolve({src,ok:false});img.src=src;});}
 function hideLoadingScreen(){
@@ -623,6 +645,7 @@ function completeTamachanEvent(){
 }
 
 function endBattleToMap(){
+  playBgm('bgmMap');
   state.inBattle=false;
   state.enemy=null;
   state.enemiesInBattle=[];
@@ -989,6 +1012,7 @@ async function showEnding(){
   }
 }
 function restartFromEnding(){
+  playBgm('bgmOpening');
   document.getElementById('endingScreen').classList.add('hidden');
   document.getElementById('battleScreen').classList.add('hidden');
   document.getElementById('mapScreen').classList.add('hidden');
@@ -1008,6 +1032,7 @@ function getOshiName(){
 
 /* ===== Start / Reset ===== */
 function startGame(){
+  playBgm('bgmMap');
   initAudio();
   document.getElementById('titleScreen').classList.add('hidden');
   document.getElementById('openingScreen').classList.add('hidden');
@@ -1070,6 +1095,7 @@ function startOpeningStory(){
 }
 
 function openOpening(){
+  playBgm('bgmOpening');
   const title=document.getElementById('titleScreen');
   const opening=document.getElementById('openingScreen');
   const active=document.getElementById('openingStoryActive');
@@ -1177,3 +1203,7 @@ document.addEventListener('gesturestart',function(e){
 - 一度遭遇後はその冒険中は再出現しない
 - ボス名を「鬼奴夜魔さん」に変更
 */
+
+window.addEventListener('DOMContentLoaded', ()=>{
+  setTimeout(()=>playBgm('bgmOpening'), 300);
+});
