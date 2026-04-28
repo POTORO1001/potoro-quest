@@ -23,7 +23,7 @@
     <input id="oshiNameInput" class="name-input" type="text" maxlength="12" placeholder="例：おうまさん">
     <button id="startBtn" class="start-btn">冒険をはじめる</button>
     <button id="openingBtn" class="opening-btn">オープニングを見る</button>
-    <div class="version-label">スマホ版 v29 / Root Cause Fixed</div>
+    <div class="version-label">スマホ版 v29 / BGM Update</div>
     <div class="release-note">スマートフォン推奨</div>
   </div>
 </section>
@@ -205,5 +205,23 @@
 </script>
 
 <script src="js/game.js"></script>
+
+<!-- BGM -->
+<audio id="bgmOpening" loop preload="auto">
+  <source src="audio/opening.mp3?v=29bgm" type="audio/mpeg">
+</audio>
+
+<audio id="bgmMap" loop preload="auto">
+  <source src="audio/map.mp3?v=29bgm" type="audio/mpeg">
+</audio>
+
+<audio id="bgmBattle" loop preload="auto">
+  <source src="audio/battle.mp3?v=29bgm" type="audio/mpeg">
+</audio>
+
+<audio id="bgmBoss" loop preload="auto">
+  <source src="audio/boss.mp3?v=29bgm" type="audio/mpeg">
+</audio>
+
 </body>
 </html>
