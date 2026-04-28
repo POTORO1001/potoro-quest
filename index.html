@@ -23,7 +23,7 @@
     <input id="oshiNameInput" class="name-input" type="text" maxlength="12" placeholder="例：おうまさん">
     <button id="startBtn" class="start-btn">冒険をはじめる</button>
     <button id="openingBtn" class="opening-btn">オープニングを見る</button>
-    <div class="version-label">スマホ版 v29 / Tamachan Once + Boss Rename</div>
+    <div class="version-label">スマホ版 v29 / Loading Fix</div>
     <div class="release-note">スマートフォン推奨</div>
   </div>
 </section>
@@ -189,6 +189,20 @@
     <button id="endingRestartBtn" class="start-btn">もう一度あそぶ</button>
   </div>
 </section>
+
+
+<script>
+  window.__potoroHideLoading = function(){
+    var loading = document.getElementById('loadingScreen');
+    if(!loading) return;
+    loading.style.opacity = '0';
+    loading.style.transition = 'opacity .35s ease';
+    setTimeout(function(){
+      if(loading && loading.parentNode) loading.parentNode.removeChild(loading);
+    }, 420);
+  };
+  setTimeout(window.__potoroHideLoading, 3500);
+</script>
 
 <script src="js/game.js"></script>
 </body>
