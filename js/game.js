@@ -8,10 +8,12 @@ const enemies=[
      叱責 → Lv8
      ボス → Lv15
   */
-  {id:'teiji',name:'定時のご主人様',hp:58,maxHp:58,atk:7,exp:22,image:'img/enemies/teiji.png?v=29b',intro:'定時のご主人様が あらわれた！'},
-  {id:'zangyo',name:'残業のご主人様',hp:108,maxHp:108,atk:11,exp:42,image:'img/enemies/zangyo.png?v=29b',intro:'残業のご主人様が つかれた顔で あらわれた！'},
-  {id:'shisseki',name:'叱責のご主人様',hp:178,maxHp:178,atk:17,exp:78,image:'img/enemies/shisseki.png?v=29b',intro:'叱責のご主人様が ふるえながら あらわれた！'},
-  {id:'boss',name:'ご主人王',hp:420,maxHp:420,atk:28,exp:260,image:'img/enemies/boss.png?v=29b',boss:true,intro:'ご主人王が あらわれた！！'}
+  {id:'teiji',name:'定時のご主人様',hp:58,maxHp:58,atk:7,exp:12,image:'img/enemies/teiji.png?v=29t',intro:'定時のご主人様が あらわれた！'},
+  {id:'zangyo',name:'残業のご主人様',hp:108,maxHp:108,atk:11,exp:24,image:'img/enemies/zangyo.png?v=29t',intro:'残業のご主人様が つかれた顔で あらわれた！'},
+  {id:'shisseki',name:'叱責のご主人様',hp:178,maxHp:178,atk:17,exp:45,image:'img/enemies/shisseki.png?v=29t',intro:'叱責のご主人様が ふるえながら あらわれた！'},
+  {id:'boss',name:'ご主人王',hp:420,maxHp:420,atk:28,exp:120,image:'img/enemies/boss.png?v=29t',
+  'img/enemies/tamachan.png?v=29t',boss:true,intro:'ご主人王が あらわれた！！'},
+  {id:'tamachan',name:'たまちゃん',hp:1,maxHp:1,atk:0,exp:0,image:'img/enemies/tamachan.png?v=29t',helper:true,intro:'たまちゃんが あらわれた！'}
 ];
 
 const equipmentData={
@@ -38,7 +40,7 @@ const initialPlayer={
   baseAtk:9,
   baseDef:3,
   exp:0,
-  nextExp:20,
+  nextExp:45,
   guarding:false,
   items:{omurice:2,tea:1,horse:1},
   inventory:{weapons:['duster'],uniforms:['stocking']},
@@ -91,7 +93,7 @@ function selectTarget(index){
 
 function buildEnemyParty(enemyBase){
   const main=cloneEnemy(enemyBase);
-  if(main.boss) return [main];
+  if(main.boss || main.helper) return [main];
 
   // 最大2体まで。通常敵は一定確率で2体出現。
   if(Math.random()<0.42){
@@ -165,12 +167,13 @@ function startBgm(kind){
 
 /* ===== Assets ===== */
 const ASSETS_TO_PRELOAD=[
-  'img/enemies/teiji.png?v=29b',
-  'img/enemies/zangyo.png?v=29b',
-  'img/enemies/shisseki.png?v=29b',
-  'img/enemies/boss.png?v=29b',
-  'img/backgrounds/battle_room.png?v=29b',
-  'img/backgrounds/battle_boss_room.png?v=29b'
+  'img/enemies/teiji.png?v=29t',
+  'img/enemies/zangyo.png?v=29t',
+  'img/enemies/shisseki.png?v=29t',
+  'img/enemies/boss.png?v=29t',
+  'img/enemies/tamachan.png?v=29t',
+  'img/backgrounds/battle_room.png?v=29t',
+  'img/backgrounds/battle_boss_room.png?v=29t'
 ];
 function preloadImage(src){return new Promise(resolve=>{const img=new Image();img.onload=()=>resolve({src,ok:true});img.onerror=()=>resolve({src,ok:false});img.src=src;});}
 async function preloadAssets(){
@@ -314,6 +317,12 @@ function checkTileEvent(){
     startBattle(cloneEnemy(enemies[3]),true);
     return;
   }
+  // レア遭遇：お助けキャラ たまちゃん
+  if(Math.random()<1/80){
+    startBattle(cloneEnemy(enemies.find(e=>e.id==='tamachan')),false);
+    return;
+  }
+
   if(Math.random()<0.18){
     const depth=Math.abs(p.mapX-1)+Math.abs(p.mapY-1);
     const enemy=depth<10?enemies[0]:(depth<18?enemies[Math.floor(Math.random()*2)]:enemies[Math.floor(Math.random()*3)]);
@@ -366,6 +375,7 @@ function renderEnemySlots(){
     slot.className='enemy-slot';
     if(index===state.targetIndex && enemy.hp>0) slot.classList.add('selected');
     if(enemy.hp<=0) slot.classList.add('defeated');
+    if(enemy.helper) slot.classList.add('helper');
 
     const indexLabel=document.createElement('div');
     indexLabel.className='enemy-slot-index';
@@ -532,6 +542,12 @@ function startBattle(enemy,fromMap){
   if(state.enemiesInBattle.some(e=>e.boss)) bossEntrance();
   updateUI();
 
+  if(enemy.helper){
+    setMessage('いつもありがと♡お給仕頑張ってね♡');
+    setTimeout(()=>completeTamachanEvent(),1200);
+    return;
+  }
+
   if(state.enemiesInBattle.length>1){
     setMessage(`${state.enemiesInBattle[0].name}たちが あらわれた！`);
   }else{
@@ -539,6 +555,21 @@ function startBattle(enemy,fromMap){
   }
 
   startBgm(state.enemiesInBattle.some(e=>e.boss)?'boss':'battle');
+}
+
+
+function completeTamachanEvent(){
+  const p=state.player;
+  if(!p.inventory.uniforms.includes('real6')){
+    p.inventory.uniforms.push('real6');
+    setMessage('初代メイド服をもらった！');
+  }else{
+    setMessage('たまちゃんが応援してくれた！');
+  }
+
+  setTimeout(()=>{
+    endBattleToMap();
+  },1200);
 }
 
 function endBattleToMap(){
@@ -1082,4 +1113,14 @@ document.addEventListener('gesturestart',function(e){
 ボス Lv20 / 最深部
 通常敵ドロップ：なし
 ボス：チェキ券抽選 1/50
+*/
+
+
+/* ===== Tamachan + Level Adjust =====
+- レベルアップ速度を遅くするため、初期nextExpを45に変更
+- 敵EXPを控えめに調整
+- たまちゃんはレア遭遇 1/80
+- たまちゃんは必ず単体で出現
+- セリフ：「いつもありがと♡お給仕頑張ってね♡」
+- イベント終了後、初代メイド服を装備品に追加
 */
