@@ -2,31 +2,39 @@ const MAZE_W=17;
 const MAZE_H=17;
 
 const enemies=[
-  /* v28 初期装備基準
-     定時 → Lv3
-     残業 → Lv5
-     叱責 → Lv8
-     ボス → Lv15
+  /* v29 Root Cause Fixed
+     定時 Lv3 / 進行度1〜2
+     残業 Lv5 / 進行度2〜3
+     激務 Lv8 / 進行度3〜4
+     泥酔 Lv12 / 進行度3〜5
+     叱責 Lv17 / 進行度4〜5
+     鬼奴夜魔さん Lv20 / 最深部
   */
-  {id:'teiji',name:'定時のご主人様',hp:58,maxHp:58,atk:7,exp:12,image:'img/enemies/teiji.png?v=29lf',intro:'定時のご主人様が あらわれた！'},
-  {id:'zangyo',name:'残業のご主人様',hp:108,maxHp:108,atk:11,exp:24,image:'img/enemies/zangyo.png?v=29lf',intro:'残業のご主人様が つかれた顔で あらわれた！'},
-  {id:'shisseki',name:'叱責のご主人様',hp:178,maxHp:178,atk:17,exp:45,image:'img/enemies/shisseki.png?v=29lf',intro:'叱責のご主人様が ふるえながら あらわれた！'},
-  {id:'boss',name:'鬼奴夜魔さん',hp:420,maxHp:420,atk:28,exp:120,image:'img/enemies/boss.png?v=29lf',
-  'img/enemies/tamachan.png?v=29lf',boss:true,intro:'鬼奴夜魔さんが あらわれた！！'},
-  {id:'tamachan',name:'たまちゃん',hp:1,maxHp:1,atk:0,exp:0,image:'img/enemies/tamachan.png?v=29lf',helper:true,intro:'たまちゃんが あらわれた！'}
+  {id:'teiji',name:'定時のご主人様',hp:52,maxHp:52,atk:6,exp:12,image:'img/enemies/teiji.png?v=29root',intro:'定時のご主人様が あらわれた！'},
+  {id:'zangyo',name:'残業のご主人様',hp:92,maxHp:92,atk:10,exp:24,image:'img/enemies/zangyo.png?v=29root',intro:'残業のご主人様が つかれた顔で あらわれた！'},
+  {id:'gekimu',name:'激務のご主人様',hp:148,maxHp:148,atk:15,exp:45,image:'img/enemies/gekimu.png?v=29root',intro:'激務のご主人様が せわしなく あらわれた！'},
+  {id:'deisui',name:'泥酔のご主人様',hp:228,maxHp:228,atk:21,exp:70,image:'img/enemies/deisui.png?v=29root',intro:'泥酔のご主人様が ふらつきながら あらわれた！'},
+  {id:'shisseki',name:'叱責のご主人様',hp:340,maxHp:340,atk:28,exp:110,image:'img/enemies/shisseki.png?v=29root',intro:'叱責のご主人様が ふるえながら あらわれた！'},
+  {id:'boss',name:'鬼奴夜魔さん',hp:520,maxHp:520,atk:36,exp:160,image:'img/enemies/boss.png?v=29root',boss:true,intro:'鬼奴夜魔さんが あらわれた！！'},
+  {id:'tamachan',name:'たまちゃん',hp:1,maxHp:1,atk:0,exp:0,image:'img/enemies/tamachan.png?v=29root',helper:true,intro:'たまちゃんが あらわれた！'}
 ];
 
 const equipmentData={
   weapons:[
-    {id:'duster',name:'フェザーダスター',atk:2},
-    {id:'broom',name:'マジカルホーキ',atk:5},
-    {id:'vacuum',name:'異国の掃除機',atk:9}
+    {id:'rod',name:'ご奉仕ロッド',atk:2},
+    {id:'frill_blade',name:'フリルブレード',atk:6},
+    {id:'gokitaku_mace',name:'ご帰宅メイス',atk:11}
   ],
   uniforms:[
-    {id:'stocking',slot:'legs',name:'黒のストッキング',def:2},
-    {id:'apron',slot:'body',name:'純白エプロン',def:4},
-    {id:'headband',slot:'head',name:'メイドカチューシャ',def:3},
-    {id:'real6',slot:'body',name:'初代メイド服',def:24}
+    {id:'maid_headband',slot:'head',name:'メイドカチューシャ',def:3},
+    {id:'heart_tiara',slot:'head',name:'ハートティアラ',def:6},
+    {id:'rose_ribbon',slot:'head',name:'ローズリボン',def:10},
+    {id:'white_apron',slot:'body',name:'純白エプロン',def:4},
+    {id:'long_maid',slot:'body',name:'ロングメイド服',def:9},
+    {id:'service_proof',slot:'accessory',name:'お給仕の証',def:3},
+    {id:'oshi_pendant',slot:'accessory',name:'推し活ペンダント',def:7},
+    {id:'legend_nameplate',slot:'accessory',name:'伝説の名札',def:12},
+    {id:'first_maid',slot:'body',name:'初代メイド服',def:28}
   ]
 };
 
@@ -44,8 +52,8 @@ const initialPlayer={
   guarding:false,
   items:{omurice:2,tea:1,horse:1},
   metTamachan:false,
-  inventory:{weapons:['duster'],uniforms:['stocking']},
-  equip:{weapon:'duster',head:null,body:null,legs:'stocking'}
+  inventory:{weapons:['rod'],uniforms:[]},
+  equip:{weapon:'rod',head:null,body:null,accessory:null}
 };
 
 const state={
@@ -64,7 +72,7 @@ const state={
 };
 
 function makePlayer(){return JSON.parse(JSON.stringify(initialPlayer));}
-function cloneEnemy(base){return JSON.parse(JSON.stringify(base));}
+function cloneEnemy(base){const c=JSON.parse(JSON.stringify(base));c.sleepTurns=0;return c;}
 function currentEnemy(){
   if(state.enemiesInBattle && state.enemiesInBattle.length){
     if(!state.enemiesInBattle[state.targetIndex] || state.enemiesInBattle[state.targetIndex].hp<=0){
@@ -98,7 +106,7 @@ function buildEnemyParty(enemyBase){
 
   // 最大2体まで。通常敵は一定確率で2体出現。
   if(Math.random()<0.42){
-    const candidates=enemies.filter(e=>!e.boss);
+    const candidates=enemies.filter(e=>!e.boss && !e.helper);
     const sub=cloneEnemy(candidates[Math.floor(Math.random()*candidates.length)]);
     return [main,sub];
   }
@@ -116,7 +124,7 @@ function totalAtk(){
 function totalDef(){
   const p=state.player;
   let def=p.baseDef;
-  ['head','body','legs'].forEach(slot=>{
+  ['head','body','accessory'].forEach(slot=>{
     const u=findUniform(p.equip[slot]);
     if(u) def+=u.def;
   });
@@ -168,13 +176,15 @@ function startBgm(kind){
 
 /* ===== Assets ===== */
 const ASSETS_TO_PRELOAD=[
-  'img/enemies/teiji.png?v=29lf',
-  'img/enemies/zangyo.png?v=29lf',
-  'img/enemies/shisseki.png?v=29lf',
-  'img/enemies/boss.png?v=29lf',
-  'img/enemies/tamachan.png?v=29lf',
-  'img/backgrounds/battle_room.png?v=29lf',
-  'img/backgrounds/battle_boss_room.png?v=29lf'
+  'img/enemies/teiji.png?v=29root',
+  'img/enemies/zangyo.png?v=29root',
+  'img/enemies/gekimu.png?v=29root',
+  'img/enemies/deisui.png?v=29root',
+  'img/enemies/shisseki.png?v=29root',
+  'img/enemies/boss.png?v=29root',
+  'img/enemies/tamachan.png?v=29root',
+  'img/backgrounds/battle_room.png?v=29root',
+  'img/backgrounds/battle_boss_room.png?v=29root'
 ];
 function preloadImage(src){return new Promise(resolve=>{const img=new Image();img.onload=()=>resolve({src,ok:true});img.onerror=()=>resolve({src,ok:false});img.src=src;});}
 function hideLoadingScreen(){
@@ -299,20 +309,18 @@ function movePlayer(dx,dy){
 function giveMapChestEquipment(){
   const p=state.player;
 
-  // マップ上の宝箱も「装備品のみ」
-  // 初代メイド服はレア装備
-  const rareFirstMaid = Math.random() < 0.15;
-  if(rareFirstMaid && !p.inventory.uniforms.includes('real6')){
-    p.inventory.uniforms.push('real6');
-    setMapMessage('宝箱を開けた！ レア装備 初代メイド服 を手に入れた！');
-    return;
-  }
-
+  // 宝箱からは装備品のみ。初代メイド服はたまちゃん限定。
   const candidates=[];
-  if(!p.inventory.weapons.includes('broom')) candidates.push({type:'weapon',id:'broom',text:'マジカルホーキ'});
-  if(!p.inventory.weapons.includes('vacuum')) candidates.push({type:'weapon',id:'vacuum',text:'異国の掃除機'});
-  if(!p.inventory.uniforms.includes('apron')) candidates.push({type:'uniform',id:'apron',text:'純白エプロン'});
-  if(!p.inventory.uniforms.includes('headband')) candidates.push({type:'uniform',id:'headband',text:'メイドカチューシャ'});
+  if(!p.inventory.weapons.includes('frill_blade')) candidates.push({type:'weapon',id:'frill_blade',text:'フリルブレード'});
+  if(!p.inventory.weapons.includes('gokitaku_mace')) candidates.push({type:'weapon',id:'gokitaku_mace',text:'ご帰宅メイス'});
+  if(!p.inventory.uniforms.includes('maid_headband')) candidates.push({type:'uniform',id:'maid_headband',text:'メイドカチューシャ'});
+  if(!p.inventory.uniforms.includes('heart_tiara')) candidates.push({type:'uniform',id:'heart_tiara',text:'ハートティアラ'});
+  if(!p.inventory.uniforms.includes('rose_ribbon')) candidates.push({type:'uniform',id:'rose_ribbon',text:'ローズリボン'});
+  if(!p.inventory.uniforms.includes('white_apron')) candidates.push({type:'uniform',id:'white_apron',text:'純白エプロン'});
+  if(!p.inventory.uniforms.includes('long_maid')) candidates.push({type:'uniform',id:'long_maid',text:'ロングメイド服'});
+  if(!p.inventory.uniforms.includes('service_proof')) candidates.push({type:'uniform',id:'service_proof',text:'お給仕の証'});
+  if(!p.inventory.uniforms.includes('oshi_pendant')) candidates.push({type:'uniform',id:'oshi_pendant',text:'推し活ペンダント'});
+  if(!p.inventory.uniforms.includes('legend_nameplate')) candidates.push({type:'uniform',id:'legend_nameplate',text:'伝説の名札'});
 
   if(!candidates.length){
     setMapMessage('宝箱を開けた！ しかし、すでに装備品は揃っていた。');
@@ -335,11 +343,13 @@ function checkTileEvent(){
     drawMaze();
     return;
   }
+
   if(p.mapX===state.boss.x && p.mapY===state.boss.y){
-    startBattle(cloneEnemy(enemies[3]),true);
+    startBattle(cloneEnemy(enemies.find(e=>e.id==='boss')),true);
     return;
   }
-  // レア遭遇：お助けキャラ たまちゃん
+
+  // レア遭遇：お助けキャラ たまちゃん（一回の冒険で一度だけ）
   if(!state.player.metTamachan && Math.random()<1/80){
     startBattle(cloneEnemy(enemies.find(e=>e.id==='tamachan')),false);
     return;
@@ -347,7 +357,23 @@ function checkTileEvent(){
 
   if(Math.random()<0.18){
     const depth=Math.abs(p.mapX-1)+Math.abs(p.mapY-1);
-    const enemy=depth<10?enemies[0]:(depth<18?enemies[Math.floor(Math.random()*2)]:enemies[Math.floor(Math.random()*3)]);
+    let enemy;
+    if(depth < 8){
+      const zone=enemies.filter(e=>['teiji'].includes(e.id));
+      enemy=zone[Math.floor(Math.random()*zone.length)];
+    }else if(depth < 16){
+      const zone=enemies.filter(e=>['teiji','zangyo'].includes(e.id));
+      enemy=zone[Math.floor(Math.random()*zone.length)];
+    }else if(depth < 24){
+      const zone=enemies.filter(e=>['zangyo','gekimu','deisui'].includes(e.id));
+      enemy=zone[Math.floor(Math.random()*zone.length)];
+    }else if(depth < 32){
+      const zone=enemies.filter(e=>['gekimu','deisui','shisseki'].includes(e.id));
+      enemy=zone[Math.floor(Math.random()*zone.length)];
+    }else{
+      const zone=enemies.filter(e=>['deisui','shisseki'].includes(e.id));
+      enemy=zone[Math.floor(Math.random()*zone.length)];
+    }
     startBattle(cloneEnemy(enemy),false);
   }else{
     setMapMessage('お屋敷を探索中...');
@@ -398,6 +424,7 @@ function renderEnemySlots(){
     if(index===state.targetIndex && enemy.hp>0) slot.classList.add('selected');
     if(enemy.hp<=0) slot.classList.add('defeated');
     if(enemy.helper) slot.classList.add('helper');
+    if(enemy.sleepTurns && enemy.sleepTurns>0) slot.classList.add('sleeping');
 
     const indexLabel=document.createElement('div');
     indexLabel.className='enemy-slot-index';
@@ -583,8 +610,8 @@ function startBattle(enemy,fromMap){
 function completeTamachanEvent(){
   const p=state.player;
   p.metTamachan=true;
-  if(!p.inventory.uniforms.includes('real6')){
-    p.inventory.uniforms.push('real6');
+  if(!p.inventory.uniforms.includes('first_maid')){
+    p.inventory.uniforms.push('first_maid');
     setMessage('初代メイド服をもらった！');
   }else{
     setMessage('たまちゃんが応援してくれた！');
@@ -618,10 +645,12 @@ function openSubMenu(kind){
   body.innerHTML='';
   if(kind==='magic'){
     title.textContent='おまじない';
-    addSubButton('もえもえぎゅー　MP5 / 敵に18〜22ダメージ',()=>useMagic('moe'));
+    addSubButton('もえもえぎゅー　MP5 / 敵に25〜30ダメージ',()=>useMagic('moe'));
     if(state.player.lv>=3) addSubButton('おいしくなーれ　MP8 / HP回復',()=>useMagic('heal'));
+    if(state.player.lv>=4) addSubButton('おやすみなさい　MP4 / 眠り',()=>useMagic('sleep'));
     if(state.player.lv>=10) addSubButton('にしきぬやまー　MP16 / 大ダメージ',()=>useMagic('nishiki'));
-    if(state.player.lv>=6) addSubButton('しゅわしゅわー　MP12 / 敵全体ダメージ',()=>useMagic('shower'));
+    if(state.player.lv>=6) addSubButton('チェキフラッシュ　MP12 / 敵全体ダメージ',()=>useMagic('shower'));
+    if(state.player.lv>=7) addSubButton('萌えちゃーじ　MP0 / MP20回復',()=>useMagic('charge'));
   }else if(kind==='item'){
     title.textContent='どうぐ';
     addSubButton(`オムライス　HP30回復　残り${state.player.items.omurice}`,()=>useItem('omurice'));
@@ -647,7 +676,7 @@ function openEquipMenu(){
   body.innerHTML='';
   const current=document.createElement('div');
   current.className='equip-current';
-  current.innerHTML=`現在の装備<br>武器：${findWeapon(p.equip.weapon)?.name||'なし'}<br>頭：${findUniform(p.equip.head)?.name||'なし'}<br>胴：${findUniform(p.equip.body)?.name||'なし'}<br>脚：${findUniform(p.equip.legs)?.name||'なし'}<br><span class="equip-stat">攻撃 ${totalAtk()} / 防御 ${totalDef()}</span>`;
+  current.innerHTML=`現在の装備<br>武器：${findWeapon(p.equip.weapon)?.name||'なし'}<br>頭：${findUniform(p.equip.head)?.name||'なし'}<br>胴：${findUniform(p.equip.body)?.name||'なし'}<br>アクセ：${findUniform(p.equip.accessory)?.name||'なし'}<br><span class="equip-stat">攻撃 ${totalAtk()} / 防御 ${totalDef()}</span>`;
   body.appendChild(current);
   p.inventory.weapons.forEach(id=>{const w=findWeapon(id);if(w)addEquipButton(`武器：${w.name}　攻+${w.atk}`,()=>equipWeapon(w.id));});
   p.inventory.uniforms.forEach(id=>{const u=findUniform(id);if(u)addEquipButton(`${slotName(u.slot)}：${u.name}　防+${u.def}`,()=>equipUniform(u.id));});
@@ -660,7 +689,7 @@ function addEquipButton(label,handler){
   document.getElementById('equipMenuBody').appendChild(btn);
 }
 function closeEquipMenu(){const menu=document.getElementById('equipMenu');if(menu)menu.classList.add('hidden');}
-function slotName(slot){return slot==='head'?'頭':slot==='body'?'胴':slot==='legs'?'脚':slot;}
+function slotName(slot){return slot==='head'?'頭':slot==='body'?'胴':slot==='accessory'?'アクセ':slot;}
 function equipWeapon(id){state.player.equip.weapon=id;setMessage(`${findWeapon(id).name} を装備した！`);openEquipMenu();updateUI();}
 function equipUniform(id){const item=findUniform(id);if(!item)return;state.player.equip[item.slot]=id;setMessage(`${item.name} を装備した！`);openEquipMenu();updateUI();}
 
@@ -733,16 +762,35 @@ async function useMagic(kind){
     setMessage(`おいしくなーれ！ HPが ${heal} 回復！`);
     showDamage(-heal,'player');seHeal();updateUI();
     await sleep(750);await enemyTurn();
+  }else if(kind==='sleep'){
+    if(p.mp<4){await failAction('MPがたりない！');return;}
+    p.mp-=4;
+    const target=currentEnemy();
+    const turns=1+Math.floor(Math.random()*3);
+    target.sleepTurns=turns;
+    await showCutin('おまじない','おやすみなさい…');
+    setMessage(`${target.name} は ${turns}ターン 眠った！`);
+    seMagic();updateUI();
+    await sleep(800);
+    await enemyTurn();
   }else if(kind==='nishiki'){
     if(p.mp<16){await failAction('MPがたりない！');return;}
-    p.mp-=12;await showCutin('必殺おまじない','にしきぬやまー！！');screenFlash();
+    p.mp-=16;await showCutin('必殺おまじない','にしきぬやまー！！');screenFlash();
     const target=currentEnemy();
     const damage=target.boss?58:82;
     await damageEnemy('にしきぬやまー！！',damage);
   }else if(kind==='shower'){
     if(p.mp<12){await failAction('MPがたりない！');return;}
-    p.mp-=16;await showCutin('全体おまじない','しゅわしゅわー！！');screenFlash();
-    await damageAllEnemies('しゅわしゅわー！！',38);
+    p.mp-=12;await showCutin('全体おまじない','チェキフラッシュ！！');screenFlash();
+    await damageAllEnemies('チェキフラッシュ！！',38);
+  }else if(kind==='charge'){
+    await showCutin('補助おまじない','萌えちゃーじ！');
+    const gain=Math.min(20,p.maxMp-p.mp);
+    p.mp+=gain;
+    setMessage(`MPが ${gain} 回復した！`);
+    seHeal();updateUI();
+    await sleep(700);
+    await enemyTurn();
   }
   state.busy=false;setButtonsDisabled(false);updateUI();
 }
@@ -812,6 +860,13 @@ async function enemyTurn(){
   if(!attackers.length) return;
 
   for(const e of attackers){
+    if(e.sleepTurns && e.sleepTurns>0){
+      e.sleepTurns--;
+      setMessage(`${e.name} は眠っている…`);
+      updateUI();
+      await sleep(700);
+      continue;
+    }
     let damage=Math.max(1,e.atk-totalDef()+Math.floor(Math.random()*3));
     const isCritical=Math.random()<0.08;
     if(isCritical) damage=Math.floor(damage*2.0);
@@ -839,59 +894,27 @@ async function enemyTurn(){
 }
 
 function giveReward(enemyId){
-  const p=state.player;
-
-  // v27：敵からのドロップは「どうぐ」のみ
-  // くろれきしはどうぐ扱いのレアドロップ
-  const rareKurorekishi = Math.random() < 0.12;
-
-  if(rareKurorekishi){
-    p.items.horse += 1;
-    setMessage('レアドロップ！ くろれきし を手に入れた！');
-    return true;
-  }
-
-  if(enemyId==='teiji'){
-    p.items.omurice += 1;
-    setMessage('定時のご主人様が オムライス を落とした！');
-    return true;
-  }
-
-  if(enemyId==='zangyo'){
-    p.items.tea += 1;
-    setMessage('残業のご主人様が 紅茶 を落とした！');
-    return true;
-  }
-
-  if(enemyId==='shisseki'){
-    p.items.omurice += 1;
-    setMessage('叱責のご主人様が オムライス を落とした！');
-    return true;
-  }
-
+  // 正式仕様：通常敵からのどうぐドロップは無し
   return false;
 }
 
 function treasureDrop(enemyId){
   const p=state.player;
 
-  // v27：宝箱からのドロップは「装備品」のみ
-  // 初代メイド服は装備品扱いのレアドロップ
+  // 戦闘後の宝箱も装備品のみ。初代メイド服はたまちゃん限定。
   if(Math.floor(Math.random()*4)!==0) return false;
 
-  const rareFirstMaid = Math.random() < 0.15;
-  if(rareFirstMaid && !p.inventory.uniforms.includes('real6')){
-    p.inventory.uniforms.push('real6');
-    openTreasureMenu('レア装備！ 初代メイド服 を発見した！ 防御 +24');
-    setMessage('宝箱からレア装備を入手！');
-    return true;
-  }
-
   const candidates=[];
-  if(!p.inventory.weapons.includes('broom')) candidates.push({type:'weapon',id:'broom',text:'マジカルホーキ を発見した！ 攻撃 +5'});
-  if(!p.inventory.weapons.includes('vacuum')) candidates.push({type:'weapon',id:'vacuum',text:'異国の掃除機 を発見した！ 攻撃 +9'});
-  if(!p.inventory.uniforms.includes('apron')) candidates.push({type:'uniform',id:'apron',text:'純白エプロン を発見した！ 防御 +4'});
-  if(!p.inventory.uniforms.includes('headband')) candidates.push({type:'uniform',id:'headband',text:'メイドカチューシャ を発見した！ 防御 +3'});
+  if(!p.inventory.weapons.includes('frill_blade')) candidates.push({type:'weapon',id:'frill_blade',text:'フリルブレード を発見した！ 攻撃 +6'});
+  if(!p.inventory.weapons.includes('gokitaku_mace')) candidates.push({type:'weapon',id:'gokitaku_mace',text:'ご帰宅メイス を発見した！ 攻撃 +11'});
+  if(!p.inventory.uniforms.includes('maid_headband')) candidates.push({type:'uniform',id:'maid_headband',text:'メイドカチューシャ を発見した！ 防御 +3'});
+  if(!p.inventory.uniforms.includes('heart_tiara')) candidates.push({type:'uniform',id:'heart_tiara',text:'ハートティアラ を発見した！ 防御 +6'});
+  if(!p.inventory.uniforms.includes('rose_ribbon')) candidates.push({type:'uniform',id:'rose_ribbon',text:'ローズリボン を発見した！ 防御 +10'});
+  if(!p.inventory.uniforms.includes('white_apron')) candidates.push({type:'uniform',id:'white_apron',text:'純白エプロン を発見した！ 防御 +4'});
+  if(!p.inventory.uniforms.includes('long_maid')) candidates.push({type:'uniform',id:'long_maid',text:'ロングメイド服 を発見した！ 防御 +9'});
+  if(!p.inventory.uniforms.includes('service_proof')) candidates.push({type:'uniform',id:'service_proof',text:'お給仕の証 を発見した！ 防御 +3'});
+  if(!p.inventory.uniforms.includes('oshi_pendant')) candidates.push({type:'uniform',id:'oshi_pendant',text:'推し活ペンダント を発見した！ 防御 +7'});
+  if(!p.inventory.uniforms.includes('legend_nameplate')) candidates.push({type:'uniform',id:'legend_nameplate',text:'伝説の名札 を発見した！ 防御 +12'});
 
   if(!candidates.length) return false;
 
@@ -948,21 +971,21 @@ async function showEnding(){
   stopBgm();
   setButtonsDisabled(true);
   state.busy=true;
-  setMessage('ご主人王をいやした！ ポ・トロに平和がもどった！');
+  setMessage('鬼奴夜魔さんをいやした！ ポ・トロに平和がもどった！');
   await sleep(900);
   document.getElementById('battleScreen').classList.add('hidden');
   document.getElementById('mapScreen').classList.add('hidden');
   document.getElementById('endingScreen').classList.remove('hidden');
   const cheki=document.getElementById('chekiTicket');
   cheki.classList.add('hidden');
-  if(Math.random()<1/3){
-    document.getElementById('endingMessage').textContent='ご主人王がチェキ券を落とした！';
+  if(Math.random()<1/50){
+    document.getElementById('endingMessage').textContent='鬼奴夜魔さんがチェキ券を落とした！';
     const issuedAt=document.getElementById('chekiIssuedAt');
     if(issuedAt) issuedAt.textContent=formatChekiIssuedAt(new Date());
     cheki.classList.remove('hidden');
     seCheki();
   }else{
-    document.getElementById('endingMessage').textContent='ご主人王をいやした！ 一人前のメイドに近づいた！';
+    document.getElementById('endingMessage').textContent='鬼奴夜魔さんをいやした！ 一人前のメイドに近づいた！';
   }
 }
 function restartFromEnding(){
