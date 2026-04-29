@@ -23,7 +23,7 @@
     <input id="oshiNameInput" class="name-input" type="text" maxlength="12" placeholder="例：おうまさん">
     <button id="startBtn" class="start-btn">冒険をはじめる</button>
     <button id="openingBtn" class="opening-btn">オープニングを見る</button>
-    <div class="version-label">スマホ版 v29 / Floor BGM + Tamachan Wait</div>
+    <div class="version-label">スマホ版 v29 / Game Over Force Restart</div>
     <div class="release-note">スマートフォン推奨</div>
   </div>
 </section>
@@ -192,27 +192,27 @@
 
 <!-- BGM -->
 <audio id="bgmOpening" loop preload="auto">
-  <source src="audio/opening.mp3?v=29floorbgm" type="audio/mpeg">
+  <source src="audio/opening.mp3?v=29gameover" type="audio/mpeg">
 </audio>
 
 <audio id="bgmMap1F" loop preload="auto">
-  <source src="audio/map_1F.mp3?v=29floorbgm" type="audio/mpeg">
+  <source src="audio/map_1F.mp3?v=29gameover" type="audio/mpeg">
 </audio>
 
 <audio id="bgmMap2F" loop preload="auto">
-  <source src="audio/map_2F.mp3?v=29floorbgm" type="audio/mpeg">
+  <source src="audio/map_2F.mp3?v=29gameover" type="audio/mpeg">
 </audio>
 
 <audio id="bgmTamachan" loop preload="auto">
-  <source src="audio/tamachan.mp3?v=29floorbgm" type="audio/mpeg">
+  <source src="audio/tamachan.mp3?v=29gameover" type="audio/mpeg">
 </audio>
 
 <audio id="bgmBattle" loop preload="auto">
-  <source src="audio/battle.mp3?v=29floorbgm" type="audio/mpeg">
+  <source src="audio/battle.mp3?v=29gameover" type="audio/mpeg">
 </audio>
 
 <audio id="bgmBoss" loop preload="auto">
-  <source src="audio/boss.mp3?v=29floorbgm" type="audio/mpeg">
+  <source src="audio/boss.mp3?v=29gameover" type="audio/mpeg">
 </audio>
 
 
@@ -247,5 +247,14 @@
   </div>
   <div id="treasureMenuBody" class="sub-menu-body"></div>
 </section>
+
+<section id="gameOverOverlay" class="game-over-overlay hidden">
+  <div class="game-over-card">
+    <div class="game-over-title">GAME OVER</div>
+    <div class="game-over-message">たおれてしまった…<br>最初から再挑戦してください。</div>
+    <button id="gameOverRestartBtn" class="game-over-btn">最初からスタート</button>
+  </div>
+</section>
+
 </body>
 </html>
