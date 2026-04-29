@@ -132,14 +132,14 @@ padding:12px;
 padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));
 background:
 linear-gradient(180deg,rgba(15,23,42,.92),rgba(17,24,39,.98)),
-url("../img/backgrounds/battle_room.png?v=29floorbgm");
+url("../img/backgrounds/battle_room.png?v=29gameover");
 background-size:cover;
 background-position:center;
 }
 body.boss-battle .battle-screen{
 background:
 linear-gradient(180deg,rgba(20,10,30,.86),rgba(5,5,12,.98)),
-url("../img/backgrounds/battle_boss_room.png?v=29floorbgm");
+url("../img/backgrounds/battle_boss_room.png?v=29gameover");
 background-size:cover;
 background-position:center;
 }
@@ -1098,4 +1098,52 @@ body.critical-flash .battle-screen{animation:criticalFlash .45s ease;}
 }
 .tamachan-continue-btn:active{
   transform:scale(.96);
+}
+
+/* ===== Game Over Force Restart ===== */
+.game-over-overlay{
+  position:fixed;
+  inset:0;
+  z-index:260;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:radial-gradient(circle at center, rgba(127,29,29,.55), rgba(2,6,23,.96) 70%);
+}
+
+.game-over-card{
+  width:min(92vw,420px);
+  padding:28px 18px;
+  border:3px solid #fca5a5;
+  border-radius:22px;
+  background:rgba(15,23,42,.98);
+  text-align:center;
+  box-shadow:0 28px 80px rgba(0,0,0,.65);
+}
+
+.game-over-title{
+  font-size:34px;
+  font-weight:1000;
+  color:#f87171;
+  letter-spacing:.08em;
+  text-shadow:0 0 18px rgba(248,113,113,.7);
+}
+
+.game-over-message{
+  margin-top:12px;
+  line-height:1.7;
+  color:#fee2e2;
+  font-weight:800;
+}
+
+.game-over-btn{
+  margin-top:20px;
+  border:none;
+  border-radius:999px;
+  padding:13px 26px;
+  background:#dc2626;
+  color:#fff;
+  font-weight:1000;
+  font-size:15px;
+  box-shadow:0 0 18px rgba(220,38,38,.5);
 }
