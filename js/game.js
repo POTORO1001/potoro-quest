@@ -1,13 +1,18 @@
 
 /* ===== BGM Control ===== */
 function stopAllBgm(){
-  ['bgmOpening','bgmMap','bgmBattle','bgmBoss'].forEach(id=>{
+  ['bgmOpening','bgmMap','bgmMap1F','bgmMap2F','bgmBattle','bgmBoss','bgmTamachan'].forEach(id=>{
     const a=document.getElementById(id);
     if(a){
       a.pause();
       a.currentTime=0;
     }
   });
+}
+
+
+function playMapBgm(){
+  playBgm(state.floor===2 ? 'bgmMap2F' : 'bgmMap1F');
 }
 
 function playBgm(id){
@@ -32,13 +37,13 @@ const enemies=[
      叱責 Lv17 / 進行度4〜5
      鬼奴夜魔さん Lv20 / 最深部
   */
-  {id:'teiji',name:'定時のご主人様',hp:52,maxHp:52,atk:6,exp:12,image:'img/enemies/teiji.png?v=29floorsplit',intro:'定時のご主人様が あらわれた！'},
-  {id:'zangyo',name:'残業のご主人様',hp:92,maxHp:92,atk:10,exp:24,image:'img/enemies/zangyo.png?v=29floorsplit',intro:'残業のご主人様が つかれた顔で あらわれた！'},
-  {id:'gekimu',name:'激務のご主人様',hp:148,maxHp:148,atk:15,exp:45,image:'img/enemies/gekimu.png?v=29floorsplit',intro:'激務のご主人様が せわしなく あらわれた！'},
-  {id:'deisui',name:'泥酔のご主人様',hp:228,maxHp:228,atk:21,exp:70,image:'img/enemies/deisui.png?v=29floorsplit',intro:'泥酔のご主人様が ふらつきながら あらわれた！'},
-  {id:'shisseki',name:'叱責のご主人様',hp:340,maxHp:340,atk:28,exp:110,image:'img/enemies/shisseki.png?v=29floorsplit',intro:'叱責のご主人様が ふるえながら あらわれた！'},
-  {id:'boss',name:'鬼奴夜魔さん',hp:520,maxHp:520,atk:36,exp:160,image:'img/enemies/boss.png?v=29floorsplit',boss:true,intro:'鬼奴夜魔さんが あらわれた！！'},
-  {id:'tamachan',name:'たまちゃん',hp:1,maxHp:1,atk:0,exp:0,image:'img/enemies/tamachan.png?v=29floorsplit',helper:true,intro:'たまちゃんが あらわれた！'}
+  {id:'teiji',name:'定時のご主人様',hp:52,maxHp:52,atk:6,exp:12,image:'img/enemies/teiji.png?v=29floorbgm',intro:'定時のご主人様が あらわれた！'},
+  {id:'zangyo',name:'残業のご主人様',hp:92,maxHp:92,atk:10,exp:24,image:'img/enemies/zangyo.png?v=29floorbgm',intro:'残業のご主人様が つかれた顔で あらわれた！'},
+  {id:'gekimu',name:'激務のご主人様',hp:148,maxHp:148,atk:15,exp:45,image:'img/enemies/gekimu.png?v=29floorbgm',intro:'激務のご主人様が せわしなく あらわれた！'},
+  {id:'deisui',name:'泥酔のご主人様',hp:228,maxHp:228,atk:21,exp:70,image:'img/enemies/deisui.png?v=29floorbgm',intro:'泥酔のご主人様が ふらつきながら あらわれた！'},
+  {id:'shisseki',name:'叱責のご主人様',hp:340,maxHp:340,atk:28,exp:110,image:'img/enemies/shisseki.png?v=29floorbgm',intro:'叱責のご主人様が ふるえながら あらわれた！'},
+  {id:'boss',name:'鬼奴夜魔さん',hp:520,maxHp:520,atk:36,exp:160,image:'img/enemies/boss.png?v=29floorbgm',boss:true,intro:'鬼奴夜魔さんが あらわれた！！'},
+  {id:'tamachan',name:'たまちゃん',hp:1,maxHp:1,atk:0,exp:0,image:'img/enemies/tamachan.png?v=29floorbgm',helper:true,intro:'たまちゃんが あらわれた！'}
 ];
 
 const equipmentData={
@@ -195,15 +200,15 @@ function startBgm(kind){
 
 /* ===== Assets ===== */
 const ASSETS_TO_PRELOAD=[
-  'img/enemies/teiji.png?v=29floorsplit',
-  'img/enemies/zangyo.png?v=29floorsplit',
-  'img/enemies/gekimu.png?v=29floorsplit',
-  'img/enemies/deisui.png?v=29floorsplit',
-  'img/enemies/shisseki.png?v=29floorsplit',
-  'img/enemies/boss.png?v=29floorsplit',
-  'img/enemies/tamachan.png?v=29floorsplit',
-  'img/backgrounds/battle_room.png?v=29floorsplit',
-  'img/backgrounds/battle_boss_room.png?v=29floorsplit'
+  'img/enemies/teiji.png?v=29floorbgm',
+  'img/enemies/zangyo.png?v=29floorbgm',
+  'img/enemies/gekimu.png?v=29floorbgm',
+  'img/enemies/deisui.png?v=29floorbgm',
+  'img/enemies/shisseki.png?v=29floorbgm',
+  'img/enemies/boss.png?v=29floorbgm',
+  'img/enemies/tamachan.png?v=29floorbgm',
+  'img/backgrounds/battle_room.png?v=29floorbgm',
+  'img/backgrounds/battle_boss_room.png?v=29floorbgm'
 ];
 function preloadImage(src){return new Promise(resolve=>{const img=new Image();img.onload=()=>resolve({src,ok:true});img.onerror=()=>resolve({src,ok:false});img.src=src;});}
 function hideLoadingScreen(){
@@ -280,6 +285,7 @@ function setupFloor(floor){
   placeChests();
   updateFloorLabel();
   drawMaze();
+  playMapBgm();
 }
 
 function updateFloorLabel(){
@@ -645,7 +651,7 @@ function victoryEffect(){
 }
 
 function startBattle(enemy,fromMap){
-  playBgm((enemy && enemy.boss) ? 'bgmBoss' : 'bgmBattle');
+  playBgm((enemy && enemy.helper) ? 'bgmTamachan' : ((enemy && enemy.boss) ? 'bgmBoss' : 'bgmBattle'));
   state.inBattle=true;
   state.enemiesInBattle=buildEnemyParty(enemy);
   state.targetIndex=0;
@@ -660,7 +666,7 @@ function startBattle(enemy,fromMap){
 
   if(enemy.helper){
     setMessage('いつもありがと♡お給仕頑張ってね♡');
-    setTimeout(()=>completeTamachanEvent(),5000);
+    setTimeout(()=>showTamachanContinueButton(),5000);
     return;
   }
 
@@ -674,11 +680,23 @@ function startBattle(enemy,fromMap){
 }
 
 
+function showTamachanContinueButton(){
+  completeTamachanEvent();
+  const btn=document.getElementById('tamachanContinueBtn');
+  if(btn) btn.classList.remove('hidden');
+}
+
+function hideTamachanContinueButton(){
+  const btn=document.getElementById('tamachanContinueBtn');
+  if(btn) btn.classList.add('hidden');
+}
+
 function showTamachanGetEffect(){
   const overlay=document.getElementById('tamachanGetOverlay');
   if(!overlay) return;
+  const btn=document.getElementById('tamachanContinueBtn');
+  if(btn) btn.classList.add('hidden');
   overlay.classList.remove('hidden');
-  setTimeout(()=>overlay.classList.add('hidden'),2200);
 }
 
 function completeTamachanEvent(){
@@ -691,15 +709,11 @@ function completeTamachanEvent(){
 
   setMessage('初代メイド服GET！！');
   showTamachanGetEffect();
-
-  setTimeout(()=>{
-    endBattleToMap();
-  },2400);
 }
 
 function endBattleToMap(){
-  playBgm('bgmMap');
-  playBgm('bgmMap');
+  playMapBgm();
+  playMapBgm();
   state.inBattle=false;
   state.enemy=null;
   state.enemiesInBattle=[];
@@ -1132,7 +1146,7 @@ function getOshiName(){
 
 /* ===== Start / Reset ===== */
 function startGame(){
-  playBgm('bgmMap');
+  playMapBgm();
   initAudio();
   document.getElementById('titleScreen').classList.add('hidden');
   document.getElementById('openingScreen').classList.add('hidden');
@@ -1340,4 +1354,24 @@ if(document.readyState==='loading'){
   document.addEventListener('DOMContentLoaded',bindMapMenuButtons,{once:true});
 }else{
   bindMapMenuButtons();
+}
+
+
+
+function bindTamachanContinueButton(){
+  const btn=document.getElementById('tamachanContinueBtn');
+  if(!btn || btn.dataset.boundTamachan) return;
+  btn.dataset.boundTamachan='1';
+  btn.addEventListener('click',()=>{
+    hideTamachanContinueButton();
+    const overlay=document.getElementById('tamachanGetOverlay');
+    if(overlay) overlay.classList.add('hidden');
+    endBattleToMap();
+  });
+}
+
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded',bindTamachanContinueButton,{once:true});
+}else{
+  bindTamachanContinueButton();
 }
