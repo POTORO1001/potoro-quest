@@ -37,13 +37,13 @@ const enemies=[
      叱責 Lv17 / 進行度4〜5
      鬼奴夜魔さん Lv20 / 最深部
   */
-  {id:'teiji',name:'定時のご主人様',hp:52,maxHp:52,atk:6,def:2,spd:6,talk:4,exp:12,image:'img/enemies/teiji.png?v=29stat',intro:'定時のご主人様が あらわれた！'},
-  {id:'zangyo',name:'残業のご主人様',hp:92,maxHp:92,atk:10,def:4,spd:8,talk:6,exp:24,image:'img/enemies/zangyo.png?v=29stat',intro:'残業のご主人様が つかれた顔で あらわれた！'},
-  {id:'gekimu',name:'激務のご主人様',hp:148,maxHp:148,atk:15,def:7,spd:11,talk:9,exp:45,image:'img/enemies/gekimu.png?v=29stat',intro:'激務のご主人様が せわしなく あらわれた！'},
-  {id:'deisui',name:'泥酔のご主人様',hp:228,maxHp:228,atk:21,def:10,spd:8,talk:12,exp:70,image:'img/enemies/deisui.png?v=29stat',intro:'泥酔のご主人様が ふらつきながら あらわれた！'},
-  {id:'shisseki',name:'叱責のご主人様',hp:340,maxHp:340,atk:28,def:14,spd:13,talk:15,exp:110,image:'img/enemies/shisseki.png?v=29stat',intro:'叱責のご主人様が ふるえながら あらわれた！'},
-  {id:'boss',name:'鬼奴夜魔さん',hp:520,maxHp:520,atk:36,def:18,spd:16,talk:20,exp:160,image:'img/enemies/boss.png?v=29stat',boss:true,intro:'鬼奴夜魔さんが あらわれた！！'},
-  {id:'tamachan',name:'たまちゃん',hp:1,maxHp:1,atk:0,def:0,spd:99,talk:99,exp:0,image:'img/enemies/tamachan.png?v=29stat',helper:true,intro:'たまちゃんが あらわれた！'}
+  {id:'teiji',name:'定時のご主人様',hp:52,maxHp:52,atk:6,def:2,spd:6,talk:4,exp:12,image:'img/enemies/teiji.png?v=29spdturn',intro:'定時のご主人様が あらわれた！'},
+  {id:'zangyo',name:'残業のご主人様',hp:92,maxHp:92,atk:10,def:4,spd:8,talk:6,exp:24,image:'img/enemies/zangyo.png?v=29spdturn',intro:'残業のご主人様が つかれた顔で あらわれた！'},
+  {id:'gekimu',name:'激務のご主人様',hp:148,maxHp:148,atk:15,def:7,spd:11,talk:9,exp:45,image:'img/enemies/gekimu.png?v=29spdturn',intro:'激務のご主人様が せわしなく あらわれた！'},
+  {id:'deisui',name:'泥酔のご主人様',hp:228,maxHp:228,atk:21,def:10,spd:8,talk:12,exp:70,image:'img/enemies/deisui.png?v=29spdturn',intro:'泥酔のご主人様が ふらつきながら あらわれた！'},
+  {id:'shisseki',name:'叱責のご主人様',hp:340,maxHp:340,atk:28,def:14,spd:13,talk:15,exp:110,image:'img/enemies/shisseki.png?v=29spdturn',intro:'叱責のご主人様が ふるえながら あらわれた！'},
+  {id:'boss',name:'鬼奴夜魔さん',hp:520,maxHp:520,atk:36,def:18,spd:16,talk:20,exp:160,image:'img/enemies/boss.png?v=29spdturn',boss:true,intro:'鬼奴夜魔さんが あらわれた！！'},
+  {id:'tamachan',name:'たまちゃん',hp:1,maxHp:1,atk:0,def:0,spd:99,talk:99,exp:0,image:'img/enemies/tamachan.png?v=29spdturn',helper:true,intro:'たまちゃんが あらわれた！'}
 ];
 
 const equipmentData={
@@ -99,7 +99,8 @@ const state={
   stairs:null,
   boss:{x:15,y:15},
   chests:[],
-  inBattle:false
+  inBattle:false,
+  enemyActedFirst:false
 };
 
 function makePlayer(){return JSON.parse(JSON.stringify(initialPlayer));}
@@ -172,8 +173,39 @@ function totalTalk(){
   return p.baseTalk || 0;
 }
 
+
+function currentEnemyMaxSpd(){
+  const alive=aliveEnemies();
+  if(!alive.length) return 0;
+  return Math.max(...alive.map(e=>e.spd||0));
+}
+
+function enemyActsFirstThisTurn(){
+  return currentEnemyMaxSpd() > totalSpd();
+}
+
+async function enemyFirstCheck(){
+  state.enemyActedFirst=false;
+  if(enemyActsFirstThisTurn()){
+    setMessage('相手のほうがすばやい！');
+    updateUI();
+    await sleep(600);
+    await enemyTurn();
+    state.enemyActedFirst=true;
+    return state.player.hp<=0;
+  }
+  return false;
+}
+
 function magicPower(base){
   return Math.floor(base + totalTalk()*1.6);
+}
+
+function moeMagicDamage(){
+  // Lv1時点では約25〜30。以後、トーク力の成長分で加算。
+  const base=25+Math.floor(Math.random()*6);
+  const talkBonus=Math.max(0, Math.floor((totalTalk()-7)*1.2));
+  return base+talkBonus;
 }
 
 /* ===== Audio ===== */
@@ -216,15 +248,15 @@ function startBgm(kind){
 
 /* ===== Assets ===== */
 const ASSETS_TO_PRELOAD=[
-  'img/enemies/teiji.png?v=29stat',
-  'img/enemies/zangyo.png?v=29stat',
-  'img/enemies/gekimu.png?v=29stat',
-  'img/enemies/deisui.png?v=29stat',
-  'img/enemies/shisseki.png?v=29stat',
-  'img/enemies/boss.png?v=29stat',
-  'img/enemies/tamachan.png?v=29stat',
-  'img/backgrounds/battle_room.png?v=29stat',
-  'img/backgrounds/battle_boss_room.png?v=29stat'
+  'img/enemies/teiji.png?v=29spdturn',
+  'img/enemies/zangyo.png?v=29spdturn',
+  'img/enemies/gekimu.png?v=29spdturn',
+  'img/enemies/deisui.png?v=29spdturn',
+  'img/enemies/shisseki.png?v=29spdturn',
+  'img/enemies/boss.png?v=29spdturn',
+  'img/enemies/tamachan.png?v=29spdturn',
+  'img/backgrounds/battle_room.png?v=29spdturn',
+  'img/backgrounds/battle_boss_room.png?v=29spdturn'
 ];
 function preloadImage(src){return new Promise(resolve=>{const img=new Image();img.onload=()=>resolve({src,ok:true});img.onerror=()=>resolve({src,ok:false});img.src=src;});}
 function hideLoadingScreen(){
@@ -496,10 +528,14 @@ function updateUI(){
 
   document.getElementById('playerHp').textContent=`HP ${p.hp} / ${p.maxHp}`;
   document.getElementById('playerMp').textContent=`MP ${p.mp} / ${p.maxMp}`;
+  const spdEl=document.getElementById('playerSpd');
+  if(spdEl) spdEl.textContent=`すばやさ ${totalSpd()}`;
+  const talkEl=document.getElementById('playerTalk');
+  if(talkEl) talkEl.textContent=`トーク力 ${totalTalk()}`;
   document.getElementById('playerExp').textContent=`EXP ${p.exp} / ${p.nextExp}`;
 
   const status=document.querySelector('.status-panel h2');
-  if(status) status.textContent=`${p.name} Lv.${p.lv}  攻${totalAtk()} 防${totalDef()} 速${totalSpd()} 話${totalTalk()}`;
+  if(status) status.textContent=`${p.name} Lv.${p.lv} 攻${totalAtk()} 防${totalDef()}`;
 
   document.body.classList.toggle('boss-battle',!!(state.enemiesInBattle||[]).some(en=>en.boss));
 }
@@ -873,6 +909,7 @@ async function playerAction(type){
   if(state.busy) return;
   closeSubMenu();closeEquipMenu();
   state.busy=true;setButtonsDisabled(true);
+  if(await enemyFirstCheck()) return;
   const p=state.player;const e=currentEnemy();
   if(type==='attack'){
     const target=currentEnemy();
@@ -892,13 +929,13 @@ async function playerAction(type){
     seAttack();enemyFlash();updateUI();
     await sleep(isCritical?950:700);
     if(allEnemiesDefeated()){await winBattle();return;}
-    await enemyTurn();
+    if(!state.enemyActedFirst) await enemyTurn();
   }else if(type==='guard'){
     p.guarding=true;
     setMessage(`${p.name} は みをまもった！`);
-    await sleep(650);await enemyTurn();
+    await sleep(650);if(!state.enemyActedFirst) await enemyTurn();
   }
-  state.busy=false;setButtonsDisabled(false);updateUI();
+  state.enemyActedFirst=false;state.busy=false;setButtonsDisabled(false);updateUI();
 }
 
 async function useMagic(kind){
@@ -906,12 +943,13 @@ async function useMagic(kind){
   if(state.busy) return;
   closeSubMenu();closeEquipMenu();
   state.busy=true;setButtonsDisabled(true);
+  if(await enemyFirstCheck()) return;
   const p=state.player;
 
   if(kind==='moe'){
     if(p.mp<5){await failAction('MPがたりない！');return;}
     p.mp-=5;await showCutin('おまじない','もえもえぎゅー！！');
-    const damage=magicPower(25)+Math.floor(Math.random()*6);
+    const damage=moeMagicDamage();
     await damageEnemy('もえもえぎゅー！！',damage);
   }else if(kind==='heal'){
     if(p.mp<8){await failAction('MPがたりない！');return;}
@@ -919,7 +957,7 @@ async function useMagic(kind){
     const heal=Math.min(35,p.maxHp-p.hp);p.hp+=heal;
     setMessage(`おいしくなーれ！ HPが ${heal} 回復！`);
     showDamage(-heal,'player');seHeal();updateUI();
-    await sleep(750);await enemyTurn();
+    await sleep(750);if(!state.enemyActedFirst) await enemyTurn();
   }else if(kind==='sleep'){
     if(p.mp<4){await failAction('MPがたりない！');return;}
     p.mp-=4;
@@ -930,7 +968,7 @@ async function useMagic(kind){
     setMessage(`${target.name} は ${turns}ターン 眠った！`);
     seMagic();updateUI();
     await sleep(800);
-    await enemyTurn();
+    if(!state.enemyActedFirst) await enemyTurn();
   }else if(kind==='nishiki'){
     if(p.mp<16){await failAction('MPがたりない！');return;}
     p.mp-=16;await showCutin('必殺おまじない','にしきぬやまー！！');screenFlash();
@@ -948,9 +986,9 @@ async function useMagic(kind){
     setMessage(`MPが ${gain} 回復した！`);
     seHeal();updateUI();
     await sleep(700);
-    await enemyTurn();
+    if(!state.enemyActedFirst) await enemyTurn();
   }
-  state.busy=false;setButtonsDisabled(false);updateUI();
+  state.enemyActedFirst=false;state.busy=false;setButtonsDisabled(false);updateUI();
 }
 
 async function useItem(kind){
@@ -958,6 +996,7 @@ async function useItem(kind){
   if(state.busy) return;
   closeSubMenu();closeEquipMenu();
   state.busy=true;setButtonsDisabled(true);
+  if(!isMapMode() && await enemyFirstCheck()) return;
   const p=state.player;const e=currentEnemy();
   if(kind==='omurice'){
     if(p.items.omurice<=0||p.hp>=p.maxHp){await failAction('オムライスは使えない！');return;}
@@ -965,13 +1004,13 @@ async function useItem(kind){
     const heal=Math.min(30,p.maxHp-p.hp);p.hp+=heal;
     setMessage(`オムライスを食べた！ HPが ${heal} 回復！`);
     showDamage(-heal,'player');seHeal();updateUI();
-    await sleep(750);if(!isMapMode()) await enemyTurn();
+    await sleep(750);if(!isMapMode() && !state.enemyActedFirst) await enemyTurn();
   }else if(kind==='tea'){
     if(p.items.tea<=0||p.mp>=p.maxMp){await failAction('紅茶は使えない！');return;}
     p.items.tea--;
     const healMp=Math.min(10,p.maxMp-p.mp);p.mp+=healMp;
     setMessage(`紅茶を飲んだ！ MPが ${healMp} 回復！`);
-    seHeal();updateUI();await sleep(750);if(!isMapMode()) await enemyTurn();
+    seHeal();updateUI();await sleep(750);if(!isMapMode() && !state.enemyActedFirst) await enemyTurn();
   }else if(kind==='horse'){
     if(isMapMode()){await failAction('くろれきしは戦闘中のみ使えます！');return;}
     if(p.items.horse<=0){await failAction('くろれきしは持っていない！');return;}
@@ -979,13 +1018,13 @@ async function useItem(kind){
     const damage=e.boss?55:999;
     await damageEnemy('くろれきしを召喚した！',damage);
   }
-  state.busy=false;setButtonsDisabled(false);updateUI();
+  state.enemyActedFirst=false;state.busy=false;setButtonsDisabled(false);updateUI();
 }
 
 async function failAction(message){
   if(isMapMode()) setMapMessage(message); else setMessage(message);
   await sleep(700);
-  state.busy=false;setButtonsDisabled(false);updateUI();
+  state.enemyActedFirst=false;state.busy=false;setButtonsDisabled(false);updateUI();
 }
 
 async function damageEnemy(message,damage){
@@ -996,7 +1035,7 @@ async function damageEnemy(message,damage){
   showDamage(damage,'enemy');seMagic();enemyFlash();updateUI();
   await sleep(750);
   if(allEnemiesDefeated()){ await winBattle(); return; }
-  await enemyTurn();
+  if(!state.enemyActedFirst) await enemyTurn();
 }
 
 async function damageAllEnemies(message,baseDamage){
@@ -1012,7 +1051,7 @@ async function damageAllEnemies(message,baseDamage){
   seMagic();enemyFlash();updateUI();
   await sleep(900);
   if(allEnemiesDefeated()){ await winBattle(); return; }
-  await enemyTurn();
+  if(!state.enemyActedFirst) await enemyTurn();
 }
 
 
