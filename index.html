@@ -23,7 +23,7 @@
     <input id="oshiNameInput" class="name-input" type="text" maxlength="12" placeholder="例：おうまさん">
     <button id="startBtn" class="start-btn">冒険をはじめる</button>
     <button id="openingBtn" class="opening-btn">オープニングを見る</button>
-    <div class="version-label">スマホ版 v29 / Floor Loot Split</div>
+    <div class="version-label">スマホ版 v29 / Floor BGM + Tamachan Wait</div>
     <div class="release-note">スマートフォン推奨</div>
   </div>
 </section>
@@ -192,19 +192,27 @@
 
 <!-- BGM -->
 <audio id="bgmOpening" loop preload="auto">
-  <source src="audio/opening.mp3?v=29floorsplit" type="audio/mpeg">
+  <source src="audio/opening.mp3?v=29floorbgm" type="audio/mpeg">
 </audio>
 
-<audio id="bgmMap" loop preload="auto">
-  <source src="audio/map.mp3?v=29floorsplit" type="audio/mpeg">
+<audio id="bgmMap1F" loop preload="auto">
+  <source src="audio/map_1F.mp3?v=29floorbgm" type="audio/mpeg">
+</audio>
+
+<audio id="bgmMap2F" loop preload="auto">
+  <source src="audio/map_2F.mp3?v=29floorbgm" type="audio/mpeg">
+</audio>
+
+<audio id="bgmTamachan" loop preload="auto">
+  <source src="audio/tamachan.mp3?v=29floorbgm" type="audio/mpeg">
 </audio>
 
 <audio id="bgmBattle" loop preload="auto">
-  <source src="audio/battle.mp3?v=29floorsplit" type="audio/mpeg">
+  <source src="audio/battle.mp3?v=29floorbgm" type="audio/mpeg">
 </audio>
 
 <audio id="bgmBoss" loop preload="auto">
-  <source src="audio/boss.mp3?v=29floorsplit" type="audio/mpeg">
+  <source src="audio/boss.mp3?v=29floorbgm" type="audio/mpeg">
 </audio>
 
 
@@ -213,6 +221,7 @@
     <div class="tamachan-get-kira">✦ ✧ ✦</div>
     <div class="tamachan-get-title">初代メイド服 GET!!</div>
     <div class="tamachan-get-sub">たまちゃんから特別な装備を受け取った！</div>
+    <button id="tamachanContinueBtn" class="tamachan-continue-btn hidden">探索へ戻る</button>
   </div>
 </section>
 
