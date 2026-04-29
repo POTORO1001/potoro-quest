@@ -32,13 +32,13 @@ const enemies=[
      叱責 Lv17 / 進行度4〜5
      鬼奴夜魔さん Lv20 / 最深部
   */
-  {id:'teiji',name:'定時のご主人様',hp:52,maxHp:52,atk:6,exp:12,image:'img/enemies/teiji.png?v=29floor',intro:'定時のご主人様が あらわれた！'},
-  {id:'zangyo',name:'残業のご主人様',hp:92,maxHp:92,atk:10,exp:24,image:'img/enemies/zangyo.png?v=29floor',intro:'残業のご主人様が つかれた顔で あらわれた！'},
-  {id:'gekimu',name:'激務のご主人様',hp:148,maxHp:148,atk:15,exp:45,image:'img/enemies/gekimu.png?v=29floor',intro:'激務のご主人様が せわしなく あらわれた！'},
-  {id:'deisui',name:'泥酔のご主人様',hp:228,maxHp:228,atk:21,exp:70,image:'img/enemies/deisui.png?v=29floor',intro:'泥酔のご主人様が ふらつきながら あらわれた！'},
-  {id:'shisseki',name:'叱責のご主人様',hp:340,maxHp:340,atk:28,exp:110,image:'img/enemies/shisseki.png?v=29floor',intro:'叱責のご主人様が ふるえながら あらわれた！'},
-  {id:'boss',name:'鬼奴夜魔さん',hp:520,maxHp:520,atk:36,exp:160,image:'img/enemies/boss.png?v=29floor',boss:true,intro:'鬼奴夜魔さんが あらわれた！！'},
-  {id:'tamachan',name:'たまちゃん',hp:1,maxHp:1,atk:0,exp:0,image:'img/enemies/tamachan.png?v=29floor',helper:true,intro:'たまちゃんが あらわれた！'}
+  {id:'teiji',name:'定時のご主人様',hp:52,maxHp:52,atk:6,exp:12,image:'img/enemies/teiji.png?v=29mapmenu',intro:'定時のご主人様が あらわれた！'},
+  {id:'zangyo',name:'残業のご主人様',hp:92,maxHp:92,atk:10,exp:24,image:'img/enemies/zangyo.png?v=29mapmenu',intro:'残業のご主人様が つかれた顔で あらわれた！'},
+  {id:'gekimu',name:'激務のご主人様',hp:148,maxHp:148,atk:15,exp:45,image:'img/enemies/gekimu.png?v=29mapmenu',intro:'激務のご主人様が せわしなく あらわれた！'},
+  {id:'deisui',name:'泥酔のご主人様',hp:228,maxHp:228,atk:21,exp:70,image:'img/enemies/deisui.png?v=29mapmenu',intro:'泥酔のご主人様が ふらつきながら あらわれた！'},
+  {id:'shisseki',name:'叱責のご主人様',hp:340,maxHp:340,atk:28,exp:110,image:'img/enemies/shisseki.png?v=29mapmenu',intro:'叱責のご主人様が ふるえながら あらわれた！'},
+  {id:'boss',name:'鬼奴夜魔さん',hp:520,maxHp:520,atk:36,exp:160,image:'img/enemies/boss.png?v=29mapmenu',boss:true,intro:'鬼奴夜魔さんが あらわれた！！'},
+  {id:'tamachan',name:'たまちゃん',hp:1,maxHp:1,atk:0,exp:0,image:'img/enemies/tamachan.png?v=29mapmenu',helper:true,intro:'たまちゃんが あらわれた！'}
 ];
 
 const equipmentData={
@@ -195,15 +195,15 @@ function startBgm(kind){
 
 /* ===== Assets ===== */
 const ASSETS_TO_PRELOAD=[
-  'img/enemies/teiji.png?v=29floor',
-  'img/enemies/zangyo.png?v=29floor',
-  'img/enemies/gekimu.png?v=29floor',
-  'img/enemies/deisui.png?v=29floor',
-  'img/enemies/shisseki.png?v=29floor',
-  'img/enemies/boss.png?v=29floor',
-  'img/enemies/tamachan.png?v=29floor',
-  'img/backgrounds/battle_room.png?v=29floor',
-  'img/backgrounds/battle_boss_room.png?v=29floor'
+  'img/enemies/teiji.png?v=29mapmenu',
+  'img/enemies/zangyo.png?v=29mapmenu',
+  'img/enemies/gekimu.png?v=29mapmenu',
+  'img/enemies/deisui.png?v=29mapmenu',
+  'img/enemies/shisseki.png?v=29mapmenu',
+  'img/enemies/boss.png?v=29mapmenu',
+  'img/enemies/tamachan.png?v=29mapmenu',
+  'img/backgrounds/battle_room.png?v=29mapmenu',
+  'img/backgrounds/battle_boss_room.png?v=29mapmenu'
 ];
 function preloadImage(src){return new Promise(resolve=>{const img=new Image();img.onload=()=>resolve({src,ok:true});img.onerror=()=>resolve({src,ok:false});img.src=src;});}
 function hideLoadingScreen(){
@@ -750,6 +750,12 @@ function addSubButton(label,handler){
   btn.onclick=handler;
   document.getElementById('subMenuBody').appendChild(btn);
 }
+
+function isMapMode(){
+  const map=document.getElementById('mapScreen');
+  return !!map && !map.classList.contains('hidden') && !state.inBattle;
+}
+
 function closeSubMenu(){const sub=document.getElementById('subMenu');if(sub)sub.classList.add('hidden');}
 
 function openEquipMenu(){
@@ -759,13 +765,51 @@ function openEquipMenu(){
   const body=document.getElementById('equipMenuBody');
   const p=state.player;
   body.innerHTML='';
+
   const current=document.createElement('div');
   current.className='equip-current';
   current.innerHTML=`現在の装備<br>武器：${findWeapon(p.equip.weapon)?.name||'なし'}<br>頭：${findUniform(p.equip.head)?.name||'なし'}<br>胴：${findUniform(p.equip.body)?.name||'なし'}<br>アクセ：${findUniform(p.equip.accessory)?.name||'なし'}<br><span class="equip-stat">攻撃 ${totalAtk()} / 防御 ${totalDef()}</span>`;
   body.appendChild(current);
-  p.inventory.weapons.forEach(id=>{const w=findWeapon(id);if(w)addEquipButton(`武器：${w.name}　攻+${w.atk}`,()=>equipWeapon(w.id));});
-  p.inventory.uniforms.forEach(id=>{const u=findUniform(id);if(u)addEquipButton(`${slotName(u.slot)}：${u.name}　防+${u.def}`,()=>equipUniform(u.id));});
+
+  renderEquipGroup(body,'武器',p.inventory.weapons.map(id=>findWeapon(id)).filter(Boolean).sort((a,b)=>b.atk-a.atk),item=>`武器：${item.name}　攻+${item.atk}`,item=>equipWeapon(item.id),item=>p.equip.weapon===item.id);
+
+  const uniforms=p.inventory.uniforms.map(id=>findUniform(id)).filter(Boolean);
+  renderEquipGroup(body,'防具（頭）',uniforms.filter(u=>u.slot==='head').sort((a,b)=>b.def-a.def),item=>`頭：${item.name}　防+${item.def}`,item=>equipUniform(item.id),item=>p.equip.head===item.id);
+  renderEquipGroup(body,'防具（胴）',uniforms.filter(u=>u.slot==='body').sort((a,b)=>b.def-a.def),item=>`胴：${item.name}　防+${item.def}`,item=>equipUniform(item.id),item=>p.equip.body===item.id);
+  renderEquipGroup(body,'防具（アクセ）',uniforms.filter(u=>u.slot==='accessory').sort((a,b)=>b.def-a.def),item=>`アクセ：${item.name}　防+${item.def}`,item=>equipUniform(item.id),item=>p.equip.accessory===item.id);
+
   menu.classList.remove('hidden');
+}
+
+function renderEquipGroup(parent,title,items,labelFn,handlerFn,isEquippedFn){
+  const details=document.createElement('details');
+  details.className='equip-group';
+  details.open=true;
+
+  const summary=document.createElement('summary');
+  summary.textContent=`${title}（${items.length}）`;
+  details.appendChild(summary);
+
+  const wrap=document.createElement('div');
+  wrap.className='equip-group-body';
+
+  if(!items.length){
+    const empty=document.createElement('div');
+    empty.className='equip-empty';
+    empty.textContent='未入手';
+    wrap.appendChild(empty);
+  }else{
+    items.forEach(item=>{
+      const btn=document.createElement('button');
+      btn.textContent=labelFn(item);
+      if(isEquippedFn(item)) btn.classList.add('equip-equipped');
+      btn.onclick=()=>handlerFn(item);
+      wrap.appendChild(btn);
+    });
+  }
+
+  details.appendChild(wrap);
+  parent.appendChild(details);
 }
 function addEquipButton(label,handler){
   const btn=document.createElement('button');
@@ -775,8 +819,8 @@ function addEquipButton(label,handler){
 }
 function closeEquipMenu(){const menu=document.getElementById('equipMenu');if(menu)menu.classList.add('hidden');}
 function slotName(slot){return slot==='head'?'頭':slot==='body'?'胴':slot==='accessory'?'アクセ':slot;}
-function equipWeapon(id){state.player.equip.weapon=id;setMessage(`${findWeapon(id).name} を装備した！`);openEquipMenu();updateUI();}
-function equipUniform(id){const item=findUniform(id);if(!item)return;state.player.equip[item.slot]=id;setMessage(`${item.name} を装備した！`);openEquipMenu();updateUI();}
+function equipWeapon(id){state.player.equip.weapon=id;const msg=`${findWeapon(id).name} を装備した！`;if(isMapMode()) setMapMessage(msg); else setMessage(msg);openEquipMenu();updateUI();}
+function equipUniform(id){const item=findUniform(id);if(!item)return;state.player.equip[item.slot]=id;const msg=`${item.name} を装備した！`;if(isMapMode()) setMapMessage(msg); else setMessage(msg);openEquipMenu();updateUI();}
 
 function openTreasureMenu(rewardText){
   const menu=document.getElementById('treasureMenu');
@@ -891,14 +935,15 @@ async function useItem(kind){
     const heal=Math.min(30,p.maxHp-p.hp);p.hp+=heal;
     setMessage(`オムライスを食べた！ HPが ${heal} 回復！`);
     showDamage(-heal,'player');seHeal();updateUI();
-    await sleep(750);await enemyTurn();
+    await sleep(750);if(!isMapMode()) await enemyTurn();
   }else if(kind==='tea'){
     if(p.items.tea<=0||p.mp>=p.maxMp){await failAction('紅茶は使えない！');return;}
     p.items.tea--;
     const healMp=Math.min(10,p.maxMp-p.mp);p.mp+=healMp;
     setMessage(`紅茶を飲んだ！ MPが ${healMp} 回復！`);
-    seHeal();updateUI();await sleep(750);await enemyTurn();
+    seHeal();updateUI();await sleep(750);if(!isMapMode()) await enemyTurn();
   }else if(kind==='horse'){
+    if(isMapMode()){await failAction('くろれきしは戦闘中のみ使えます！');return;}
     if(p.items.horse<=0){await failAction('くろれきしは持っていない！');return;}
     p.items.horse--;
     const damage=e.boss?55:999;
@@ -908,7 +953,8 @@ async function useItem(kind){
 }
 
 async function failAction(message){
-  setMessage(message);await sleep(700);
+  if(isMapMode()) setMapMessage(message); else setMessage(message);
+  await sleep(700);
   state.busy=false;setButtonsDisabled(false);updateUI();
 }
 
@@ -1201,6 +1247,8 @@ document.getElementById('guideBtn').addEventListener('click',openGuide);
 document.getElementById('guideCloseBtn').addEventListener('click',closeGuide);
 document.getElementById('guideModal').addEventListener('click',function(e){if(e.target===this) closeGuide();});
 document.getElementById('newMapBtn').addEventListener('click',()=>setupFloor(state.floor||1));
+document.getElementById('mapItemBtn').addEventListener('click',()=>openSubMenu('item'));
+document.getElementById('mapEquipBtn').addEventListener('click',openEquipMenu);
 document.getElementById('endingRestartBtn').addEventListener('click',restartFromEnding);
 
 document.querySelectorAll('[data-move]').forEach(btn=>{
