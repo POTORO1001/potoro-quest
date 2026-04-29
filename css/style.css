@@ -132,14 +132,14 @@ padding:12px;
 padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));
 background:
 linear-gradient(180deg,rgba(15,23,42,.92),rgba(17,24,39,.98)),
-url("../img/backgrounds/battle_room.png?v=29bgmfix");
+url("../img/backgrounds/battle_room.png?v=29floor");
 background-size:cover;
 background-position:center;
 }
 body.boss-battle .battle-screen{
 background:
 linear-gradient(180deg,rgba(20,10,30,.86),rgba(5,5,12,.98)),
-url("../img/backgrounds/battle_boss_room.png?v=29bgmfix");
+url("../img/backgrounds/battle_boss_room.png?v=29floor");
 background-size:cover;
 background-position:center;
 }
@@ -964,4 +964,65 @@ body.critical-flash .battle-screen{animation:criticalFlash .45s ease;}
   font-size:13px;
   font-weight:900;
   text-shadow:0 0 8px rgba(147,197,253,.9);
+}
+
+/* ===== Tamachan GET Effect ===== */
+.tamachan-get-overlay{
+  position:fixed;
+  inset:0;
+  z-index:240;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:radial-gradient(circle at center, rgba(255,183,222,.34), rgba(15,23,42,.92) 68%);
+}
+.tamachan-get-card{
+  width:min(92vw,420px);
+  padding:28px 18px;
+  border:3px solid #fde68a;
+  border-radius:24px;
+  background:linear-gradient(180deg, rgba(255,247,237,.98), rgba(255,228,240,.98));
+  color:#7c2d12;
+  text-align:center;
+  box-shadow:0 0 24px rgba(255,215,0,.8),0 28px 80px rgba(0,0,0,.55);
+  animation:tamachanGetPop 1.35s ease infinite;
+}
+.tamachan-get-kira{
+  font-size:30px;
+  color:#f59e0b;
+  margin-bottom:8px;
+  animation:tamachanKira 1s ease-in-out infinite;
+}
+.tamachan-get-title{
+  font-size:32px;
+  font-weight:1000;
+  color:#db2777;
+  text-shadow:0 0 8px rgba(255,255,255,.95),0 0 18px rgba(244,114,182,.85);
+  letter-spacing:.04em;
+}
+.tamachan-get-sub{
+  margin-top:10px;
+  font-size:14px;
+  font-weight:800;
+  color:#92400e;
+}
+@keyframes tamachanGetPop{
+  0%,100%{transform:scale(1) rotate(-1deg);}
+  50%{transform:scale(1.055) rotate(1deg);}
+}
+@keyframes tamachanKira{
+  0%,100%{opacity:.55; transform:scale(.96);}
+  50%{opacity:1; transform:scale(1.14);}
+}
+
+/* ===== Two Floor Map ===== */
+.floor-label{
+  display:inline-block;
+  margin-left:6px;
+  padding:2px 8px;
+  border-radius:999px;
+  background:#7c3aed;
+  color:#fff;
+  font-size:13px;
+  vertical-align:middle;
 }
