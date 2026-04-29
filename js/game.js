@@ -32,13 +32,13 @@ const enemies=[
      叱責 Lv17 / 進行度4〜5
      鬼奴夜魔さん Lv20 / 最深部
   */
-  {id:'teiji',name:'定時のご主人様',hp:52,maxHp:52,atk:6,exp:12,image:'img/enemies/teiji.png?v=29mapbtn',intro:'定時のご主人様が あらわれた！'},
-  {id:'zangyo',name:'残業のご主人様',hp:92,maxHp:92,atk:10,exp:24,image:'img/enemies/zangyo.png?v=29mapbtn',intro:'残業のご主人様が つかれた顔で あらわれた！'},
-  {id:'gekimu',name:'激務のご主人様',hp:148,maxHp:148,atk:15,exp:45,image:'img/enemies/gekimu.png?v=29mapbtn',intro:'激務のご主人様が せわしなく あらわれた！'},
-  {id:'deisui',name:'泥酔のご主人様',hp:228,maxHp:228,atk:21,exp:70,image:'img/enemies/deisui.png?v=29mapbtn',intro:'泥酔のご主人様が ふらつきながら あらわれた！'},
-  {id:'shisseki',name:'叱責のご主人様',hp:340,maxHp:340,atk:28,exp:110,image:'img/enemies/shisseki.png?v=29mapbtn',intro:'叱責のご主人様が ふるえながら あらわれた！'},
-  {id:'boss',name:'鬼奴夜魔さん',hp:520,maxHp:520,atk:36,exp:160,image:'img/enemies/boss.png?v=29mapbtn',boss:true,intro:'鬼奴夜魔さんが あらわれた！！'},
-  {id:'tamachan',name:'たまちゃん',hp:1,maxHp:1,atk:0,exp:0,image:'img/enemies/tamachan.png?v=29mapbtn',helper:true,intro:'たまちゃんが あらわれた！'}
+  {id:'teiji',name:'定時のご主人様',hp:52,maxHp:52,atk:6,exp:12,image:'img/enemies/teiji.png?v=29floorsplit',intro:'定時のご主人様が あらわれた！'},
+  {id:'zangyo',name:'残業のご主人様',hp:92,maxHp:92,atk:10,exp:24,image:'img/enemies/zangyo.png?v=29floorsplit',intro:'残業のご主人様が つかれた顔で あらわれた！'},
+  {id:'gekimu',name:'激務のご主人様',hp:148,maxHp:148,atk:15,exp:45,image:'img/enemies/gekimu.png?v=29floorsplit',intro:'激務のご主人様が せわしなく あらわれた！'},
+  {id:'deisui',name:'泥酔のご主人様',hp:228,maxHp:228,atk:21,exp:70,image:'img/enemies/deisui.png?v=29floorsplit',intro:'泥酔のご主人様が ふらつきながら あらわれた！'},
+  {id:'shisseki',name:'叱責のご主人様',hp:340,maxHp:340,atk:28,exp:110,image:'img/enemies/shisseki.png?v=29floorsplit',intro:'叱責のご主人様が ふるえながら あらわれた！'},
+  {id:'boss',name:'鬼奴夜魔さん',hp:520,maxHp:520,atk:36,exp:160,image:'img/enemies/boss.png?v=29floorsplit',boss:true,intro:'鬼奴夜魔さんが あらわれた！！'},
+  {id:'tamachan',name:'たまちゃん',hp:1,maxHp:1,atk:0,exp:0,image:'img/enemies/tamachan.png?v=29floorsplit',helper:true,intro:'たまちゃんが あらわれた！'}
 ];
 
 const equipmentData={
@@ -195,15 +195,15 @@ function startBgm(kind){
 
 /* ===== Assets ===== */
 const ASSETS_TO_PRELOAD=[
-  'img/enemies/teiji.png?v=29mapbtn',
-  'img/enemies/zangyo.png?v=29mapbtn',
-  'img/enemies/gekimu.png?v=29mapbtn',
-  'img/enemies/deisui.png?v=29mapbtn',
-  'img/enemies/shisseki.png?v=29mapbtn',
-  'img/enemies/boss.png?v=29mapbtn',
-  'img/enemies/tamachan.png?v=29mapbtn',
-  'img/backgrounds/battle_room.png?v=29mapbtn',
-  'img/backgrounds/battle_boss_room.png?v=29mapbtn'
+  'img/enemies/teiji.png?v=29floorsplit',
+  'img/enemies/zangyo.png?v=29floorsplit',
+  'img/enemies/gekimu.png?v=29floorsplit',
+  'img/enemies/deisui.png?v=29floorsplit',
+  'img/enemies/shisseki.png?v=29floorsplit',
+  'img/enemies/boss.png?v=29floorsplit',
+  'img/enemies/tamachan.png?v=29floorsplit',
+  'img/backgrounds/battle_room.png?v=29floorsplit',
+  'img/backgrounds/battle_boss_room.png?v=29floorsplit'
 ];
 function preloadImage(src){return new Promise(resolve=>{const img=new Image();img.onload=()=>resolve({src,ok:true});img.onerror=()=>resolve({src,ok:false});img.src=src;});}
 function hideLoadingScreen(){
@@ -376,20 +376,24 @@ function goToSecondFloor(){
 
 function giveMapChestEquipment(){
   const p=state.player;
-  const candidates=[];
-  if(!p.inventory.weapons.includes('frill_blade')) candidates.push({type:'weapon',id:'frill_blade',text:'フリルブレード'});
-  if(!p.inventory.weapons.includes('gokitaku_mace')) candidates.push({type:'weapon',id:'gokitaku_mace',text:'ご帰宅メイス'});
-  if(!p.inventory.uniforms.includes('maid_headband')) candidates.push({type:'uniform',id:'maid_headband',text:'メイドカチューシャ'});
-  if(!p.inventory.uniforms.includes('heart_tiara')) candidates.push({type:'uniform',id:'heart_tiara',text:'ハートティアラ'});
-  if(!p.inventory.uniforms.includes('rose_ribbon')) candidates.push({type:'uniform',id:'rose_ribbon',text:'ローズリボン'});
-  if(!p.inventory.uniforms.includes('white_apron')) candidates.push({type:'uniform',id:'white_apron',text:'純白エプロン'});
-  if(!p.inventory.uniforms.includes('long_maid')) candidates.push({type:'uniform',id:'long_maid',text:'ロングメイド服'});
-  if(!p.inventory.uniforms.includes('service_proof')) candidates.push({type:'uniform',id:'service_proof',text:'お給仕の証'});
-  if(!p.inventory.uniforms.includes('oshi_pendant')) candidates.push({type:'uniform',id:'oshi_pendant',text:'推し活ペンダント'});
-  if(!p.inventory.uniforms.includes('legend_nameplate')) candidates.push({type:'uniform',id:'legend_nameplate',text:'伝説の名札'});
+  let candidates=[];
+
+  if(state.floor===1){
+    if(!p.inventory.weapons.includes('frill_blade')) candidates.push({type:'weapon',id:'frill_blade',text:'フリルブレード'});
+    if(!p.inventory.uniforms.includes('maid_headband')) candidates.push({type:'uniform',id:'maid_headband',text:'メイドカチューシャ'});
+    if(!p.inventory.uniforms.includes('white_apron')) candidates.push({type:'uniform',id:'white_apron',text:'純白エプロン'});
+    if(!p.inventory.uniforms.includes('service_proof')) candidates.push({type:'uniform',id:'service_proof',text:'お給仕の証'});
+  }else{
+    if(!p.inventory.weapons.includes('gokitaku_mace')) candidates.push({type:'weapon',id:'gokitaku_mace',text:'ご帰宅メイス'});
+    if(!p.inventory.uniforms.includes('heart_tiara')) candidates.push({type:'uniform',id:'heart_tiara',text:'ハートティアラ'});
+    if(!p.inventory.uniforms.includes('rose_ribbon')) candidates.push({type:'uniform',id:'rose_ribbon',text:'ローズリボン'});
+    if(!p.inventory.uniforms.includes('long_maid')) candidates.push({type:'uniform',id:'long_maid',text:'ロングメイド服'});
+    if(!p.inventory.uniforms.includes('oshi_pendant')) candidates.push({type:'uniform',id:'oshi_pendant',text:'推し活ペンダント'});
+    if(!p.inventory.uniforms.includes('legend_nameplate')) candidates.push({type:'uniform',id:'legend_nameplate',text:'伝説の名札'});
+  }
 
   if(!candidates.length){
-    setMapMessage('宝箱を開けた！ しかし、すでに装備品は揃っていた。');
+    setMapMessage('宝箱を開けた！ しかし、この階の装備品はすでに揃っていた。');
     return;
   }
 
@@ -426,28 +430,16 @@ function checkTileEvent(){
   }
 
   if(Math.random()<0.18){
-    const depth=Math.abs(p.mapX-1)+Math.abs(p.mapY-1);
     let enemy;
+
     if(state.floor===1){
-      if(depth < 8){
-        const zone=enemies.filter(e=>['teiji'].includes(e.id));
-        enemy=zone[Math.floor(Math.random()*zone.length)];
-      }else if(depth < 16){
-        const zone=enemies.filter(e=>['teiji','zangyo'].includes(e.id));
-        enemy=zone[Math.floor(Math.random()*zone.length)];
-      }else{
-        const zone=enemies.filter(e=>['zangyo','gekimu'].includes(e.id));
-        enemy=zone[Math.floor(Math.random()*zone.length)];
-      }
+      const zone=enemies.filter(e=>['teiji','zangyo','gekimu'].includes(e.id));
+      enemy=zone[Math.floor(Math.random()*zone.length)];
     }else{
-      if(depth < 10){
-        const zone=enemies.filter(e=>['gekimu','deisui'].includes(e.id));
-        enemy=zone[Math.floor(Math.random()*zone.length)];
-      }else{
-        const zone=enemies.filter(e=>['deisui','shisseki'].includes(e.id));
-        enemy=zone[Math.floor(Math.random()*zone.length)];
-      }
+      const zone=enemies.filter(e=>['gekimu','deisui','shisseki'].includes(e.id));
+      enemy=zone[Math.floor(Math.random()*zone.length)];
     }
+
     startBattle(cloneEnemy(enemy),false);
   }else{
     setMapMessage(`${state.floor}Fを探索中...`);
