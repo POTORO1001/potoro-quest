@@ -132,14 +132,14 @@ padding:12px;
 padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));
 background:
 linear-gradient(180deg,rgba(15,23,42,.92),rgba(17,24,39,.98)),
-url("../img/backgrounds/battle_room.png?v=29floor");
+url("../img/backgrounds/battle_room.png?v=29mapmenu");
 background-size:cover;
 background-position:center;
 }
 body.boss-battle .battle-screen{
 background:
 linear-gradient(180deg,rgba(20,10,30,.86),rgba(5,5,12,.98)),
-url("../img/backgrounds/battle_boss_room.png?v=29floor");
+url("../img/backgrounds/battle_boss_room.png?v=29mapmenu");
 background-size:cover;
 background-position:center;
 }
@@ -1025,4 +1025,48 @@ body.critical-flash .battle-screen{animation:criticalFlash .45s ease;}
   color:#fff;
   font-size:13px;
   vertical-align:middle;
+}
+
+/* ===== Map Menu + Equipment Sort ===== */
+.map-action-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  max-width:260px;
+  margin:12px auto 0;
+}
+
+.equip-group{
+  margin-bottom:10px;
+  border:1px solid rgba(219,234,254,.35);
+  border-radius:12px;
+  overflow:hidden;
+  background:rgba(255,255,255,.04);
+}
+
+.equip-group summary{
+  cursor:pointer;
+  padding:10px 12px;
+  font-weight:900;
+  color:#fde68a;
+  background:rgba(15,23,42,.82);
+  user-select:none;
+}
+
+.equip-group-body{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:8px;
+  padding:10px;
+}
+
+.equip-empty{
+  font-size:12px;
+  color:#94a3b8;
+  padding:8px 2px;
+}
+
+.equip-equipped{
+  outline:2px solid #fde68a;
+  box-shadow:0 0 12px rgba(250,204,21,.35);
 }
