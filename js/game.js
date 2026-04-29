@@ -37,13 +37,13 @@ const enemies=[
      叱責 Lv17 / 進行度4〜5
      鬼奴夜魔さん Lv20 / 最深部
   */
-  {id:'teiji',name:'定時のご主人様',hp:52,maxHp:52,atk:6,exp:12,image:'img/enemies/teiji.png?v=29battleui',intro:'定時のご主人様が あらわれた！'},
-  {id:'zangyo',name:'残業のご主人様',hp:92,maxHp:92,atk:10,exp:24,image:'img/enemies/zangyo.png?v=29battleui',intro:'残業のご主人様が つかれた顔で あらわれた！'},
-  {id:'gekimu',name:'激務のご主人様',hp:148,maxHp:148,atk:15,exp:45,image:'img/enemies/gekimu.png?v=29battleui',intro:'激務のご主人様が せわしなく あらわれた！'},
-  {id:'deisui',name:'泥酔のご主人様',hp:228,maxHp:228,atk:21,exp:70,image:'img/enemies/deisui.png?v=29battleui',intro:'泥酔のご主人様が ふらつきながら あらわれた！'},
-  {id:'shisseki',name:'叱責のご主人様',hp:340,maxHp:340,atk:28,exp:110,image:'img/enemies/shisseki.png?v=29battleui',intro:'叱責のご主人様が ふるえながら あらわれた！'},
-  {id:'boss',name:'鬼奴夜魔さん',hp:520,maxHp:520,atk:36,exp:160,image:'img/enemies/boss.png?v=29battleui',boss:true,intro:'鬼奴夜魔さんが あらわれた！！'},
-  {id:'tamachan',name:'たまちゃん',hp:1,maxHp:1,atk:0,exp:0,image:'img/enemies/tamachan.png?v=29battleui',helper:true,intro:'たまちゃんが あらわれた！'}
+  {id:'teiji',name:'定時のご主人様',hp:52,maxHp:52,atk:6,def:2,spd:6,talk:4,exp:12,image:'img/enemies/teiji.png?v=29stat',intro:'定時のご主人様が あらわれた！'},
+  {id:'zangyo',name:'残業のご主人様',hp:92,maxHp:92,atk:10,def:4,spd:8,talk:6,exp:24,image:'img/enemies/zangyo.png?v=29stat',intro:'残業のご主人様が つかれた顔で あらわれた！'},
+  {id:'gekimu',name:'激務のご主人様',hp:148,maxHp:148,atk:15,def:7,spd:11,talk:9,exp:45,image:'img/enemies/gekimu.png?v=29stat',intro:'激務のご主人様が せわしなく あらわれた！'},
+  {id:'deisui',name:'泥酔のご主人様',hp:228,maxHp:228,atk:21,def:10,spd:8,talk:12,exp:70,image:'img/enemies/deisui.png?v=29stat',intro:'泥酔のご主人様が ふらつきながら あらわれた！'},
+  {id:'shisseki',name:'叱責のご主人様',hp:340,maxHp:340,atk:28,def:14,spd:13,talk:15,exp:110,image:'img/enemies/shisseki.png?v=29stat',intro:'叱責のご主人様が ふるえながら あらわれた！'},
+  {id:'boss',name:'鬼奴夜魔さん',hp:520,maxHp:520,atk:36,def:18,spd:16,talk:20,exp:160,image:'img/enemies/boss.png?v=29stat',boss:true,intro:'鬼奴夜魔さんが あらわれた！！'},
+  {id:'tamachan',name:'たまちゃん',hp:1,maxHp:1,atk:0,def:0,spd:99,talk:99,exp:0,image:'img/enemies/tamachan.png?v=29stat',helper:true,intro:'たまちゃんが あらわれた！'}
 ];
 
 const equipmentData={
@@ -74,6 +74,8 @@ const initialPlayer={
   maxMp:10,
   baseAtk:9,
   baseDef:3,
+  baseSpd:6,
+  baseTalk:7,
   exp:0,
   nextExp:45,
   guarding:false,
@@ -160,6 +162,20 @@ function totalDef(){
   return def;
 }
 
+function totalSpd(){
+  const p=state.player;
+  return p.baseSpd || 0;
+}
+
+function totalTalk(){
+  const p=state.player;
+  return p.baseTalk || 0;
+}
+
+function magicPower(base){
+  return Math.floor(base + totalTalk()*1.6);
+}
+
 /* ===== Audio ===== */
 const soundState={ctx:null,enabled:true,bgmTimer:null,bgmKind:null};
 function initAudio(){
@@ -200,15 +216,15 @@ function startBgm(kind){
 
 /* ===== Assets ===== */
 const ASSETS_TO_PRELOAD=[
-  'img/enemies/teiji.png?v=29battleui',
-  'img/enemies/zangyo.png?v=29battleui',
-  'img/enemies/gekimu.png?v=29battleui',
-  'img/enemies/deisui.png?v=29battleui',
-  'img/enemies/shisseki.png?v=29battleui',
-  'img/enemies/boss.png?v=29battleui',
-  'img/enemies/tamachan.png?v=29battleui',
-  'img/backgrounds/battle_room.png?v=29battleui',
-  'img/backgrounds/battle_boss_room.png?v=29battleui'
+  'img/enemies/teiji.png?v=29stat',
+  'img/enemies/zangyo.png?v=29stat',
+  'img/enemies/gekimu.png?v=29stat',
+  'img/enemies/deisui.png?v=29stat',
+  'img/enemies/shisseki.png?v=29stat',
+  'img/enemies/boss.png?v=29stat',
+  'img/enemies/tamachan.png?v=29stat',
+  'img/backgrounds/battle_room.png?v=29stat',
+  'img/backgrounds/battle_boss_room.png?v=29stat'
 ];
 function preloadImage(src){return new Promise(resolve=>{const img=new Image();img.onload=()=>resolve({src,ok:true});img.onerror=()=>resolve({src,ok:false});img.src=src;});}
 function hideLoadingScreen(){
@@ -461,6 +477,11 @@ function updateUI(){
   const alive=aliveEnemies();
   const displayName=alive.length>1 ? `${alive.length}体のご主人様` : e.name;
   document.getElementById('enemyName').textContent=displayName;
+  const enemyStats=document.getElementById('enemyStats');
+  if(enemyStats){
+    const statTarget = e || {};
+    enemyStats.textContent = `攻${statTarget.atk||0} 防${statTarget.def||0} 速${statTarget.spd||0} 話${statTarget.talk||0}`;
+  }
 
   renderEnemySlots();
 
@@ -478,7 +499,7 @@ function updateUI(){
   document.getElementById('playerExp').textContent=`EXP ${p.exp} / ${p.nextExp}`;
 
   const status=document.querySelector('.status-panel h2');
-  if(status) status.textContent=`${p.name} Lv.${p.lv}  攻${totalAtk()} 防${totalDef()}`;
+  if(status) status.textContent=`${p.name} Lv.${p.lv}  攻${totalAtk()} 防${totalDef()} 速${totalSpd()} 話${totalTalk()}`;
 
   document.body.classList.toggle('boss-battle',!!(state.enemiesInBattle||[]).some(en=>en.boss));
 }
@@ -774,7 +795,7 @@ function openEquipMenu(){
 
   const current=document.createElement('div');
   current.className='equip-current';
-  current.innerHTML=`現在の装備<br>武器：${findWeapon(p.equip.weapon)?.name||'なし'}<br>頭：${findUniform(p.equip.head)?.name||'なし'}<br>胴：${findUniform(p.equip.body)?.name||'なし'}<br>アクセ：${findUniform(p.equip.accessory)?.name||'なし'}<br><span class="equip-stat">攻撃 ${totalAtk()} / 防御 ${totalDef()}</span>`;
+  current.innerHTML=`現在の装備<br>武器：${findWeapon(p.equip.weapon)?.name||'なし'}<br>頭：${findUniform(p.equip.head)?.name||'なし'}<br>胴：${findUniform(p.equip.body)?.name||'なし'}<br>アクセ：${findUniform(p.equip.accessory)?.name||'なし'}<br><span class="equip-stat">攻撃 ${totalAtk()} / 防御 ${totalDef()} / すばやさ ${totalSpd()} / トーク力 ${totalTalk()}</span>`;
   body.appendChild(current);
 
   renderEquipGroup(body,'武器',p.inventory.weapons.map(id=>findWeapon(id)).filter(Boolean).sort((a,b)=>b.atk-a.atk),item=>`武器：${item.name}　攻+${item.atk}`,item=>equipWeapon(item.id),item=>p.equip.weapon===item.id);
@@ -890,7 +911,7 @@ async function useMagic(kind){
   if(kind==='moe'){
     if(p.mp<5){await failAction('MPがたりない！');return;}
     p.mp-=5;await showCutin('おまじない','もえもえぎゅー！！');
-    const damage=25+Math.floor(Math.random()*6);
+    const damage=magicPower(25)+Math.floor(Math.random()*6);
     await damageEnemy('もえもえぎゅー！！',damage);
   }else if(kind==='heal'){
     if(p.mp<8){await failAction('MPがたりない！');return;}
@@ -914,12 +935,12 @@ async function useMagic(kind){
     if(p.mp<16){await failAction('MPがたりない！');return;}
     p.mp-=16;await showCutin('必殺おまじない','にしきぬやまー！！');screenFlash();
     const target=currentEnemy();
-    const damage=target.boss?58:82;
+    const damage=target.boss?magicPower(50):magicPower(75);
     await damageEnemy('にしきぬやまー！！',damage);
   }else if(kind==='shower'){
     if(p.mp<12){await failAction('MPがたりない！');return;}
     p.mp-=12;await showCutin('全体おまじない','チェキフラッシュ！！');screenFlash();
-    await damageAllEnemies('チェキフラッシュ！！',38);
+    await damageAllEnemies('チェキフラッシュ！！',magicPower(32));
   }else if(kind==='charge'){
     await showCutin('補助おまじない','萌えちゃーじ！');
     const gain=Math.min(20,p.maxMp-p.mp);
@@ -1119,7 +1140,7 @@ async function winBattle(){
 
   while(p.exp>=p.nextExp){
     p.exp-=p.nextExp;p.lv++;p.nextExp=Math.floor(p.nextExp*1.5);
-    p.maxHp+=6;p.maxMp+=3;p.baseAtk+=2;p.baseDef+=1;p.hp=p.maxHp;p.mp=p.maxMp;
+    p.maxHp+=6;p.maxMp+=3;p.baseAtk+=2;p.baseDef+=1;p.baseSpd+=1;p.baseTalk+=2;p.hp=p.maxHp;p.mp=p.maxMp;
     seLevelUp();showLevelToast(`LEVEL UP！ Lv.${p.lv}`);
     setMessage(`${p.name} は レベル ${p.lv} に あがった！`);
     updateUI();await sleep(1200);
