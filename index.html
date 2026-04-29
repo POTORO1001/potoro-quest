@@ -23,7 +23,7 @@
     <input id="oshiNameInput" class="name-input" type="text" maxlength="12" placeholder="例：おうまさん">
     <button id="startBtn" class="start-btn">冒険をはじめる</button>
     <button id="openingBtn" class="opening-btn">オープニングを見る</button>
-    <div class="version-label">スマホ版 v29 / Game Over Force Restart</div>
+    <div class="version-label">スマホ版 v29 / Battle UI Command Rework</div>
     <div class="release-note">スマートフォン推奨</div>
   </div>
 </section>
@@ -116,6 +116,7 @@
 <button onclick="openSubMenu('magic')">おまじない</button>
 <button onclick="playerAction('guard')">ぼうぎょ</button>
 <button onclick="openSubMenu('item')">どうぐ</button>
+<button id="battleEquipBtn" onclick="openEquipMenu()">装備</button>
 </div>
 </section>
 
@@ -192,27 +193,27 @@
 
 <!-- BGM -->
 <audio id="bgmOpening" loop preload="auto">
-  <source src="audio/opening.mp3?v=29gameover" type="audio/mpeg">
+  <source src="audio/opening.mp3?v=29battleui" type="audio/mpeg">
 </audio>
 
 <audio id="bgmMap1F" loop preload="auto">
-  <source src="audio/map_1F.mp3?v=29gameover" type="audio/mpeg">
+  <source src="audio/map_1F.mp3?v=29battleui" type="audio/mpeg">
 </audio>
 
 <audio id="bgmMap2F" loop preload="auto">
-  <source src="audio/map_2F.mp3?v=29gameover" type="audio/mpeg">
+  <source src="audio/map_2F.mp3?v=29battleui" type="audio/mpeg">
 </audio>
 
 <audio id="bgmTamachan" loop preload="auto">
-  <source src="audio/tamachan.mp3?v=29gameover" type="audio/mpeg">
+  <source src="audio/tamachan.mp3?v=29battleui" type="audio/mpeg">
 </audio>
 
 <audio id="bgmBattle" loop preload="auto">
-  <source src="audio/battle.mp3?v=29gameover" type="audio/mpeg">
+  <source src="audio/battle.mp3?v=29battleui" type="audio/mpeg">
 </audio>
 
 <audio id="bgmBoss" loop preload="auto">
-  <source src="audio/boss.mp3?v=29gameover" type="audio/mpeg">
+  <source src="audio/boss.mp3?v=29battleui" type="audio/mpeg">
 </audio>
 
 
