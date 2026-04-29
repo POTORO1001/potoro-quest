@@ -37,13 +37,13 @@ const enemies=[
      叱責 Lv17 / 進行度4〜5
      鬼奴夜魔さん Lv20 / 最深部
   */
-  {id:'teiji',name:'定時のご主人様',hp:52,maxHp:52,atk:6,exp:12,image:'img/enemies/teiji.png?v=29floorbgm',intro:'定時のご主人様が あらわれた！'},
-  {id:'zangyo',name:'残業のご主人様',hp:92,maxHp:92,atk:10,exp:24,image:'img/enemies/zangyo.png?v=29floorbgm',intro:'残業のご主人様が つかれた顔で あらわれた！'},
-  {id:'gekimu',name:'激務のご主人様',hp:148,maxHp:148,atk:15,exp:45,image:'img/enemies/gekimu.png?v=29floorbgm',intro:'激務のご主人様が せわしなく あらわれた！'},
-  {id:'deisui',name:'泥酔のご主人様',hp:228,maxHp:228,atk:21,exp:70,image:'img/enemies/deisui.png?v=29floorbgm',intro:'泥酔のご主人様が ふらつきながら あらわれた！'},
-  {id:'shisseki',name:'叱責のご主人様',hp:340,maxHp:340,atk:28,exp:110,image:'img/enemies/shisseki.png?v=29floorbgm',intro:'叱責のご主人様が ふるえながら あらわれた！'},
-  {id:'boss',name:'鬼奴夜魔さん',hp:520,maxHp:520,atk:36,exp:160,image:'img/enemies/boss.png?v=29floorbgm',boss:true,intro:'鬼奴夜魔さんが あらわれた！！'},
-  {id:'tamachan',name:'たまちゃん',hp:1,maxHp:1,atk:0,exp:0,image:'img/enemies/tamachan.png?v=29floorbgm',helper:true,intro:'たまちゃんが あらわれた！'}
+  {id:'teiji',name:'定時のご主人様',hp:52,maxHp:52,atk:6,exp:12,image:'img/enemies/teiji.png?v=29gameover',intro:'定時のご主人様が あらわれた！'},
+  {id:'zangyo',name:'残業のご主人様',hp:92,maxHp:92,atk:10,exp:24,image:'img/enemies/zangyo.png?v=29gameover',intro:'残業のご主人様が つかれた顔で あらわれた！'},
+  {id:'gekimu',name:'激務のご主人様',hp:148,maxHp:148,atk:15,exp:45,image:'img/enemies/gekimu.png?v=29gameover',intro:'激務のご主人様が せわしなく あらわれた！'},
+  {id:'deisui',name:'泥酔のご主人様',hp:228,maxHp:228,atk:21,exp:70,image:'img/enemies/deisui.png?v=29gameover',intro:'泥酔のご主人様が ふらつきながら あらわれた！'},
+  {id:'shisseki',name:'叱責のご主人様',hp:340,maxHp:340,atk:28,exp:110,image:'img/enemies/shisseki.png?v=29gameover',intro:'叱責のご主人様が ふるえながら あらわれた！'},
+  {id:'boss',name:'鬼奴夜魔さん',hp:520,maxHp:520,atk:36,exp:160,image:'img/enemies/boss.png?v=29gameover',boss:true,intro:'鬼奴夜魔さんが あらわれた！！'},
+  {id:'tamachan',name:'たまちゃん',hp:1,maxHp:1,atk:0,exp:0,image:'img/enemies/tamachan.png?v=29gameover',helper:true,intro:'たまちゃんが あらわれた！'}
 ];
 
 const equipmentData={
@@ -200,15 +200,15 @@ function startBgm(kind){
 
 /* ===== Assets ===== */
 const ASSETS_TO_PRELOAD=[
-  'img/enemies/teiji.png?v=29floorbgm',
-  'img/enemies/zangyo.png?v=29floorbgm',
-  'img/enemies/gekimu.png?v=29floorbgm',
-  'img/enemies/deisui.png?v=29floorbgm',
-  'img/enemies/shisseki.png?v=29floorbgm',
-  'img/enemies/boss.png?v=29floorbgm',
-  'img/enemies/tamachan.png?v=29floorbgm',
-  'img/backgrounds/battle_room.png?v=29floorbgm',
-  'img/backgrounds/battle_boss_room.png?v=29floorbgm'
+  'img/enemies/teiji.png?v=29gameover',
+  'img/enemies/zangyo.png?v=29gameover',
+  'img/enemies/gekimu.png?v=29gameover',
+  'img/enemies/deisui.png?v=29gameover',
+  'img/enemies/shisseki.png?v=29gameover',
+  'img/enemies/boss.png?v=29gameover',
+  'img/enemies/tamachan.png?v=29gameover',
+  'img/backgrounds/battle_room.png?v=29gameover',
+  'img/backgrounds/battle_boss_room.png?v=29gameover'
 ];
 function preloadImage(src){return new Promise(resolve=>{const img=new Image();img.onload=()=>resolve({src,ok:true});img.onerror=()=>resolve({src,ok:false});img.src=src;});}
 function hideLoadingScreen(){
@@ -848,6 +848,7 @@ function openTreasureMenu(rewardText){
 function closeTreasureMenu(){const menu=document.getElementById('treasureMenu');if(menu)menu.classList.add('hidden');}
 
 async function playerAction(type){
+  if(state.player.hp<=0) return;
   if(state.busy) return;
   closeSubMenu();closeEquipMenu();
   state.busy=true;setButtonsDisabled(true);
@@ -880,6 +881,7 @@ async function playerAction(type){
 }
 
 async function useMagic(kind){
+  if(state.player.hp<=0) return;
   if(state.busy) return;
   closeSubMenu();closeEquipMenu();
   state.busy=true;setButtonsDisabled(true);
@@ -931,6 +933,7 @@ async function useMagic(kind){
 }
 
 async function useItem(kind){
+  if(state.player.hp<=0 && !isMapMode()) return;
   if(state.busy) return;
   closeSubMenu();closeEquipMenu();
   state.busy=true;setButtonsDisabled(true);
@@ -991,6 +994,43 @@ async function damageAllEnemies(message,baseDamage){
   await enemyTurn();
 }
 
+
+function showGameOver(){
+  state.busy=true;
+  state.inBattle=false;
+  setButtonsDisabled(true);
+  stopAllBgm();
+  const overlay=document.getElementById('gameOverOverlay');
+  if(overlay) overlay.classList.remove('hidden');
+}
+
+function restartFromGameOver(){
+  const overlay=document.getElementById('gameOverOverlay');
+  if(overlay) overlay.classList.add('hidden');
+
+  document.getElementById('battleScreen').classList.add('hidden');
+  document.getElementById('mapScreen').classList.add('hidden');
+  document.getElementById('endingScreen').classList.add('hidden');
+  document.getElementById('openingScreen').classList.add('hidden');
+  document.getElementById('titleScreen').classList.remove('hidden');
+
+  state.player=makePlayer();
+  state.enemy=null;
+  state.enemiesInBattle=[];
+  state.targetIndex=0;
+  state.lastDefeatedEnemy=null;
+  state.busy=false;
+  state.started=false;
+  state.inBattle=false;
+  state.floor=1;
+  state.stairs=null;
+  state.maze=[];
+  state.chests=[];
+
+  setButtonsDisabled(false);
+  playBgm('bgmOpening');
+}
+
 async function enemyTurn(){
   const p=state.player;
   const attackers=aliveEnemies();
@@ -1022,8 +1062,9 @@ async function enemyTurn(){
     await sleep(isCritical?1050:850);
 
     if(p.hp<=0){
-      setMessage(`${p.name} は たおれてしまった… 「最初から」で再挑戦できます。`);
-      setButtonsDisabled(true);state.busy=true;
+      setMessage(`${p.name} は たおれてしまった…`);
+      await sleep(900);
+      showGameOver();
       return;
     }
   }
@@ -1374,4 +1415,19 @@ if(document.readyState==='loading'){
   document.addEventListener('DOMContentLoaded',bindTamachanContinueButton,{once:true});
 }else{
   bindTamachanContinueButton();
+}
+
+
+
+function bindGameOverButton(){
+  const btn=document.getElementById('gameOverRestartBtn');
+  if(!btn || btn.dataset.boundGameOver) return;
+  btn.dataset.boundGameOver='1';
+  btn.addEventListener('click',restartFromGameOver);
+}
+
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded',bindGameOverButton,{once:true});
+}else{
+  bindGameOverButton();
 }
