@@ -32,13 +32,13 @@ const enemies=[
      叱責 Lv17 / 進行度4〜5
      鬼奴夜魔さん Lv20 / 最深部
   */
-  {id:'teiji',name:'定時のご主人様',hp:52,maxHp:52,atk:6,exp:12,image:'img/enemies/teiji.png?v=29bgmfix',intro:'定時のご主人様が あらわれた！'},
-  {id:'zangyo',name:'残業のご主人様',hp:92,maxHp:92,atk:10,exp:24,image:'img/enemies/zangyo.png?v=29bgmfix',intro:'残業のご主人様が つかれた顔で あらわれた！'},
-  {id:'gekimu',name:'激務のご主人様',hp:148,maxHp:148,atk:15,exp:45,image:'img/enemies/gekimu.png?v=29bgmfix',intro:'激務のご主人様が せわしなく あらわれた！'},
-  {id:'deisui',name:'泥酔のご主人様',hp:228,maxHp:228,atk:21,exp:70,image:'img/enemies/deisui.png?v=29bgmfix',intro:'泥酔のご主人様が ふらつきながら あらわれた！'},
-  {id:'shisseki',name:'叱責のご主人様',hp:340,maxHp:340,atk:28,exp:110,image:'img/enemies/shisseki.png?v=29bgmfix',intro:'叱責のご主人様が ふるえながら あらわれた！'},
-  {id:'boss',name:'鬼奴夜魔さん',hp:520,maxHp:520,atk:36,exp:160,image:'img/enemies/boss.png?v=29bgmfix',boss:true,intro:'鬼奴夜魔さんが あらわれた！！'},
-  {id:'tamachan',name:'たまちゃん',hp:1,maxHp:1,atk:0,exp:0,image:'img/enemies/tamachan.png?v=29bgmfix',helper:true,intro:'たまちゃんが あらわれた！'}
+  {id:'teiji',name:'定時のご主人様',hp:52,maxHp:52,atk:6,exp:12,image:'img/enemies/teiji.png?v=29floor',intro:'定時のご主人様が あらわれた！'},
+  {id:'zangyo',name:'残業のご主人様',hp:92,maxHp:92,atk:10,exp:24,image:'img/enemies/zangyo.png?v=29floor',intro:'残業のご主人様が つかれた顔で あらわれた！'},
+  {id:'gekimu',name:'激務のご主人様',hp:148,maxHp:148,atk:15,exp:45,image:'img/enemies/gekimu.png?v=29floor',intro:'激務のご主人様が せわしなく あらわれた！'},
+  {id:'deisui',name:'泥酔のご主人様',hp:228,maxHp:228,atk:21,exp:70,image:'img/enemies/deisui.png?v=29floor',intro:'泥酔のご主人様が ふらつきながら あらわれた！'},
+  {id:'shisseki',name:'叱責のご主人様',hp:340,maxHp:340,atk:28,exp:110,image:'img/enemies/shisseki.png?v=29floor',intro:'叱責のご主人様が ふるえながら あらわれた！'},
+  {id:'boss',name:'鬼奴夜魔さん',hp:520,maxHp:520,atk:36,exp:160,image:'img/enemies/boss.png?v=29floor',boss:true,intro:'鬼奴夜魔さんが あらわれた！！'},
+  {id:'tamachan',name:'たまちゃん',hp:1,maxHp:1,atk:0,exp:0,image:'img/enemies/tamachan.png?v=29floor',helper:true,intro:'たまちゃんが あらわれた！'}
 ];
 
 const equipmentData={
@@ -88,6 +88,8 @@ const state={
   busy:false,
   started:false,
   maze:[],
+  floor:1,
+  stairs:null,
   boss:{x:15,y:15},
   chests:[],
   inBattle:false
@@ -193,15 +195,15 @@ function startBgm(kind){
 
 /* ===== Assets ===== */
 const ASSETS_TO_PRELOAD=[
-  'img/enemies/teiji.png?v=29bgmfix',
-  'img/enemies/zangyo.png?v=29bgmfix',
-  'img/enemies/gekimu.png?v=29bgmfix',
-  'img/enemies/deisui.png?v=29bgmfix',
-  'img/enemies/shisseki.png?v=29bgmfix',
-  'img/enemies/boss.png?v=29bgmfix',
-  'img/enemies/tamachan.png?v=29bgmfix',
-  'img/backgrounds/battle_room.png?v=29bgmfix',
-  'img/backgrounds/battle_boss_room.png?v=29bgmfix'
+  'img/enemies/teiji.png?v=29floor',
+  'img/enemies/zangyo.png?v=29floor',
+  'img/enemies/gekimu.png?v=29floor',
+  'img/enemies/deisui.png?v=29floor',
+  'img/enemies/shisseki.png?v=29floor',
+  'img/enemies/boss.png?v=29floor',
+  'img/enemies/tamachan.png?v=29floor',
+  'img/backgrounds/battle_room.png?v=29floor',
+  'img/backgrounds/battle_boss_room.png?v=29floor'
 ];
 function preloadImage(src){return new Promise(resolve=>{const img=new Image();img.onload=()=>resolve({src,ok:true});img.onerror=()=>resolve({src,ok:false});img.src=src;});}
 function hideLoadingScreen(){
@@ -236,7 +238,7 @@ setTimeout(hideLoadingScreen,3500);
 const cvs=document.getElementById('mapCanvas');
 const mapCtx=cvs.getContext('2d');
 
-function makeMaze(){
+function generateRandomMaze(){
   const maze=Array.from({length:MAZE_H},()=>Array(MAZE_W).fill(1));
   function carve(x,y){
     maze[y][x]=0;
@@ -250,13 +252,39 @@ function makeMaze(){
     }
   }
   carve(1,1);
-  state.maze=maze;
+  return maze;
+}
+
+function makeMaze(){
+  setupFloor(1);
+}
+
+function setupFloor(floor){
+  state.floor=floor;
+  state.maze=generateRandomMaze();
   state.player.mapX=1;
   state.player.mapY=1;
-  state.boss=findFarthest();
+
+  const far=findFarthest();
+
+  if(floor===1){
+    state.stairs={x:far.x,y:far.y};
+    state.boss={x:-1,y:-1};
+    setMapMessage('1Fのお屋敷が生成されました。階段を探しましょう。');
+  }else{
+    state.stairs=null;
+    state.boss={x:far.x,y:far.y};
+    setMapMessage('2Fに到着しました。鬼奴夜魔さんの気配を探しましょう。');
+  }
+
   placeChests();
+  updateFloorLabel();
   drawMaze();
-  setMapMessage('ランダムなお屋敷が生成されました。探索しましょう。');
+}
+
+function updateFloorLabel(){
+  const label=document.getElementById('floorLabel');
+  if(label) label.textContent=`${state.floor}F`;
 }
 
 function findFarthest(){
@@ -277,11 +305,14 @@ function placeChests(){
   const floors=[];
   for(let y=1;y<MAZE_H-1;y++){
     for(let x=1;x<MAZE_W-1;x++){
-      if(state.maze[y][x]===0 && !(x===1&&y===1) && !(x===state.boss.x&&y===state.boss.y)) floors.push({x,y});
+      const isStart=(x===1&&y===1);
+      const isBoss=(x===state.boss.x&&y===state.boss.y);
+      const isStairs=(state.stairs&&x===state.stairs.x&&y===state.stairs.y);
+      if(state.maze[y][x]===0 && !isStart && !isBoss && !isStairs) floors.push({x,y});
     }
   }
   floors.sort(()=>Math.random()-.5);
-  state.chests=floors.slice(0,4).map((p,i)=>({...p,opened:false,id:i}));
+  state.chests=floors.slice(0,4).map((p,i)=>({...p,opened:false,id:`${state.floor}-${i}`}));
 }
 
 function drawMaze(){
@@ -298,13 +329,28 @@ function drawMaze(){
       }
     }
   }
+
   for(const chest of state.chests){
     if(chest.opened) continue;
     mapCtx.fillStyle='#facc15';
     mapCtx.fillRect(chest.x*size+size*.25,chest.y*size+size*.32,size*.5,size*.42);
   }
-  mapCtx.fillStyle='#dc2626';
-  mapCtx.fillRect(state.boss.x*size+size*.25,state.boss.y*size+size*.25,size*.5,size*.5);
+
+  if(state.floor===1 && state.stairs){
+    mapCtx.fillStyle='#a78bfa';
+    mapCtx.fillRect(state.stairs.x*size+size*.2,state.stairs.y*size+size*.2,size*.6,size*.6);
+    mapCtx.fillStyle='#fff';
+    mapCtx.font=`${Math.floor(size*.55)}px sans-serif`;
+    mapCtx.textAlign='center';
+    mapCtx.textBaseline='middle';
+    mapCtx.fillText('⇧',state.stairs.x*size+size/2,state.stairs.y*size+size/2);
+  }
+
+  if(state.floor===2){
+    mapCtx.fillStyle='#dc2626';
+    mapCtx.fillRect(state.boss.x*size+size*.25,state.boss.y*size+size*.25,size*.5,size*.5);
+  }
+
   mapCtx.fillStyle='#ff7ad6';
   mapCtx.beginPath();
   mapCtx.arc(state.player.mapX*size+size/2,state.player.mapY*size+size/2,size*.32,0,Math.PI*2);
@@ -323,10 +369,13 @@ function movePlayer(dx,dy){
   checkTileEvent();
 }
 
+function goToSecondFloor(){
+  setupFloor(2);
+  setMapMessage('階段を上がって2Fへ。もう1Fには戻れません。');
+}
+
 function giveMapChestEquipment(){
   const p=state.player;
-
-  // 宝箱からは装備品のみ。初代メイド服はたまちゃん限定。
   const candidates=[];
   if(!p.inventory.weapons.includes('frill_blade')) candidates.push({type:'weapon',id:'frill_blade',text:'フリルブレード'});
   if(!p.inventory.weapons.includes('gokitaku_mace')) candidates.push({type:'weapon',id:'gokitaku_mace',text:'ご帰宅メイス'});
@@ -361,12 +410,16 @@ function checkTileEvent(){
     return;
   }
 
-  if(p.mapX===state.boss.x && p.mapY===state.boss.y){
+  if(state.floor===1 && state.stairs && p.mapX===state.stairs.x && p.mapY===state.stairs.y){
+    goToSecondFloor();
+    return;
+  }
+
+  if(state.floor===2 && p.mapX===state.boss.x && p.mapY===state.boss.y){
     startBattle(cloneEnemy(enemies.find(e=>e.id==='boss')),true);
     return;
   }
 
-  // レア遭遇：お助けキャラ たまちゃん（一回の冒険で一度だけ）
   if(!state.player.metTamachan && Math.random()<1/80){
     startBattle(cloneEnemy(enemies.find(e=>e.id==='tamachan')),false);
     return;
@@ -375,25 +428,29 @@ function checkTileEvent(){
   if(Math.random()<0.18){
     const depth=Math.abs(p.mapX-1)+Math.abs(p.mapY-1);
     let enemy;
-    if(depth < 8){
-      const zone=enemies.filter(e=>['teiji'].includes(e.id));
-      enemy=zone[Math.floor(Math.random()*zone.length)];
-    }else if(depth < 16){
-      const zone=enemies.filter(e=>['teiji','zangyo'].includes(e.id));
-      enemy=zone[Math.floor(Math.random()*zone.length)];
-    }else if(depth < 24){
-      const zone=enemies.filter(e=>['zangyo','gekimu','deisui'].includes(e.id));
-      enemy=zone[Math.floor(Math.random()*zone.length)];
-    }else if(depth < 32){
-      const zone=enemies.filter(e=>['gekimu','deisui','shisseki'].includes(e.id));
-      enemy=zone[Math.floor(Math.random()*zone.length)];
+    if(state.floor===1){
+      if(depth < 8){
+        const zone=enemies.filter(e=>['teiji'].includes(e.id));
+        enemy=zone[Math.floor(Math.random()*zone.length)];
+      }else if(depth < 16){
+        const zone=enemies.filter(e=>['teiji','zangyo'].includes(e.id));
+        enemy=zone[Math.floor(Math.random()*zone.length)];
+      }else{
+        const zone=enemies.filter(e=>['zangyo','gekimu'].includes(e.id));
+        enemy=zone[Math.floor(Math.random()*zone.length)];
+      }
     }else{
-      const zone=enemies.filter(e=>['deisui','shisseki'].includes(e.id));
-      enemy=zone[Math.floor(Math.random()*zone.length)];
+      if(depth < 10){
+        const zone=enemies.filter(e=>['gekimu','deisui'].includes(e.id));
+        enemy=zone[Math.floor(Math.random()*zone.length)];
+      }else{
+        const zone=enemies.filter(e=>['deisui','shisseki'].includes(e.id));
+        enemy=zone[Math.floor(Math.random()*zone.length)];
+      }
     }
     startBattle(cloneEnemy(enemy),false);
   }else{
-    setMapMessage('お屋敷を探索中...');
+    setMapMessage(`${state.floor}Fを探索中...`);
   }
 }
 
@@ -611,7 +668,7 @@ function startBattle(enemy,fromMap){
 
   if(enemy.helper){
     setMessage('いつもありがと♡お給仕頑張ってね♡');
-    setTimeout(()=>completeTamachanEvent(),1200);
+    setTimeout(()=>completeTamachanEvent(),5000);
     return;
   }
 
@@ -625,19 +682,27 @@ function startBattle(enemy,fromMap){
 }
 
 
+function showTamachanGetEffect(){
+  const overlay=document.getElementById('tamachanGetOverlay');
+  if(!overlay) return;
+  overlay.classList.remove('hidden');
+  setTimeout(()=>overlay.classList.add('hidden'),2200);
+}
+
 function completeTamachanEvent(){
   const p=state.player;
   p.metTamachan=true;
+
   if(!p.inventory.uniforms.includes('first_maid')){
     p.inventory.uniforms.push('first_maid');
-    setMessage('初代メイド服をもらった！');
-  }else{
-    setMessage('たまちゃんが応援してくれた！');
   }
+
+  setMessage('初代メイド服GET！！');
+  showTamachanGetEffect();
 
   setTimeout(()=>{
     endBattleToMap();
-  },1200);
+  },2400);
 }
 
 function endBattleToMap(){
@@ -1040,7 +1105,7 @@ function startGame(){
   state.player.name=getOshiName();
   state.busy=false;state.started=true;state.inBattle=false;
   setButtonsDisabled(false);
-  makeMaze();
+  setupFloor(1);
 }
 function resetGame(){
   closeSubMenu();closeEquipMenu();closeTreasureMenu();
@@ -1135,7 +1200,7 @@ document.getElementById('soundBtn').addEventListener('click',toggleSound);
 document.getElementById('guideBtn').addEventListener('click',openGuide);
 document.getElementById('guideCloseBtn').addEventListener('click',closeGuide);
 document.getElementById('guideModal').addEventListener('click',function(e){if(e.target===this) closeGuide();});
-document.getElementById('newMapBtn').addEventListener('click',makeMaze);
+document.getElementById('newMapBtn').addEventListener('click',()=>setupFloor(state.floor||1));
 document.getElementById('endingRestartBtn').addEventListener('click',restartFromEnding);
 
 document.querySelectorAll('[data-move]').forEach(btn=>{
