@@ -32,13 +32,13 @@ const enemies=[
      叱責 Lv17 / 進行度4〜5
      鬼奴夜魔さん Lv20 / 最深部
   */
-  {id:'teiji',name:'定時のご主人様',hp:52,maxHp:52,atk:6,exp:12,image:'img/enemies/teiji.png?v=29mapmenu',intro:'定時のご主人様が あらわれた！'},
-  {id:'zangyo',name:'残業のご主人様',hp:92,maxHp:92,atk:10,exp:24,image:'img/enemies/zangyo.png?v=29mapmenu',intro:'残業のご主人様が つかれた顔で あらわれた！'},
-  {id:'gekimu',name:'激務のご主人様',hp:148,maxHp:148,atk:15,exp:45,image:'img/enemies/gekimu.png?v=29mapmenu',intro:'激務のご主人様が せわしなく あらわれた！'},
-  {id:'deisui',name:'泥酔のご主人様',hp:228,maxHp:228,atk:21,exp:70,image:'img/enemies/deisui.png?v=29mapmenu',intro:'泥酔のご主人様が ふらつきながら あらわれた！'},
-  {id:'shisseki',name:'叱責のご主人様',hp:340,maxHp:340,atk:28,exp:110,image:'img/enemies/shisseki.png?v=29mapmenu',intro:'叱責のご主人様が ふるえながら あらわれた！'},
-  {id:'boss',name:'鬼奴夜魔さん',hp:520,maxHp:520,atk:36,exp:160,image:'img/enemies/boss.png?v=29mapmenu',boss:true,intro:'鬼奴夜魔さんが あらわれた！！'},
-  {id:'tamachan',name:'たまちゃん',hp:1,maxHp:1,atk:0,exp:0,image:'img/enemies/tamachan.png?v=29mapmenu',helper:true,intro:'たまちゃんが あらわれた！'}
+  {id:'teiji',name:'定時のご主人様',hp:52,maxHp:52,atk:6,exp:12,image:'img/enemies/teiji.png?v=29mapbtn',intro:'定時のご主人様が あらわれた！'},
+  {id:'zangyo',name:'残業のご主人様',hp:92,maxHp:92,atk:10,exp:24,image:'img/enemies/zangyo.png?v=29mapbtn',intro:'残業のご主人様が つかれた顔で あらわれた！'},
+  {id:'gekimu',name:'激務のご主人様',hp:148,maxHp:148,atk:15,exp:45,image:'img/enemies/gekimu.png?v=29mapbtn',intro:'激務のご主人様が せわしなく あらわれた！'},
+  {id:'deisui',name:'泥酔のご主人様',hp:228,maxHp:228,atk:21,exp:70,image:'img/enemies/deisui.png?v=29mapbtn',intro:'泥酔のご主人様が ふらつきながら あらわれた！'},
+  {id:'shisseki',name:'叱責のご主人様',hp:340,maxHp:340,atk:28,exp:110,image:'img/enemies/shisseki.png?v=29mapbtn',intro:'叱責のご主人様が ふるえながら あらわれた！'},
+  {id:'boss',name:'鬼奴夜魔さん',hp:520,maxHp:520,atk:36,exp:160,image:'img/enemies/boss.png?v=29mapbtn',boss:true,intro:'鬼奴夜魔さんが あらわれた！！'},
+  {id:'tamachan',name:'たまちゃん',hp:1,maxHp:1,atk:0,exp:0,image:'img/enemies/tamachan.png?v=29mapbtn',helper:true,intro:'たまちゃんが あらわれた！'}
 ];
 
 const equipmentData={
@@ -195,15 +195,15 @@ function startBgm(kind){
 
 /* ===== Assets ===== */
 const ASSETS_TO_PRELOAD=[
-  'img/enemies/teiji.png?v=29mapmenu',
-  'img/enemies/zangyo.png?v=29mapmenu',
-  'img/enemies/gekimu.png?v=29mapmenu',
-  'img/enemies/deisui.png?v=29mapmenu',
-  'img/enemies/shisseki.png?v=29mapmenu',
-  'img/enemies/boss.png?v=29mapmenu',
-  'img/enemies/tamachan.png?v=29mapmenu',
-  'img/backgrounds/battle_room.png?v=29mapmenu',
-  'img/backgrounds/battle_boss_room.png?v=29mapmenu'
+  'img/enemies/teiji.png?v=29mapbtn',
+  'img/enemies/zangyo.png?v=29mapbtn',
+  'img/enemies/gekimu.png?v=29mapbtn',
+  'img/enemies/deisui.png?v=29mapbtn',
+  'img/enemies/shisseki.png?v=29mapbtn',
+  'img/enemies/boss.png?v=29mapbtn',
+  'img/enemies/tamachan.png?v=29mapbtn',
+  'img/backgrounds/battle_room.png?v=29mapbtn',
+  'img/backgrounds/battle_boss_room.png?v=29mapbtn'
 ];
 function preloadImage(src){return new Promise(resolve=>{const img=new Image();img.onload=()=>resolve({src,ok:true});img.onerror=()=>resolve({src,ok:false});img.src=src;});}
 function hideLoadingScreen(){
@@ -1317,3 +1317,35 @@ document.addEventListener('gesturestart',function(e){
 window.addEventListener('DOMContentLoaded', ()=>{
   setTimeout(()=>playBgm('bgmOpening'), 300);
 });
+
+
+
+/* ===== Map Menu Button Fix ===== */
+function bindMapMenuButtons(){
+  const itemBtn=document.getElementById('mapItemBtn');
+  const equipBtn=document.getElementById('mapEquipBtn');
+
+  if(itemBtn && !itemBtn.dataset.boundMapMenu){
+    itemBtn.dataset.boundMapMenu='1';
+    itemBtn.addEventListener('click',function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      openSubMenu('item');
+    });
+  }
+
+  if(equipBtn && !equipBtn.dataset.boundMapMenu){
+    equipBtn.dataset.boundMapMenu='1';
+    equipBtn.addEventListener('click',function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      openEquipMenu();
+    });
+  }
+}
+
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded',bindMapMenuButtons,{once:true});
+}else{
+  bindMapMenuButtons();
+}
