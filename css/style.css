@@ -132,14 +132,14 @@ padding:12px;
 padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));
 background:
 linear-gradient(180deg,rgba(15,23,42,.92),rgba(17,24,39,.98)),
-url("../img/backgrounds/battle_room.png?v=29gameover");
+url("../img/backgrounds/battle_room.png?v=29battleui");
 background-size:cover;
 background-position:center;
 }
 body.boss-battle .battle-screen{
 background:
 linear-gradient(180deg,rgba(20,10,30,.86),rgba(5,5,12,.98)),
-url("../img/backgrounds/battle_boss_room.png?v=29gameover");
+url("../img/backgrounds/battle_boss_room.png?v=29battleui");
 background-size:cover;
 background-position:center;
 }
@@ -1146,4 +1146,39 @@ body.critical-flash .battle-screen{animation:criticalFlash .45s ease;}
   font-weight:1000;
   font-size:15px;
   box-shadow:0 0 18px rgba(220,38,38,.5);
+}
+
+
+/* ===== Battle UI Command Rework ===== */
+.battle-screen .battle-utility-panel{
+  display:none !important;
+}
+
+.battle-screen .command-panel{
+  grid-template-columns:1fr 1fr;
+}
+
+#battleEquipBtn{
+  grid-column:1 / -1;
+  background:#334155;
+}
+
+.sub-menu:not(.hidden){
+  position:fixed;
+  left:12px;
+  right:12px;
+  bottom:calc(12px + env(safe-area-inset-bottom,0px));
+  z-index:220;
+  max-height:42vh;
+  overflow:auto;
+}
+
+#equipMenu:not(.hidden){
+  position:fixed;
+  left:12px;
+  right:12px;
+  bottom:calc(12px + env(safe-area-inset-bottom,0px));
+  z-index:221;
+  max-height:52vh;
+  overflow:auto;
 }
