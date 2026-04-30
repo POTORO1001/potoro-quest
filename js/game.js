@@ -29,21 +29,16 @@ const MAZE_W=17;
 const MAZE_H=17;
 
 const enemies=[
-  /* v29 Root Cause Fixed
-     定時 Lv3 / 進行度1〜2
-     残業 Lv5 / 進行度2〜3
-     激務 Lv8 / 進行度3〜4
-     泥酔 Lv12 / 進行度3〜5
-     叱責 Lv17 / 進行度4〜5
-     鬼奴夜魔さん Lv20 / 最深部
-  */
-  {id:'teiji',name:'定時のご主人様',hp:52,maxHp:52,atk:6,def:2,spd:6,talk:4,exp:12,image:'img/enemies/teiji.png?v=29spdturn',intro:'定時のご主人様が あらわれた！'},
-  {id:'zangyo',name:'残業のご主人様',hp:92,maxHp:92,atk:10,def:4,spd:8,talk:6,exp:24,image:'img/enemies/zangyo.png?v=29spdturn',intro:'残業のご主人様が つかれた顔で あらわれた！'},
-  {id:'gekimu',name:'激務のご主人様',hp:148,maxHp:148,atk:15,def:7,spd:11,talk:9,exp:45,image:'img/enemies/gekimu.png?v=29spdturn',intro:'激務のご主人様が せわしなく あらわれた！'},
-  {id:'deisui',name:'泥酔のご主人様',hp:228,maxHp:228,atk:21,def:10,spd:8,talk:12,exp:70,image:'img/enemies/deisui.png?v=29spdturn',intro:'泥酔のご主人様が ふらつきながら あらわれた！'},
-  {id:'shisseki',name:'叱責のご主人様',hp:340,maxHp:340,atk:28,def:14,spd:13,talk:15,exp:110,image:'img/enemies/shisseki.png?v=29spdturn',intro:'叱責のご主人様が ふるえながら あらわれた！'},
-  {id:'boss',name:'鬼奴夜魔さん',hp:520,maxHp:520,atk:36,def:18,spd:16,talk:20,exp:160,image:'img/enemies/boss.png?v=29spdturn',boss:true,intro:'鬼奴夜魔さんが あらわれた！！'},
-  {id:'tamachan',name:'たまちゃん',hp:1,maxHp:1,atk:0,def:0,spd:99,talk:99,exp:0,image:'img/enemies/tamachan.png?v=29spdturn',helper:true,intro:'たまちゃんが あらわれた！'}
+  {id:'teiji',name:'定時のご主人様',hp:45,maxHp:45,mp:0,maxMp:0,atk:7,def:3,spd:6,talk:3,exp:10,image:'img/enemies/teiji.png?v=29special',intro:'定時のご主人様が あらわれた！'},
+  {id:'kuufuku',name:'空腹のご主人様',hp:65,maxHp:65,mp:5,maxMp:5,atk:10,def:4,spd:7,talk:5,exp:15,image:'img/enemies/kuufuku.png?v=29special',skill:'drain',intro:'空腹のご主人様が おなかを鳴らして あらわれた！'},
+  {id:'zangyo',name:'残業のご主人様',hp:85,maxHp:85,mp:0,maxMp:0,atk:13,def:6,spd:8,talk:6,exp:22,image:'img/enemies/zangyo.png?v=29special',skill:'double',intro:'残業のご主人様が つかれた顔で あらわれた！'},
+  {id:'meisou',name:'迷走のご主人様',hp:110,maxHp:110,mp:10,maxMp:10,atk:15,def:8,spd:12,talk:10,exp:30,image:'img/enemies/meisou.png?v=29special',skill:'confuse',intro:'迷走のご主人様が ぐるぐるしながら あらわれた！'},
+  {id:'gekimu',name:'激務のご主人様',hp:150,maxHp:150,mp:12,maxMp:12,atk:19,def:10,spd:12,talk:11,exp:42,image:'img/enemies/gekimu.png?v=29special',skill:'powerup',intro:'激務のご主人様が せわしなく あらわれた！'},
+  {id:'neochi',name:'寝落のご主人様',hp:130,maxHp:130,mp:15,maxMp:15,atk:16,def:9,spd:9,talk:12,exp:38,image:'img/enemies/neochi.png?v=29special',skill:'sleep',intro:'寝落のご主人様が うとうとしながら あらわれた！'},
+  {id:'deisui',name:'泥酔のご主人様',hp:180,maxHp:180,mp:18,maxMp:18,atk:21,def:12,spd:8,talk:14,exp:55,image:'img/enemies/deisui.png?v=29special',skill:'drunk',intro:'泥酔のご主人様が ふらつきながら あらわれた！'},
+  {id:'shisseki',name:'叱責のご主人様',hp:240,maxHp:240,mp:25,maxMp:25,atk:26,def:16,spd:15,talk:16,exp:75,image:'img/enemies/shisseki.png?v=29special',skill:'defdown',intro:'叱責のご主人様が ふるえながら あらわれた！'},
+  {id:'boss',name:'鬼怒夜魔さん',hp:380,maxHp:380,mp:40,maxMp:40,atk:32,def:20,spd:18,talk:22,exp:120,image:'img/enemies/boss.png?v=29special',boss:true,skill:'boss',intro:'鬼怒夜魔さんが あらわれた！！'},
+  {id:'tamachan',name:'たまちゃん',hp:1,maxHp:1,mp:0,maxMp:0,atk:0,def:0,spd:99,talk:99,exp:0,image:'img/enemies/tamachan.png?v=29special',helper:true,intro:'たまちゃんが あらわれた！'}
 ];
 
 const equipmentData={
@@ -81,6 +76,7 @@ const initialPlayer={
   guarding:false,
   items:{omurice:2,tea:1,horse:1},
   metTamachan:false,
+  status:{sleep:0,confuse:0,defDown:0},
   inventory:{weapons:['rod'],uniforms:[]},
   equip:{weapon:'rod',head:null,body:null,accessory:null}
 };
@@ -105,6 +101,24 @@ const state={
 
 function makePlayer(){return JSON.parse(JSON.stringify(initialPlayer));}
 function cloneEnemy(base){const c=JSON.parse(JSON.stringify(base));c.sleepTurns=0;return c;}
+function ensurePlayerStatus(){
+  const p=state.player;
+  if(!p.status) p.status={sleep:0,confuse:0,defDown:0};
+  return p.status;
+}
+function statusText(){
+  const s=ensurePlayerStatus(), parts=[];
+  if(s.sleep>0) parts.push(`😴 睡眠(${s.sleep})`);
+  if(s.confuse>0) parts.push(`💫 混乱(${s.confuse})`);
+  if(s.defDown>0) parts.push(`🔻 防御ダウン(${s.defDown})`);
+  return parts.length?parts.join(' '):'なし';
+}
+function effectiveDef(){
+  const s=ensurePlayerStatus();
+  const base=totalDef();
+  return s.defDown>0?Math.max(0,Math.floor(base*.65)):base;
+}
+
 function currentEnemy(){
   if(state.enemiesInBattle && state.enemiesInBattle.length){
     if(!state.enemiesInBattle[state.targetIndex] || state.enemiesInBattle[state.targetIndex].hp<=0){
@@ -248,15 +262,10 @@ function startBgm(kind){
 
 /* ===== Assets ===== */
 const ASSETS_TO_PRELOAD=[
-  'img/enemies/teiji.png?v=29spdturn',
-  'img/enemies/zangyo.png?v=29spdturn',
-  'img/enemies/gekimu.png?v=29spdturn',
-  'img/enemies/deisui.png?v=29spdturn',
-  'img/enemies/shisseki.png?v=29spdturn',
-  'img/enemies/boss.png?v=29spdturn',
-  'img/enemies/tamachan.png?v=29spdturn',
-  'img/backgrounds/battle_room.png?v=29spdturn',
-  'img/backgrounds/battle_boss_room.png?v=29spdturn'
+  'img/enemies/teiji.png?v=29special','img/enemies/kuufuku.png?v=29special','img/enemies/zangyo.png?v=29special',
+  'img/enemies/meisou.png?v=29special','img/enemies/gekimu.png?v=29special','img/enemies/neochi.png?v=29special',
+  'img/enemies/deisui.png?v=29special','img/enemies/shisseki.png?v=29special','img/enemies/boss.png?v=29special',
+  'img/enemies/tamachan.png?v=29special','img/backgrounds/battle_room.png?v=29special','img/backgrounds/battle_boss_room.png?v=29special'
 ];
 function preloadImage(src){return new Promise(resolve=>{const img=new Image();img.onload=()=>resolve({src,ok:true});img.onerror=()=>resolve({src,ok:false});img.src=src;});}
 function hideLoadingScreen(){
@@ -487,10 +496,10 @@ function checkTileEvent(){
     let enemy;
 
     if(state.floor===1){
-      const zone=enemies.filter(e=>['teiji','zangyo','gekimu'].includes(e.id));
+      const zone=enemies.filter(e=>['teiji','kuufuku','zangyo','meisou'].includes(e.id));
       enemy=zone[Math.floor(Math.random()*zone.length)];
     }else{
-      const zone=enemies.filter(e=>['gekimu','deisui','shisseki'].includes(e.id));
+      const zone=enemies.filter(e=>['gekimu','neochi','deisui','shisseki'].includes(e.id));
       enemy=zone[Math.floor(Math.random()*zone.length)];
     }
 
@@ -532,6 +541,8 @@ function updateUI(){
   if(spdEl) spdEl.textContent=`すばやさ ${totalSpd()}`;
   const talkEl=document.getElementById('playerTalk');
   if(talkEl) talkEl.textContent=`トーク力 ${totalTalk()}`;
+  const statusEl=document.getElementById('playerStatusEffects');
+  if(statusEl) statusEl.textContent=`状態：${statusText()}`;
   document.getElementById('playerExp').textContent=`EXP ${p.exp} / ${p.nextExp}`;
 
   const status=document.querySelector('.status-panel h2');
@@ -904,11 +915,29 @@ function openTreasureMenu(rewardText){
 }
 function closeTreasureMenu(){const menu=document.getElementById('treasureMenu');if(menu)menu.classList.add('hidden');}
 
+async function playerStatusCheck(){
+  const s=ensurePlayerStatus();
+  if(s.sleep>0){
+    setMessage(`${state.player.name} は眠っている…`);
+    s.sleep--; updateUI(); await sleep(800); await enemyTurn(); return false;
+  }
+  if(s.confuse>0){
+    s.confuse--;
+    if(Math.random()<0.35){
+      setMessage(`${state.player.name} は混乱して行動できなかった！`);
+      updateUI(); await sleep(800); await enemyTurn(); return false;
+    }
+  }
+  if(s.defDown>0) s.defDown--;
+  return true;
+}
+
 async function playerAction(type){
   if(state.player.hp<=0) return;
   if(state.busy) return;
   closeSubMenu();closeEquipMenu();
   state.busy=true;setButtonsDisabled(true);
+  if(!(await playerStatusCheck())) return;
   if(await enemyFirstCheck()) return;
   const p=state.player;const e=currentEnemy();
   if(type==='attack'){
@@ -943,6 +972,7 @@ async function useMagic(kind){
   if(state.busy) return;
   closeSubMenu();closeEquipMenu();
   state.busy=true;setButtonsDisabled(true);
+  if(!(await playerStatusCheck())) return;
   if(await enemyFirstCheck()) return;
   const p=state.player;
 
@@ -996,6 +1026,7 @@ async function useItem(kind){
   if(state.busy) return;
   closeSubMenu();closeEquipMenu();
   state.busy=true;setButtonsDisabled(true);
+  if(!isMapMode() && !(await playerStatusCheck())) return;
   if(!isMapMode() && await enemyFirstCheck()) return;
   const p=state.player;const e=currentEnemy();
   if(kind==='omurice'){
@@ -1093,42 +1124,104 @@ function restartFromGameOver(){
 
 async function enemyTurn(){
   const p=state.player;
+  ensurePlayerStatus();
   const attackers=aliveEnemies();
   if(!attackers.length) return;
 
   for(const e of attackers){
-    if(e.sleepTurns && e.sleepTurns>0){
+    if(e.sleepTurns&&e.sleepTurns>0){
       e.sleepTurns--;
       setMessage(`${e.name} は眠っている…`);
-      updateUI();
-      await sleep(700);
+      updateUI(); await sleep(700); continue;
+    }
+
+    if(await enemySpecialAction(e)){
+      updateUI(); await sleep(850);
+      if(p.hp<=0){setMessage(`${p.name} は たおれてしまった…`);await sleep(900);showGameOver();return;}
       continue;
     }
-    let damage=Math.max(1,e.atk-totalDef()+Math.floor(Math.random()*3));
-    const isCritical=Math.random()<0.08;
-    if(isCritical) damage=Math.floor(damage*2.0);
-    if(p.guarding){damage=Math.max(1,Math.floor(damage/2));}
 
-    p.hp=Math.max(0,p.hp-damage);
-    if(isCritical){
-      setMessage(`${e.name} の会心の一撃！ ${damage} ダメージ！`);
-      criticalFlash();
-      showDamage(damage,'player','enemy-critical-text');
-    }else{
-      setMessage(`${e.name} のこうげき！ ${damage} ダメージ！`);
-      showDamage(damage,'player');
-    }
-    seHit();playerFlash();updateUI();
-    await sleep(isCritical?1050:850);
-
-    if(p.hp<=0){
-      setMessage(`${p.name} は たおれてしまった…`);
-      await sleep(900);
-      showGameOver();
-      return;
-    }
+    await enemyBasicAttack(e);
+    if(p.hp<=0){setMessage(`${p.name} は たおれてしまった…`);await sleep(900);showGameOver();return;}
   }
   p.guarding=false;
+}
+
+async function enemyBasicAttack(e){
+  const p=state.player;
+  let damage=Math.max(1,e.atk-effectiveDef()+Math.floor(Math.random()*3));
+  const isCritical=Math.random()<0.08;
+  if(isCritical) damage=Math.floor(damage*2);
+  if(p.guarding) damage=Math.max(1,Math.floor(damage/2));
+  p.hp=Math.max(0,p.hp-damage);
+  setMessage(isCritical?`${e.name} の会心の一撃！ ${damage} ダメージ！`:`${e.name} のこうげき！ ${damage} ダメージ！`);
+  showDamage(damage,'player',isCritical?'enemy-critical-text':null);
+  if(isCritical) criticalFlash();
+  seHit();playerFlash();updateUI();await sleep(isCritical?1050:850);
+}
+
+async function enemySpecialAction(e){
+  const p=state.player;
+  const s=ensurePlayerStatus();
+
+  if(e.skill==='drain'&&Math.random()<0.28){
+    const damage=Math.max(4,Math.floor(e.atk*.75)-Math.floor(effectiveDef()*.35));
+    p.hp=Math.max(0,p.hp-damage);
+    const heal=Math.max(1,Math.floor(damage*.3));
+    e.hp=Math.min(e.maxHp,e.hp+heal);
+    setMessage(`${e.name} の おなかすいた…！ ${damage}ダメージ、HPを${heal}回復！`);
+    showDamage(damage,'player');seHit();playerFlash();return true;
+  }
+  if(e.skill==='double'&&Math.random()<0.24){
+    setMessage(`${e.name} は さらに働き続けた！`);await sleep(450);
+    await enemyBasicAttack(e); if(p.hp>0) await enemyBasicAttack(e); return true;
+  }
+  if(e.skill==='confuse'&&Math.random()<0.30){
+    s.confuse=Math.max(s.confuse,2);
+    setMessage(`${e.name} の 思考迷走！ 💫 混乱した！`);seMagic();screenFlash();return true;
+  }
+  if(e.skill==='powerup'&&Math.random()<0.28){
+    e.atk+=3; setMessage(`${e.name} は 激務で追い込まれた！ 攻撃力が上がった！`);seMagic();return true;
+  }
+  if(e.skill==='sleep'&&Math.random()<0.25){
+    s.sleep=Math.max(s.sleep,1+Math.floor(Math.random()*2));
+    setMessage(`${e.name} の うとうと…！ 😴 眠ってしまった！`);seMagic();screenFlash();return true;
+  }
+  if(e.skill==='drunk'&&Math.random()<0.35){
+    if(Math.random()<0.35){
+      const selfDamage=Math.max(8,Math.floor(e.atk*.9));
+      e.hp=Math.max(0,e.hp-selfDamage);
+      if(e.hp<=0) state.lastDefeatedEnemy=e;
+      setMessage(`${e.name} は酔って自分にぶつかった！ ${selfDamage}ダメージ！`);
+      showDamage(selfDamage,'enemy');seHit();enemyFlash();
+    }else{
+      s.confuse=Math.max(s.confuse,2);
+      setMessage(`${e.name} の 千鳥足トーク！ 💫 混乱した！`);seMagic();screenFlash();
+    }
+    return true;
+  }
+  if(e.skill==='defdown'&&Math.random()<0.32){
+    s.defDown=Math.max(s.defDown,2);
+    setMessage(`${e.name} の 叱責！ 🔻 防御が下がった！`);seMagic();screenFlash();return true;
+  }
+  if(e.skill==='boss'&&Math.random()<0.35){
+    const roll=Math.random();
+    if(roll<.45){
+      let damage=Math.max(5,Math.floor(e.atk*.75)-Math.floor(effectiveDef()*.35));
+      if(p.guarding) damage=Math.max(1,Math.floor(damage/2));
+      p.hp=Math.max(0,p.hp-damage);
+      setMessage(`${e.name} の 夜魔の圧！ ${damage}ダメージ！`);
+      showDamage(damage,'player','enemy-critical-text');seMagic();screenFlash();playerFlash();
+    }else if(roll<.7){
+      s.defDown=Math.max(s.defDown,2);
+      setMessage(`${e.name} の 威圧！ 🔻 防御が下がった！`);seMagic();screenFlash();
+    }else{
+      s.confuse=Math.max(s.confuse,2);
+      setMessage(`${e.name} の 闇トーク！ 💫 混乱した！`);seMagic();screenFlash();
+    }
+    return true;
+  }
+  return false;
 }
 
 function giveReward(enemyId){
