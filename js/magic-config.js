@@ -1,37 +1,15 @@
 /* =========================
-   ポトロクエスト magic-config.js（STEP17）
-   おまじない設定・調整ファイル
+   ポトロクエスト magic-config.js（改良版）
+   おまじない習得レベル対応版
 
-   読み込み順：
-   1. js/game.js
-   2. js/core.js
-   3. js/data.js
-   4. js/assets.js
-   5. js/loading.js
-   6. js/audio.js
-   7. js/ui.js
-   8. js/opening.js
-   9. js/ending.js
-   10. js/scene.js
-   11. js/battle.js
-   12. js/enemy.js
-   13. js/equipment.js
-   14. js/item.js
-   15. js/map.js
-   16. js/balance.js
-   17. js/event.js
-   18. js/magic-config.js
-   19. js/magic.js
-   20. js/compatibility.js
-
-   目的：
-   - おまじないのMP、威力、ターン数、成功率を一元管理します。
-   - magic.js の前に読み込んで、magic.js側から参照できる形にします。
+   変更点：
+   - おまじないを最初から全習得しない
+   - レベルアップに応じて順番に習得
+   - 既存おまじない・追加おまじないすべてに requiredLv を設定
 ========================= */
 
-/* ===== Magic Config ===== */
 const POTORO_MAGIC_CONFIG = {
-  version: 'step17-magic-config',
+  version: 'magic-config-level-learn',
 
   existing: {
     moe: {
@@ -41,7 +19,8 @@ const POTORO_MAGIC_CONFIG = {
       mp:5,
       baseDamageMin:25,
       baseDamageMax:30,
-      talkScale:1.2
+      talkScale:1.2,
+      requiredLv:1
     },
     heal: {
       id:'heal',
@@ -60,15 +39,6 @@ const POTORO_MAGIC_CONFIG = {
       maxTurns:3,
       requiredLv:4
     },
-    nishiki: {
-      id:'nishiki',
-      name:'にしきぬやまー',
-      label:'にしきぬやまー　MP16 / 大ダメージ',
-      mp:16,
-      bossBase:50,
-      normalBase:75,
-      requiredLv:10
-    },
     shower: {
       id:'shower',
       name:'チェキフラッシュ',
@@ -85,6 +55,15 @@ const POTORO_MAGIC_CONFIG = {
       mp:0,
       mpRecover:20,
       requiredLv:7
+    },
+    nishiki: {
+      id:'nishiki',
+      name:'にしきぬやまー',
+      label:'にしきぬやまー　MP16 / 大ダメージ',
+      mp:16,
+      bossBase:50,
+      normalBase:75,
+      requiredLv:10
     }
   },
 
@@ -96,14 +75,16 @@ const POTORO_MAGIC_CONFIG = {
       mp:6,
       turns:2,
       spdBonus:5,
-      talkBonus:5
+      talkBonus:5,
+      requiredLv:2
     },
     charge2: {
       id:'charge2',
       name:'完璧なお給仕',
       label:'完璧なお給仕　MP8 / 次ダメージ2.5倍',
       mp:8,
-      multiplier:2.5
+      multiplier:2.5,
+      requiredLv:5
     },
     multi: {
       id:'multi',
@@ -112,7 +93,8 @@ const POTORO_MAGIC_CONFIG = {
       mp:7,
       minHits:2,
       maxHits:3,
-      atkRate:0.6
+      atkRate:0.6,
+      requiredLv:8
     },
     rush: {
       id:'rush',
@@ -121,13 +103,15 @@ const POTORO_MAGIC_CONFIG = {
       mp:12,
       base:60,
       confuseRate:0.30,
-      confuseTurns:1
+      confuseTurns:1,
+      requiredLv:9
     },
     fullheal: {
       id:'fullheal',
       name:'ひなたぼっこ',
       label:'ひなたぼっこ　MP10 / 全回復＋状態異常解除',
-      mp:10
+      mp:10,
+      requiredLv:11
     }
   }
 };
@@ -154,6 +138,37 @@ function getAllMagicConfigs(){
     ...POTORO_MAGIC_CONFIG.existing,
     ...POTORO_MAGIC_CONFIG.added
   };
+}
+
+/* ===== 習得判定 ===== */
+function isMagicLearned(kind){
+  const config = getMagicConfig(kind);
+  if(!config) return false;
+
+  const requiredLv = config.requiredLv || 1;
+  return state.player.lv >= requiredLv;
+}
+
+function getLearnedMagicConfigs(){
+  const all = getAllMagicConfigs();
+  const learned = {};
+
+  Object.keys(all).forEach(kind => {
+    if(isMagicLearned(kind)){
+      learned[kind] = all[kind];
+    }
+  });
+
+  return learned;
+}
+
+function getNextMagicLearnList(){
+  const all = getAllMagicConfigs();
+
+  return Object.keys(all)
+    .map(kind => all[kind])
+    .filter(config => (config.requiredLv || 1) > state.player.lv)
+    .sort((a,b) => (a.requiredLv || 1) - (b.requiredLv || 1));
 }
 
 /* ===== Magic Label ===== */
@@ -220,5 +235,16 @@ function setMultiAttack(minHits,maxHits,atkRate){
 function potoroMagicConfigReport(){
   const report = JSON.parse(JSON.stringify(POTORO_MAGIC_CONFIG));
   console.log('[PO・TORO QUEST magic config]',report);
+  return report;
+}
+
+function potoroLearnedMagicReport(){
+  const report = {
+    lv:state.player.lv,
+    learned:getLearnedMagicConfigs(),
+    next:getNextMagicLearnList()
+  };
+
+  console.log('[PO・TORO QUEST learned magic]',report);
   return report;
 }
