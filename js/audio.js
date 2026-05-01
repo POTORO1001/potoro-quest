@@ -1,22 +1,10 @@
 /* =========================
-   ポトロクエスト audio.js（STEP8）
+   ポトロクエスト audio.js（STEP8 修正版）
    BGM / SE / 音量制御 分離ファイル
 
-   読み込み順：
-   1. js/game.js
-   2. js/audio.js
-   3. js/ui.js
-   4. js/battle.js
-   5. js/enemy.js
-   6. js/equipment.js
-   7. js/item.js
-   8. js/map.js
-   9. js/magic.js
-
    重要：
-   - audio.js は stopAllBgm / playBgm / playMapBgm / SE系関数を上書きします。
-   - battle.js / map.js / ui.js からSEやBGMを呼ぶため、
-     audio.js はそれらより前に読み込む構成を推奨します。
+   - game.js に const soundState が既にあるため、ここでは再定義しません。
+   - soundState をそのまま参照します。
 ========================= */
 
 /* ===== BGM ID管理 ===== */
@@ -73,16 +61,6 @@ function stopBgm(){
   }
 
   soundState.bgmKind = null;
-}
-
-/* ===== 音声状態 ===== */
-if(typeof soundState === 'undefined'){
-  var soundState = {
-    ctx:null,
-    enabled:true,
-    bgmTimer:null,
-    bgmKind:null
-  };
 }
 
 /* ===== AudioContext初期化 ===== */
@@ -236,9 +214,7 @@ function seCheki(){
   ]);
 }
 
-/* ===== 旧WebAudio BGM互換 =====
-   MP3 BGM版では簡易BGMは使用しません。
-========================= */
+/* ===== 旧WebAudio BGM互換 ===== */
 function startBgm(kind){
   return;
 }
