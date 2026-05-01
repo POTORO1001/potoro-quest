@@ -282,7 +282,6 @@ function movePlayer(dx,dy){
 /* ===== Floor Change ===== */
 function goToSecondFloor(){
   setupFloor(2);
-  setMapMessage('階段を上がって2Fへ。もう1Fには戻れません。');
 }
 
 /* ===== Map Chest Reward ===== */
@@ -383,7 +382,6 @@ function checkTileEvent(){
     const enemy = selectRandomMapEnemy();
     startBattle(cloneEnemy(enemy), false);
   }else{
-    setMapMessage(`${state.floor}Fを探索中...`);
   }
 }
 
