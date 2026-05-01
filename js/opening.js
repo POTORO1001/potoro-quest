@@ -1,0 +1,194 @@
+/* =========================
+   ポトロクエスト opening.js（STEP9-A）
+   タイトル・オープニング分離ファイル
+
+   読み込み順：
+   1. js/game.js
+   2. js/audio.js
+   3. js/ui.js
+   4. js/opening.js
+   5. js/ending.js
+   6. js/battle.js
+   7. js/enemy.js
+   8. js/equipment.js
+   9. js/item.js
+   10. js/map.js
+   11. js/magic.js
+
+   重要：
+   - opening.js はオープニング表示・スキップ・開始処理を管理します。
+   - game.js の既存関数を後読みで上書きします。
+========================= */
+
+/* ===== Opening State ===== */
+var openingTimer = null;
+var openingCurrentIndex = 0;
+
+const OPENING_FADE_MS = 600;
+const OPENING_SHOW_MS = 4000;
+
+/* ===== 推し名取得 ===== */
+function getOshiName(){
+  const input = document.getElementById('oshiNameInput');
+  const raw = input ? input.value.trim() : '';
+  return raw ? raw.slice(0,12) : 'おうまさん';
+}
+
+/* ===== 冒険開始 ===== */
+function startGame(){
+  initAudio();
+
+  hideElement('titleScreen');
+  hideElement('openingScreen');
+  hideElement('endingScreen');
+  hideElement('battleScreen');
+  showElement('mapScreen');
+
+  state.player = makePlayer();
+  state.player.name = getOshiName();
+
+  state.busy = false;
+  state.started = true;
+  state.inBattle = false;
+
+  setButtonsDisabled(false);
+  setupFloor(1);
+  playMapBgm();
+}
+
+/* ===== リセット ===== */
+function resetGame(){
+  closeSubMenu();
+  closeEquipMenu();
+  closeTreasureMenu();
+  startGame();
+}
+
+/* ===== Opening Text ===== */
+function getOpeningLines(){
+  const source = document.getElementById('openingCrawlSource');
+  if(!source) return [];
+
+  const lines = [];
+
+  const titleBlock = source.querySelector('.opening-title-block');
+  if(titleBlock) lines.push(titleBlock.innerHTML);
+
+  Array.from(source.querySelectorAll('p')).forEach(p => {
+    lines.push(p.innerHTML);
+  });
+
+  return lines;
+}
+
+/* ===== Opening Line Display ===== */
+function showOpeningLine(lines,index){
+  const active = document.getElementById('openingStoryActive');
+
+  if(!active || index < 0 || index >= lines.length) return;
+
+  active.style.opacity = 0;
+
+  setTimeout(() => {
+    active.innerHTML = lines[index];
+    active.style.opacity = 1;
+  },OPENING_FADE_MS);
+}
+
+/* ===== Opening Story Start ===== */
+function startOpeningStory(){
+  const lines = getOpeningLines();
+
+  if(!lines.length) return;
+
+  openingCurrentIndex = 0;
+  showOpeningLine(lines,0);
+
+  const interval = OPENING_FADE_MS + OPENING_SHOW_MS;
+
+  openingTimer = setInterval(() => {
+    openingCurrentIndex++;
+
+    if(openingCurrentIndex >= lines.length){
+      clearInterval(openingTimer);
+      openingTimer = null;
+      return;
+    }
+
+    showOpeningLine(lines,openingCurrentIndex);
+  },interval);
+}
+
+/* ===== Opening Screen Open ===== */
+function openOpening(){
+  playBgm('bgmOpening');
+
+  const active = document.getElementById('openingStoryActive');
+
+  if(openingTimer){
+    clearInterval(openingTimer);
+    openingTimer = null;
+  }
+
+  if(active){
+    active.innerHTML = '';
+    active.style.opacity = 0;
+  }
+
+  hideElement('titleScreen');
+  showElement('openingScreen');
+
+  setTimeout(startOpeningStory,4000);
+}
+
+/* ===== Opening Screen Close ===== */
+function closeOpening(){
+  const active = document.getElementById('openingStoryActive');
+
+  if(openingTimer){
+    clearInterval(openingTimer);
+    openingTimer = null;
+  }
+
+  if(active){
+    active.innerHTML = '';
+    active.style.opacity = 0;
+  }
+
+  hideElement('openingScreen');
+  showElement('titleScreen');
+}
+
+/* ===== Opening Event Bind ===== */
+function bindOpeningEvents(){
+  const startBtn = document.getElementById('startBtn');
+  const openingBtn = document.getElementById('openingBtn');
+  const openingSkipBtn = document.getElementById('openingSkipBtn');
+  const restartBtn = document.getElementById('restartBtn');
+
+  if(startBtn && !startBtn.dataset.boundOpeningStart){
+    startBtn.dataset.boundOpeningStart = '1';
+    startBtn.addEventListener('click',startGame);
+  }
+
+  if(openingBtn && !openingBtn.dataset.boundOpening){
+    openingBtn.dataset.boundOpening = '1';
+    openingBtn.addEventListener('click',openOpening);
+  }
+
+  if(openingSkipBtn && !openingSkipBtn.dataset.boundOpeningSkip){
+    openingSkipBtn.dataset.boundOpeningSkip = '1';
+    openingSkipBtn.addEventListener('click',closeOpening);
+  }
+
+  if(restartBtn && !restartBtn.dataset.boundOpeningRestart){
+    restartBtn.dataset.boundOpeningRestart = '1';
+    restartBtn.addEventListener('click',resetGame);
+  }
+}
+
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded',bindOpeningEvents,{once:true});
+}else{
+  bindOpeningEvents();
+}
