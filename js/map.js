@@ -95,11 +95,9 @@ function setupFloor(floor){
   if(floor === 1){
     state.stairs = {x:far.x,y:far.y};
     state.boss = {x:-1,y:-1};
-    setMapMessage('1Fのお屋敷が生成されました。階段を探しましょう。');
   }else{
     state.stairs = null;
     state.boss = {x:far.x,y:far.y};
-    setMapMessage('2Fに到着しました。鬼奴夜魔さんの気配を探しましょう。');
   }
 
   placeChests();
