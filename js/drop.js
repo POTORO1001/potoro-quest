@@ -1,107 +1,64 @@
 /* =========================
-   ポトロクエスト drop.js（STEP20）
-   ドロップ設計専用ファイル
+   ポトロクエスト drop.js（改良版）
+   装備品ドロップ廃止 / どうぐドロップ専用
 
-   読み込み順：
-   balance.js の後、event.js の前を推奨
-
-   目的：
-   - 通常敵からのどうぐドロップ
-   - 戦闘後の装備ドロップ
-   - レアドロップ
-   - ボス撃破時の特別抽選
-   をこのファイルで一元管理します。
-
-   重要：
-   - たまちゃん限定「初代メイド服」は維持します。
-   - 初代メイド服は通常ドロップ・宝箱ドロップに入れません。
+   変更点：
+   - 敵から装備品はドロップしない
+   - 装備品の入手は宝箱のみ
+   - 例外：たまちゃんの初代メイド服
+   - 戦闘後はどうぐのみドロップ
 ========================= */
 
-/* ===== Drop Config ===== */
 const POTORO_DROP_CONFIG = {
-  version:'step20-drop-design',
+  version:'drop-item-only',
 
   // 通常敵からのどうぐドロップ率
-  itemDropRate:0.28,
+  itemDropRate:0.32,
 
-  // 戦闘後の装備宝箱ドロップ率
-  equipmentDropRate:0.25,
-
-  // レア装備ドロップ率。通常装備抽選とは別枠。
-  rareEquipmentDropRate:0.06,
-
-  // ボス撃破時のチェキ券抽選は ending.js 側の 1/50 を維持
-  bossSpecialDropRate:0,
+  // 装備品ドロップは廃止
+  equipmentDropRate:0,
+  rareEquipmentDropRate:0,
 
   items:{
     teiji:[
-      {id:'tea',name:'紅茶',count:1,rate:0.65},
-      {id:'omurice',name:'オムライス',count:1,rate:0.35}
-    ],
-    kuufuku:[
-      {id:'omurice',name:'オムライス',count:1,rate:0.80},
-      {id:'tea',name:'紅茶',count:1,rate:0.20}
-    ],
-    zangyo:[
       {id:'tea',name:'紅茶',count:1,rate:0.70},
       {id:'omurice',name:'オムライス',count:1,rate:0.30}
     ],
+    kuufuku:[
+      {id:'omurice',name:'オムライス',count:1,rate:0.85},
+      {id:'tea',name:'紅茶',count:1,rate:0.15}
+    ],
+    zangyo:[
+      {id:'tea',name:'紅茶',count:1,rate:0.72},
+      {id:'omurice',name:'オムライス',count:1,rate:0.28}
+    ],
     meisou:[
-      {id:'tea',name:'紅茶',count:1,rate:0.55},
-      {id:'horse',name:'くろれきし',count:1,rate:0.10},
-      {id:'omurice',name:'オムライス',count:1,rate:0.35}
+      {id:'tea',name:'紅茶',count:1,rate:0.60},
+      {id:'omurice',name:'オムライス',count:1,rate:0.35},
+      {id:'horse',name:'くろれきし',count:1,rate:0.05}
     ],
     gekimu:[
-      {id:'omurice',name:'オムライス',count:1,rate:0.50},
+      {id:'omurice',name:'オムライス',count:1,rate:0.55},
       {id:'tea',name:'紅茶',count:1,rate:0.40},
-      {id:'horse',name:'くろれきし',count:1,rate:0.10}
+      {id:'horse',name:'くろれきし',count:1,rate:0.05}
     ],
     neochi:[
-      {id:'tea',name:'紅茶',count:1,rate:0.65},
-      {id:'omurice',name:'オムライス',count:1,rate:0.35}
+      {id:'tea',name:'紅茶',count:1,rate:0.70},
+      {id:'omurice',name:'オムライス',count:1,rate:0.30}
     ],
     deisui:[
-      {id:'horse',name:'くろれきし',count:1,rate:0.18},
-      {id:'tea',name:'紅茶',count:1,rate:0.42},
-      {id:'omurice',name:'オムライス',count:1,rate:0.40}
+      {id:'tea',name:'紅茶',count:1,rate:0.45},
+      {id:'omurice',name:'オムライス',count:1,rate:0.45},
+      {id:'horse',name:'くろれきし',count:1,rate:0.10}
     ],
     shisseki:[
-      {id:'horse',name:'くろれきし',count:1,rate:0.22},
-      {id:'omurice',name:'オムライス',count:1,rate:0.38},
-      {id:'tea',name:'紅茶',count:1,rate:0.40}
-    ]
-  },
-
-  equipment:{
-    floor1:[
-      {type:'weapon',id:'frill_blade',name:'フリルブレード',rate:0.20},
-      {type:'uniform',id:'maid_headband',name:'メイドカチューシャ',rate:0.30},
-      {type:'uniform',id:'white_apron',name:'純白エプロン',rate:0.30},
-      {type:'uniform',id:'service_proof',name:'お給仕の証',rate:0.20}
-    ],
-    floor2:[
-      {type:'weapon',id:'gokitaku_mace',name:'ご帰宅メイス',rate:0.16},
-      {type:'uniform',id:'heart_tiara',name:'ハートティアラ',rate:0.17},
-      {type:'uniform',id:'rose_ribbon',name:'ローズリボン',rate:0.15},
-      {type:'uniform',id:'long_maid',name:'ロングメイド服',rate:0.18},
-      {type:'uniform',id:'oshi_pendant',name:'推し活ペンダント',rate:0.18},
-      {type:'uniform',id:'legend_nameplate',name:'伝説の名札',rate:0.16}
-    ]
-  },
-
-  rareEquipment:{
-    floor1:[
-      {type:'uniform',id:'heart_tiara',name:'ハートティアラ',rate:0.55},
-      {type:'uniform',id:'oshi_pendant',name:'推し活ペンダント',rate:0.45}
-    ],
-    floor2:[
-      {type:'uniform',id:'legend_nameplate',name:'伝説の名札',rate:0.55},
-      {type:'uniform',id:'rose_ribbon',name:'ローズリボン',rate:0.45}
+      {id:'tea',name:'紅茶',count:1,rate:0.42},
+      {id:'omurice',name:'オムライス',count:1,rate:0.46},
+      {id:'horse',name:'くろれきし',count:1,rate:0.12}
     ]
   }
 };
 
-/* ===== Weighted Pick ===== */
 function pickWeightedDrop(list){
   if(!list || !list.length) return null;
 
@@ -118,7 +75,6 @@ function pickWeightedDrop(list){
   return list[list.length-1];
 }
 
-/* ===== Item Drop ===== */
 function rollItemDrop(enemyId){
   if(Math.random() >= POTORO_DROP_CONFIG.itemDropRate) return null;
 
@@ -144,105 +100,10 @@ function applyItemDrop(drop){
   return true;
 }
 
-/* ===== Equipment Drop ===== */
-function getEquipmentDropPool(){
-  return state.floor === 1
-    ? POTORO_DROP_CONFIG.equipment.floor1
-    : POTORO_DROP_CONFIG.equipment.floor2;
-}
-
-function getRareEquipmentDropPool(){
-  return state.floor === 1
-    ? POTORO_DROP_CONFIG.rareEquipment.floor1
-    : POTORO_DROP_CONFIG.rareEquipment.floor2;
-}
-
-function isEquipmentOwned(drop){
-  const p = state.player;
-
-  if(drop.type === 'weapon'){
-    return p.inventory.weapons.includes(drop.id);
-  }
-
-  if(drop.type === 'uniform'){
-    return p.inventory.uniforms.includes(drop.id);
-  }
-
-  return true;
-}
-
-function addDroppedEquipment(drop){
-  const p = state.player;
-
-  if(drop.type === 'weapon'){
-    if(!p.inventory.weapons.includes(drop.id)){
-      p.inventory.weapons.push(drop.id);
-      return true;
-    }
-  }
-
-  if(drop.type === 'uniform'){
-    if(!p.inventory.uniforms.includes(drop.id)){
-      p.inventory.uniforms.push(drop.id);
-      return true;
-    }
-  }
-
-  return false;
-}
-
-function rollEquipmentDrop(){
-  if(Math.random() >= POTORO_DROP_CONFIG.equipmentDropRate) return null;
-
-  const candidates = getEquipmentDropPool().filter(drop => !isEquipmentOwned(drop));
-  if(!candidates.length) return null;
-
-  return pickWeightedDrop(candidates);
-}
-
-function rollRareEquipmentDrop(){
-  if(Math.random() >= POTORO_DROP_CONFIG.rareEquipmentDropRate) return null;
-
-  const candidates = getRareEquipmentDropPool().filter(drop => !isEquipmentOwned(drop));
-  if(!candidates.length) return null;
-
-  return pickWeightedDrop(candidates);
-}
-
-function applyEquipmentDrop(drop,isRare=false){
-  if(!drop) return false;
-
-  const added = addDroppedEquipment(drop);
-  if(!added) return false;
-
-  const prefix = isRare ? 'レアドロップ！' : '装備品を発見！';
-  const statText = getEquipmentDropStatText(drop.id);
-
-  openTreasureMenu(`${prefix} ${drop.name} を手に入れた！${statText}`);
-
-  return true;
-}
-
-function getEquipmentDropStatText(id){
-  const weapon = typeof getWeaponById === 'function'
-    ? getWeaponById(id)
-    : (typeof findWeapon === 'function' ? findWeapon(id) : null);
-
-  if(weapon) return ` 攻撃 +${weapon.atk}`;
-
-  const uniform = typeof getUniformById === 'function'
-    ? getUniformById(id)
-    : (typeof findUniform === 'function' ? findUniform(id) : null);
-
-  if(uniform) return ` 防御 +${uniform.def}`;
-
-  return '';
-}
-
-/* ===== giveReward Override =====
-   通常敵のどうぐドロップをここで管理します。
-========================= */
+/* ===== 通常敵：どうぐのみドロップ ===== */
 function giveReward(enemyId){
+  if(enemyId === 'tamachan' || enemyId === 'boss') return false;
+
   const drop = rollItemDrop(enemyId);
 
   if(!drop) return false;
@@ -250,23 +111,8 @@ function giveReward(enemyId){
   return applyItemDrop(drop);
 }
 
-/* ===== treasureDrop Override =====
-   戦闘後の装備ドロップをここで管理します。
-========================= */
+/* ===== 装備品ドロップ完全停止 ===== */
 function treasureDrop(enemyId){
-  // たまちゃん・ボスは通常装備ドロップ対象外
-  if(enemyId === 'tamachan' || enemyId === 'boss') return false;
-
-  const rare = rollRareEquipmentDrop();
-  if(rare){
-    return applyEquipmentDrop(rare,true);
-  }
-
-  const normal = rollEquipmentDrop();
-  if(normal){
-    return applyEquipmentDrop(normal,false);
-  }
-
   return false;
 }
 
@@ -277,13 +123,15 @@ function setItemDropRate(rate){
 }
 
 function setEquipmentDropRate(rate){
-  POTORO_DROP_CONFIG.equipmentDropRate = Math.max(0,Math.min(1,rate));
-  return POTORO_DROP_CONFIG.equipmentDropRate;
+  console.warn('装備品ドロップは廃止されています。装備品は宝箱またはたまちゃんイベントからのみ入手します。');
+  POTORO_DROP_CONFIG.equipmentDropRate = 0;
+  return 0;
 }
 
 function setRareEquipmentDropRate(rate){
-  POTORO_DROP_CONFIG.rareEquipmentDropRate = Math.max(0,Math.min(1,rate));
-  return POTORO_DROP_CONFIG.rareEquipmentDropRate;
+  console.warn('レア装備ドロップは廃止されています。装備品は宝箱またはたまちゃんイベントからのみ入手します。');
+  POTORO_DROP_CONFIG.rareEquipmentDropRate = 0;
+  return 0;
 }
 
 /* ===== Drop Debug ===== */
@@ -297,19 +145,13 @@ function testDrop(enemyId='teiji',times=20){
   const result = {
     enemyId,
     item:{},
-    equipment:{},
-    rare:{}
+    equipment:'disabled',
+    rare:'disabled'
   };
 
   for(let i=0;i<times;i++){
     const item = rollItemDrop(enemyId);
     if(item) result.item[item.id] = (result.item[item.id] || 0) + 1;
-
-    const equip = rollEquipmentDrop();
-    if(equip) result.equipment[equip.id] = (result.equipment[equip.id] || 0) + 1;
-
-    const rare = rollRareEquipmentDrop();
-    if(rare) result.rare[rare.id] = (result.rare[rare.id] || 0) + 1;
   }
 
   console.log('[PO・TORO QUEST drop test]',result);
