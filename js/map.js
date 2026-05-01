@@ -448,7 +448,6 @@ function updateMapStatusPanel(){
   const status = typeof statusText === 'function' ? statusText() : 'なし';
 
   panel.innerHTML = `
-    <div class="map-status-title">ステータス</div>
     <div class="map-status-grid">
       <div>HP <strong>${p.hp}/${p.maxHp}</strong></div>
       <div>MP <strong>${p.mp}/${p.maxMp}</strong></div>
