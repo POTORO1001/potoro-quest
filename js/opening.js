@@ -1,31 +1,11 @@
 /* =========================
-   ポトロクエスト opening.js（STEP9-A）
+   ポトロクエスト opening.js（STEP9-A 修正版）
    タイトル・オープニング分離ファイル
 
-   読み込み順：
-   1. js/game.js
-   2. js/audio.js
-   3. js/ui.js
-   4. js/opening.js
-   5. js/ending.js
-   6. js/battle.js
-   7. js/enemy.js
-   8. js/equipment.js
-   9. js/item.js
-   10. js/map.js
-   11. js/magic.js
-
    重要：
-   - opening.js はオープニング表示・スキップ・開始処理を管理します。
-   - game.js の既存関数を後読みで上書きします。
+   - game.js に let openingTimer / let openingCurrentIndex が既にあるため、ここでは再定義しません。
+   - OPENING_FADE_MS / OPENING_SHOW_MS も既存値を使用します。
 ========================= */
-
-/* ===== Opening State ===== */
-var openingTimer = null;
-var openingCurrentIndex = 0;
-
-const OPENING_FADE_MS = 600;
-const OPENING_SHOW_MS = 4000;
 
 /* ===== 推し名取得 ===== */
 function getOshiName(){
