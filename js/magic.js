@@ -1,36 +1,13 @@
 /* =========================
-   ポトロクエスト magic.js（STEP18）
-   おまじない完全設定参照版
+   ポトロクエスト magic.js（改良版）
+   レベル習得対応 + magic-config参照版
 
-   読み込み順：
-   1. js/game.js
-   2. js/core.js
-   3. js/data.js
-   4. js/assets.js
-   5. js/loading.js
-   6. js/audio.js
-   7. js/ui.js
-   8. js/opening.js
-   9. js/ending.js
-   10. js/scene.js
-   11. js/battle.js
-   12. js/enemy.js
-   13. js/equipment.js
-   14. js/item.js
-   15. js/map.js
-   16. js/balance.js
-   17. js/event.js
-   18. js/magic-config.js
-   19. js/magic-config-bridge.js
-   20. js/magic.js
-   21. js/compatibility.js
-
-   重要：
-   - このファイルは STEP1 の magic.js と差し替え用です。
-   - magic-config.js の POTORO_MAGIC_CONFIG を参照して動きます。
+   変更点：
+   - おまじないメニューは習得済みのみ表示
+   - 未習得のおまじないは使えない
+   - レベルアップ後に自然にメニューへ追加
 ========================= */
 
-/* ===== バフ状態管理 ===== */
 if(!window.buffState){
   window.buffState = {
     aura: 0,
@@ -38,7 +15,6 @@ if(!window.buffState){
   };
 }
 
-/* ===== Magic Config Fallback ===== */
 function requireMagicConfig(kind){
   const config = typeof getMagicConfig === 'function'
     ? getMagicConfig(kind)
@@ -51,12 +27,10 @@ function requireMagicConfig(kind){
   return config;
 }
 
-/* ===== バフターン経過 ===== */
 function tickBuffs(){
   if(buffState.aura > 0) buffState.aura--;
 }
 
-/* ===== ステータス補正：キラキラオーラ ===== */
 const _potoroMagicTotalSpd = totalSpd;
 totalSpd = function(){
   let base = _potoroMagicTotalSpd();
@@ -81,42 +55,88 @@ totalTalk = function(){
   return base;
 };
 
-/* ===== おまじないメニュー ===== */
+/* ===== おまじないメニュー：習得済みのみ表示 ===== */
 const _potoroMagicOpenSubMenu = openSubMenu;
 
 openSubMenu = function(kind){
-  _potoroMagicOpenSubMenu(kind);
+  if(kind !== 'magic'){
+    _potoroMagicOpenSubMenu(kind);
+    return;
+  }
 
-  if(kind !== 'magic') return;
-
-  const body = document.getElementById('subMenuBody');
+  const sub = document.getElementById('subMenu');
   const title = document.getElementById('subMenuTitle');
+  const body = document.getElementById('subMenuBody');
 
-  if(!body) return;
+  if(!sub || !title || !body) return;
 
-  if(title) title.textContent = 'おまじない';
+  title.textContent = 'おまじない';
+  body.innerHTML = '';
 
-  // 既存おまじないは game.js 側の表示を尊重しつつ、追加おまじないを設定から追加
-  addConfiguredMagicButton('aura');
-  addConfiguredMagicButton('charge2');
-  addConfiguredMagicButton('multi');
-  addConfiguredMagicButton('rush');
-  addConfiguredMagicButton('fullheal');
+  const order = [
+    'moe',
+    'aura',
+    'heal',
+    'sleep',
+    'charge2',
+    'shower',
+    'charge',
+    'multi',
+    'rush',
+    'nishiki',
+    'fullheal'
+  ];
+
+  let count = 0;
+
+  order.forEach(kind => {
+    if(typeof isMagicLearned === 'function' && !isMagicLearned(kind)) return;
+
+    const config = requireMagicConfig(kind);
+    if(!config) return;
+
+    addSubButton(config.label || config.name || kind, () => useMagic(kind));
+    count++;
+  });
+
+  if(count === 0){
+    const empty = document.createElement('div');
+    empty.className = 'equip-empty';
+    empty.textContent = 'まだ使えるおまじないがありません。';
+    body.appendChild(empty);
+  }
+
+  const nextList = typeof getNextMagicLearnList === 'function'
+    ? getNextMagicLearnList()
+    : [];
+
+  if(nextList.length){
+    const next = nextList[0];
+    const note = document.createElement('div');
+    note.className = 'equip-current';
+    note.innerHTML = `次の習得：Lv.${next.requiredLv} ${next.name}`;
+    body.appendChild(note);
+  }
+
+  sub.classList.remove('hidden');
 };
 
 function addConfiguredMagicButton(kind){
   const config = requireMagicConfig(kind);
   if(!config) return;
-
   addSubButton(config.label || config.name || kind, () => useMagic(kind));
 }
 
-/* ===== MP消費共通 ===== */
 async function payMagicCost(kind){
   const config = requireMagicConfig(kind);
 
   if(!config){
     await failAction('そのおまじないは使えません！');
+    return false;
+  }
+
+  if(typeof isMagicLearned === 'function' && !isMagicLearned(kind)){
+    await failAction(`${config.name || 'そのおまじない'}はまだ覚えていません！`);
     return false;
   }
 
@@ -131,7 +151,6 @@ async function payMagicCost(kind){
   return true;
 }
 
-/* ===== チャージ倍率適用 ===== */
 function applyChargeIfNeeded(damage){
   const charge = requireMagicConfig('charge2');
 
@@ -144,12 +163,17 @@ function applyChargeIfNeeded(damage){
   return damage;
 }
 
-/* ===== useMagic 完全設定参照版 ===== */
 const _potoroOriginalUseMagic = useMagic;
 
 useMagic = async function(kind){
   if(state.player.hp <= 0) return;
   if(state.busy) return;
+
+  const config = requireMagicConfig(kind);
+  if(config && typeof isMagicLearned === 'function' && !isMagicLearned(kind)){
+    await failAction(`${config.name}はまだ覚えていません！`);
+    return;
+  }
 
   closeSubMenu();
   closeEquipMenu();
@@ -205,7 +229,6 @@ useMagic = async function(kind){
   }
 
   else{
-    // 未対応の場合だけ旧処理へフォールバック
     state.busy = false;
     setButtonsDisabled(false);
     return _potoroOriginalUseMagic(kind);
@@ -217,7 +240,6 @@ useMagic = async function(kind){
   updateUI();
 };
 
-/* ===== 追加：キラキラオーラ ===== */
 async function useMagicAura(){
   const config = requireMagicConfig('aura');
   if(!config) return failAction('そのおまじないは使えません！');
@@ -235,7 +257,6 @@ async function useMagicAura(){
   if(!state.enemyActedFirst) await enemyTurn();
 }
 
-/* ===== 追加：完璧なお給仕 ===== */
 async function useMagicCharge2(){
   if(!(await payMagicCost('charge2'))) return;
 
@@ -251,7 +272,6 @@ async function useMagicCharge2(){
   if(!state.enemyActedFirst) await enemyTurn();
 }
 
-/* ===== 追加：ご奉仕連撃 ===== */
 async function useMagicMulti(){
   const config = requireMagicConfig('multi');
   if(!config) return failAction('そのおまじないは使えません！');
@@ -301,7 +321,6 @@ async function useMagicMulti(){
   if(!state.enemyActedFirst) await enemyTurn();
 }
 
-/* ===== 追加：ご帰宅ラッシュ ===== */
 async function useMagicRush(){
   const config = requireMagicConfig('rush');
   if(!config) return failAction('そのおまじないは使えません！');
@@ -319,7 +338,6 @@ async function useMagicRush(){
   let message = `ご帰宅ラッシュ！！ ${target.name} に ${damage} ダメージ！`;
 
   if(Math.random() < (config.confuseRate || 0)){
-    // 現行敵側には混乱状態がないため、疑似的に睡眠ターンで行動阻害します。
     target.sleepTurns = Math.max(target.sleepTurns || 0, config.confuseTurns || 1);
     message += ' さらに、相手は混乱した！';
   }
@@ -342,7 +360,6 @@ async function useMagicRush(){
   if(!state.enemyActedFirst) await enemyTurn();
 }
 
-/* ===== 追加：ひなたぼっこ ===== */
 async function useMagicFullHeal(){
   if(!(await payMagicCost('fullheal'))) return;
 
@@ -371,7 +388,6 @@ async function useMagicFullHeal(){
   if(!state.enemyActedFirst) await enemyTurn();
 }
 
-/* ===== 既存：もえもえぎゅー 設定参照版 ===== */
 async function useMagicMoeConfigured(){
   const config = requireMagicConfig('moe');
   if(!config) return _potoroOriginalUseMagic('moe');
@@ -396,7 +412,6 @@ async function useMagicMoeConfigured(){
   await damageEnemy('もえもえぎゅー！！',damage);
 }
 
-/* ===== 既存：おいしくなーれ 設定参照版 ===== */
 async function useMagicHealConfigured(){
   const config = requireMagicConfig('heal');
   if(!config) return _potoroOriginalUseMagic('heal');
@@ -418,7 +433,6 @@ async function useMagicHealConfigured(){
   if(!state.enemyActedFirst) await enemyTurn();
 }
 
-/* ===== 既存：おやすみなさい 設定参照版 ===== */
 async function useMagicSleepConfigured(){
   const config = requireMagicConfig('sleep');
   if(!config) return _potoroOriginalUseMagic('sleep');
@@ -442,7 +456,6 @@ async function useMagicSleepConfigured(){
   if(!state.enemyActedFirst) await enemyTurn();
 }
 
-/* ===== 既存：にしきぬやまー 設定参照版 ===== */
 async function useMagicNishikiConfigured(){
   const config = requireMagicConfig('nishiki');
   if(!config) return _potoroOriginalUseMagic('nishiki');
@@ -461,7 +474,6 @@ async function useMagicNishikiConfigured(){
   await damageEnemy('にしきぬやまー！！',damage);
 }
 
-/* ===== 既存：チェキフラッシュ 設定参照版 ===== */
 async function useMagicShowerConfigured(){
   const config = requireMagicConfig('shower');
   if(!config) return _potoroOriginalUseMagic('shower');
@@ -506,14 +518,12 @@ async function damageAllEnemiesConfigured(message,baseDamage,bossRate){
   if(!state.enemyActedFirst) await enemyTurn();
 }
 
-/* ===== 既存：萌えちゃーじ 設定参照版 ===== */
 async function useMagicMpChargeConfigured(){
   const config = requireMagicConfig('charge');
   if(!config) return _potoroOriginalUseMagic('charge');
 
   const p = state.player;
 
-  // MP0想定だが、設定でMPコストを持たせることも可能
   if(!(await payMagicCost('charge'))) return;
 
   await showCutin('補助おまじない','萌えちゃーじ！');
@@ -531,7 +541,6 @@ async function useMagicMpChargeConfigured(){
   if(!state.enemyActedFirst) await enemyTurn();
 }
 
-/* ===== enemyTurn 拡張：バフターン経過 ===== */
 const _potoroMagicEnemyTurn = enemyTurn;
 
 enemyTurn = async function(){
@@ -539,13 +548,13 @@ enemyTurn = async function(){
   await _potoroMagicEnemyTurn();
 };
 
-/* ===== Magic Debug ===== */
 function potoroMagicState(){
   const stateReport = {
+    lv:state.player.lv,
+    learned:typeof getLearnedMagicConfigs === 'function' ? getLearnedMagicConfigs() : null,
+    next:typeof getNextMagicLearnList === 'function' ? getNextMagicLearnList() : null,
     buffState:JSON.parse(JSON.stringify(buffState)),
-    configs:typeof getAllMagicConfigs === 'function'
-      ? getAllMagicConfigs()
-      : null
+    configs:typeof getAllMagicConfigs === 'function' ? getAllMagicConfigs() : null
   };
 
   console.log('[PO・TORO QUEST magic state]',stateReport);
