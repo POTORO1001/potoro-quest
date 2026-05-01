@@ -445,39 +445,15 @@ function updateMapStatusPanel(){
   if(!panel || !state || !state.player) return;
 
   const p = state.player;
-
-  const weaponName = typeof findWeapon === 'function'
-    ? (findWeapon(p.equip.weapon)?.name || 'なし')
-    : (p.equip.weapon || 'なし');
-
-  const headName = typeof findUniform === 'function'
-    ? (findUniform(p.equip.head)?.name || 'なし')
-    : (p.equip.head || 'なし');
-
-  const bodyName = typeof findUniform === 'function'
-    ? (findUniform(p.equip.body)?.name || 'なし')
-    : (p.equip.body || 'なし');
-
-  const accessoryName = typeof findUniform === 'function'
-    ? (findUniform(p.equip.accessory)?.name || 'なし')
-    : (p.equip.accessory || 'なし');
-
   const status = typeof statusText === 'function' ? statusText() : 'なし';
 
   panel.innerHTML = `
-    <div class="map-status-title">${p.name} Lv.${p.lv}</div>
+    <div class="map-status-title">ステータス</div>
     <div class="map-status-grid">
       <div>HP <strong>${p.hp}/${p.maxHp}</strong></div>
       <div>MP <strong>${p.mp}/${p.maxMp}</strong></div>
-      <div>攻撃 <strong>${typeof totalAtk === 'function' ? totalAtk() : p.baseAtk}</strong></div>
-      <div>防御 <strong>${typeof totalDef === 'function' ? totalDef() : p.baseDef}</strong></div>
-      <div>速さ <strong>${typeof totalSpd === 'function' ? totalSpd() : p.baseSpd}</strong></div>
-      <div>話術 <strong>${typeof totalTalk === 'function' ? totalTalk() : p.baseTalk}</strong></div>
     </div>
     <div class="map-status-line">状態：${status}</div>
-    <div class="map-status-line">武器：${weaponName}</div>
-    <div class="map-status-line">防具：${headName} / ${bodyName} / ${accessoryName}</div>
-    <div class="map-status-line">EXP：${p.exp}/${p.nextExp}</div>
   `;
 }
 
