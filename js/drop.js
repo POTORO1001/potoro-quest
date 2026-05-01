@@ -1,60 +1,52 @@
 /* =========================
-   ポトロクエスト drop.js（改良版）
-   装備品ドロップ廃止 / どうぐドロップ専用
-
-   変更点：
-   - 敵から装備品はドロップしない
-   - 装備品の入手は宝箱のみ
-   - 例外：たまちゃんの初代メイド服
-   - 戦闘後はどうぐのみドロップ
+   ポトロクエスト drop.js（回復アイテム入手しやすい版）
+   装備品ドロップ廃止 / どうぐドロップ強化
 ========================= */
 
 const POTORO_DROP_CONFIG = {
-  version:'drop-item-only',
+  version:'drop-item-only-easier-heal',
 
-  // 通常敵からのどうぐドロップ率
-  itemDropRate:0.32,
+  itemDropRate:0.42,
 
-  // 装備品ドロップは廃止
   equipmentDropRate:0,
   rareEquipmentDropRate:0,
 
   items:{
     teiji:[
-      {id:'tea',name:'紅茶',count:1,rate:0.70},
-      {id:'omurice',name:'オムライス',count:1,rate:0.30}
-    ],
-    kuufuku:[
-      {id:'omurice',name:'オムライス',count:1,rate:0.85},
-      {id:'tea',name:'紅茶',count:1,rate:0.15}
-    ],
-    zangyo:[
       {id:'tea',name:'紅茶',count:1,rate:0.72},
       {id:'omurice',name:'オムライス',count:1,rate:0.28}
     ],
+    kuufuku:[
+      {id:'omurice',name:'オムライス',count:1,rate:0.88},
+      {id:'tea',name:'紅茶',count:1,rate:0.12}
+    ],
+    zangyo:[
+      {id:'tea',name:'紅茶',count:1,rate:0.75},
+      {id:'omurice',name:'オムライス',count:1,rate:0.25}
+    ],
     meisou:[
-      {id:'tea',name:'紅茶',count:1,rate:0.60},
-      {id:'omurice',name:'オムライス',count:1,rate:0.35},
-      {id:'horse',name:'くろれきし',count:1,rate:0.05}
+      {id:'tea',name:'紅茶',count:1,rate:0.64},
+      {id:'omurice',name:'オムライス',count:1,rate:0.34},
+      {id:'horse',name:'くろれきし',count:1,rate:0.02}
     ],
     gekimu:[
-      {id:'omurice',name:'オムライス',count:1,rate:0.55},
-      {id:'tea',name:'紅茶',count:1,rate:0.40},
-      {id:'horse',name:'くろれきし',count:1,rate:0.05}
+      {id:'omurice',name:'オムライス',count:1,rate:0.58},
+      {id:'tea',name:'紅茶',count:1,rate:0.39},
+      {id:'horse',name:'くろれきし',count:1,rate:0.03}
     ],
     neochi:[
-      {id:'tea',name:'紅茶',count:1,rate:0.70},
-      {id:'omurice',name:'オムライス',count:1,rate:0.30}
+      {id:'tea',name:'紅茶',count:1,rate:0.72},
+      {id:'omurice',name:'オムライス',count:1,rate:0.28}
     ],
     deisui:[
-      {id:'tea',name:'紅茶',count:1,rate:0.45},
-      {id:'omurice',name:'オムライス',count:1,rate:0.45},
-      {id:'horse',name:'くろれきし',count:1,rate:0.10}
+      {id:'tea',name:'紅茶',count:1,rate:0.47},
+      {id:'omurice',name:'オムライス',count:1,rate:0.48},
+      {id:'horse',name:'くろれきし',count:1,rate:0.05}
     ],
     shisseki:[
-      {id:'tea',name:'紅茶',count:1,rate:0.42},
-      {id:'omurice',name:'オムライス',count:1,rate:0.46},
-      {id:'horse',name:'くろれきし',count:1,rate:0.12}
+      {id:'tea',name:'紅茶',count:1,rate:0.44},
+      {id:'omurice',name:'オムライス',count:1,rate:0.50},
+      {id:'horse',name:'くろれきし',count:1,rate:0.06}
     ]
   }
 };
@@ -100,23 +92,19 @@ function applyItemDrop(drop){
   return true;
 }
 
-/* ===== 通常敵：どうぐのみドロップ ===== */
 function giveReward(enemyId){
   if(enemyId === 'tamachan' || enemyId === 'boss') return false;
 
   const drop = rollItemDrop(enemyId);
-
   if(!drop) return false;
 
   return applyItemDrop(drop);
 }
 
-/* ===== 装備品ドロップ完全停止 ===== */
 function treasureDrop(enemyId){
   return false;
 }
 
-/* ===== Drop Rate Helpers ===== */
 function setItemDropRate(rate){
   POTORO_DROP_CONFIG.itemDropRate = Math.max(0,Math.min(1,rate));
   return POTORO_DROP_CONFIG.itemDropRate;
@@ -134,7 +122,6 @@ function setRareEquipmentDropRate(rate){
   return 0;
 }
 
-/* ===== Drop Debug ===== */
 function potoroDropReport(){
   const report = JSON.parse(JSON.stringify(POTORO_DROP_CONFIG));
   console.log('[PO・TORO QUEST drop config]',report);
