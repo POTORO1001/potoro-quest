@@ -1,20 +1,41 @@
 /* =========================
-   ポトロクエスト map.js（STEP6）
-   迷路・探索・宝箱・エンカウント分離ファイル
+   ポトロクエスト map.js（統合版）
+   bugfix.js / map-ui-fix.js 吸収済み
 
-   読み込み順：
-   1. js/game.js
-   2. js/battle.js
-   3. js/enemy.js
-   4. js/equipment.js
-   5. js/item.js
-   6. js/map.js
-   7. js/magic.js
+   吸収内容：
+   - 1マス移動固定
+   - 二重イベント発火対策
+   - マップ上で紅茶使用可能
+   - マップ画面ステータス表示
+   - マップステータス自動更新
 
-   重要：
-   - 既存 game.js の MAZE_W / MAZE_H / enemies / state はそのまま使用します。
-   - map.js はマップ関連関数を後読みで上書きします。
+   置き換え対象：
+   js/map.js
+
+   削除対象：
+   js/bugfix.js
+   js/map-ui-fix.js
 ========================= */
+
+/* ===== Move Guard ===== */
+let potoroMoveGuardLocked = false;
+let potoroMoveGuardLastAt = 0;
+
+function potoroCanMoveOneStep(){
+  const now = Date.now();
+
+  if(potoroMoveGuardLocked) return false;
+  if(now - potoroMoveGuardLastAt < 130) return false;
+
+  potoroMoveGuardLocked = true;
+  potoroMoveGuardLastAt = now;
+
+  setTimeout(() => {
+    potoroMoveGuardLocked = false;
+  },130);
+
+  return true;
+}
 
 /* ===== Map Canvas Helper ===== */
 function getMapCanvas(){
@@ -85,6 +106,7 @@ function setupFloor(floor){
   updateFloorLabel();
   drawMaze();
   playMapBgm();
+  updateMapStatusPanel();
 }
 
 /* ===== Floor Label ===== */
@@ -163,6 +185,7 @@ function drawMaze(){
   drawStairs(ctx,size);
   drawBossMark(ctx,size);
   drawPlayerMark(ctx,size);
+  updateMapStatusPanel();
 }
 
 /* ===== Draw Parts ===== */
@@ -233,14 +256,18 @@ function setMapMessage(text){
   if(el) el.textContent = text;
 }
 
-/* ===== Move Player ===== */
+/* ===== Move Player：1マス固定 ===== */
 function movePlayer(dx,dy){
   if(state.inBattle || state.busy) return;
+  if(!potoroCanMoveOneStep()) return;
+
+  dx = Math.max(-1,Math.min(1,dx));
+  dy = Math.max(-1,Math.min(1,dy));
 
   const nx = state.player.mapX + dx;
   const ny = state.player.mapY + dy;
 
-  if(nx<0 || ny<0 || nx>=MAZE_W || ny>=MAZE_H) return;
+  if(nx < 0 || ny < 0 || nx >= MAZE_W || ny >= MAZE_H) return;
 
   if(state.maze[ny][nx] === 1){
     setMapMessage('壁です。別の道を進みましょう。');
@@ -388,8 +415,204 @@ function regenerateCurrentFloor(){
   setupFloor(state.floor || 1);
 }
 
-/* ===== STEP6時点ではマップバランスは変更しない =====
-   例：
-   getEncounterRate を変更するとエンカウント率を調整できます。
-========================= */
+/* ==================================================
+   マップステータス表示
+================================================== */
 
+function createMapStatusPanelIfNeeded(){
+  const mapPanel = document.querySelector('.map-panel');
+  if(!mapPanel) return null;
+
+  let panel = document.getElementById('mapStatusPanel');
+  if(panel) return panel;
+
+  panel = document.createElement('div');
+  panel.id = 'mapStatusPanel';
+  panel.className = 'map-status-panel';
+
+  const message = document.getElementById('mapMessage');
+  if(message){
+    message.insertAdjacentElement('afterend',panel);
+  }else{
+    mapPanel.appendChild(panel);
+  }
+
+  return panel;
+}
+
+function updateMapStatusPanel(){
+  const panel = createMapStatusPanelIfNeeded();
+  if(!panel || !state || !state.player) return;
+
+  const p = state.player;
+
+  const weaponName = typeof findWeapon === 'function'
+    ? (findWeapon(p.equip.weapon)?.name || 'なし')
+    : (p.equip.weapon || 'なし');
+
+  const headName = typeof findUniform === 'function'
+    ? (findUniform(p.equip.head)?.name || 'なし')
+    : (p.equip.head || 'なし');
+
+  const bodyName = typeof findUniform === 'function'
+    ? (findUniform(p.equip.body)?.name || 'なし')
+    : (p.equip.body || 'なし');
+
+  const accessoryName = typeof findUniform === 'function'
+    ? (findUniform(p.equip.accessory)?.name || 'なし')
+    : (p.equip.accessory || 'なし');
+
+  const status = typeof statusText === 'function' ? statusText() : 'なし';
+
+  panel.innerHTML = `
+    <div class="map-status-title">${p.name} Lv.${p.lv}</div>
+    <div class="map-status-grid">
+      <div>HP <strong>${p.hp}/${p.maxHp}</strong></div>
+      <div>MP <strong>${p.mp}/${p.maxMp}</strong></div>
+      <div>攻撃 <strong>${typeof totalAtk === 'function' ? totalAtk() : p.baseAtk}</strong></div>
+      <div>防御 <strong>${typeof totalDef === 'function' ? totalDef() : p.baseDef}</strong></div>
+      <div>速さ <strong>${typeof totalSpd === 'function' ? totalSpd() : p.baseSpd}</strong></div>
+      <div>話術 <strong>${typeof totalTalk === 'function' ? totalTalk() : p.baseTalk}</strong></div>
+    </div>
+    <div class="map-status-line">状態：${status}</div>
+    <div class="map-status-line">武器：${weaponName}</div>
+    <div class="map-status-line">防具：${headName} / ${bodyName} / ${accessoryName}</div>
+    <div class="map-status-line">EXP：${p.exp}/${p.nextExp}</div>
+  `;
+}
+
+/* ==================================================
+   マップ上どうぐ使用
+================================================== */
+
+function getMapItemAmount(kind,fallback){
+  if(typeof POTORO_ITEMS !== 'undefined' && POTORO_ITEMS[kind]){
+    return POTORO_ITEMS[kind].amount || fallback;
+  }
+
+  if(kind === 'omurice') return 40;
+  if(kind === 'tea') return 14;
+
+  return fallback;
+}
+
+function potoroMapItemFail(message){
+  if(typeof setMapMessage === 'function') setMapMessage(message);
+  else if(typeof setMessage === 'function') setMessage(message);
+
+  state.busy = false;
+  if(typeof setButtonsDisabled === 'function') setButtonsDisabled(false);
+  updateMapStatusPanel();
+}
+
+async function useMapItem(kind){
+  const p = state.player;
+  if(!p.items) p.items = {};
+
+  state.busy = false;
+
+  if(kind === 'omurice'){
+    if((p.items.omurice || 0) <= 0){
+      potoroMapItemFail('オムライスは持っていない！');
+      return;
+    }
+
+    if(p.hp >= p.maxHp){
+      potoroMapItemFail('HPはすでに満タンです！');
+      return;
+    }
+
+    p.items.omurice--;
+
+    const heal = Math.min(getMapItemAmount('omurice',40),p.maxHp - p.hp);
+    p.hp += heal;
+
+    setMapMessage(`オムライスを食べた！ HPが ${heal} 回復！`);
+    if(typeof seHeal === 'function') seHeal();
+    updateMapStatusPanel();
+    return;
+  }
+
+  if(kind === 'tea'){
+    if((p.items.tea || 0) <= 0){
+      potoroMapItemFail('紅茶は持っていない！');
+      return;
+    }
+
+    if(p.mp >= p.maxMp){
+      potoroMapItemFail('MPはすでに満タンです！');
+      return;
+    }
+
+    p.items.tea--;
+
+    const healMp = Math.min(getMapItemAmount('tea',14),p.maxMp - p.mp);
+    p.mp += healMp;
+
+    setMapMessage(`紅茶を飲んだ！ MPが ${healMp} 回復！`);
+    if(typeof seHeal === 'function') seHeal();
+    updateMapStatusPanel();
+    return;
+  }
+
+  if(kind === 'horse'){
+    potoroMapItemFail('くろれきしは戦闘中のみ使えます！');
+  }
+}
+
+/* useItem をマップ時だけ分岐 */
+const _potoroMapOriginalUseItem = useItem;
+
+useItem = async function(kind){
+  if(typeof isMapMode === 'function' && isMapMode()){
+    return useMapItem(kind);
+  }
+
+  return _potoroMapOriginalUseItem(kind);
+};
+
+/* どうぐメニュー補正 */
+function getMapItemLabel(kind){
+  const p = state.player;
+  const items = p.items || {};
+
+  if(kind === 'omurice') return `オムライス　HP回復　残り${items.omurice || 0}`;
+  if(kind === 'tea') return `紅茶　MP回復　残り${items.tea || 0}`;
+  if(kind === 'horse') return `くろれきし　戦闘中のみ　残り${items.horse || 0}`;
+
+  return kind;
+}
+
+const _potoroMapOriginalOpenSubMenu = openSubMenu;
+
+openSubMenu = function(kind){
+  _potoroMapOriginalOpenSubMenu(kind);
+
+  if(kind !== 'item') return;
+
+  const title = document.getElementById('subMenuTitle');
+  const body = document.getElementById('subMenuBody');
+
+  if(!title || !body) return;
+
+  title.textContent = 'どうぐ';
+  body.innerHTML = '';
+
+  ['omurice','tea','horse'].forEach(itemKind => {
+    const btn = document.createElement('button');
+    btn.textContent = getMapItemLabel(itemKind);
+    btn.onclick = () => useItem(itemKind);
+    body.appendChild(btn);
+  });
+};
+
+function initMapStatusPanel(){
+  createMapStatusPanelIfNeeded();
+  updateMapStatusPanel();
+}
+
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded',initMapStatusPanel,{once:true});
+}else{
+  initMapStatusPanel();
+}
