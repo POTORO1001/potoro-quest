@@ -1687,3 +1687,21 @@ body.potoro-boss-criticalhp .enemy-slot.selected{
   0%,100%{filter:brightness(1);}
   50%{filter:brightness(1.8);}
 }
+
+.treasure-rarity-effect{position:fixed;inset:0;z-index:540;display:flex;align-items:center;justify-content:center;pointer-events:none;background:radial-gradient(circle,rgba(255,255,255,.12),rgba(0,0,0,.36));animation:treasureEffectFade 1.4s ease forwards;}
+.treasure-rarity-effect.rarity-s{background:radial-gradient(circle,rgba(250,204,21,.32),rgba(255,255,255,.08) 36%,rgba(0,0,0,.52)),linear-gradient(135deg,rgba(126,34,206,.28),rgba(219,39,119,.24));animation:treasureEffectFade 1.9s ease forwards;}
+.treasure-rarity-card{width:min(88vw,420px);padding:24px 18px;border:3px solid rgba(255,255,255,.8);border-radius:24px;text-align:center;background:rgba(15,23,42,.94);box-shadow:0 24px 80px rgba(0,0,0,.6);animation:treasureCardPop 1.25s ease forwards;}
+.treasure-rarity-label{font-size:18px;font-weight:1000;letter-spacing:.18em;margin-bottom:10px;}
+.treasure-rarity-name{font-size:24px;font-weight:1000;line-height:1.35;}
+.rarity-c .treasure-rarity-card{border-color:#cbd5e1;box-shadow:0 0 24px rgba(203,213,225,.35),0 24px 80px rgba(0,0,0,.6);}
+.rarity-c .treasure-rarity-label,.rarity-c .treasure-rarity-name{color:#e2e8f0;}
+.rarity-b .treasure-rarity-card{border-color:#93c5fd;box-shadow:0 0 26px rgba(147,197,253,.48),0 24px 80px rgba(0,0,0,.6);}
+.rarity-b .treasure-rarity-label,.rarity-b .treasure-rarity-name{color:#bfdbfe;}
+.rarity-a .treasure-rarity-card{border-color:#f9a8d4;box-shadow:0 0 30px rgba(244,114,182,.58),0 24px 80px rgba(0,0,0,.6);}
+.rarity-a .treasure-rarity-label,.rarity-a .treasure-rarity-name{color:#fbcfe8;}
+.rarity-s .treasure-rarity-card{border-color:#fde68a;background:linear-gradient(135deg,rgba(120,53,15,.96),rgba(88,28,135,.96)),rgba(15,23,42,.94);box-shadow:0 0 0 5px rgba(250,204,21,.16),0 0 40px rgba(250,204,21,.85),0 0 80px rgba(219,39,119,.45),0 24px 90px rgba(0,0,0,.72);animation:treasureCardPop 1.55s ease forwards, treasureSGlow .55s ease-in-out infinite;}
+.rarity-s .treasure-rarity-label{color:#fde68a;text-shadow:0 0 12px rgba(250,204,21,.95);}
+.rarity-s .treasure-rarity-name{color:#fff7ed;text-shadow:0 0 16px rgba(250,204,21,.8),0 0 28px rgba(244,114,182,.6);}
+@keyframes treasureEffectFade{0%{opacity:0;}18%{opacity:1;}78%{opacity:1;}100%{opacity:0;}}
+@keyframes treasureCardPop{0%{opacity:0;transform:scale(.72) rotate(-3deg);}22%{opacity:1;transform:scale(1.08) rotate(1deg);}70%{opacity:1;transform:scale(1);}100%{opacity:0;transform:scale(.98) translateY(-18px);}}
+@keyframes treasureSGlow{0%,100%{filter:brightness(1);}50%{filter:brightness(1.28);}}
