@@ -1,28 +1,47 @@
+function potoroHasEquipmentData(){
+  return (
+    typeof equipmentData !== 'undefined' &&
+    equipmentData &&
+    Array.isArray(equipmentData.weapons) &&
+    Array.isArray(equipmentData.uniforms)
+  );
+}
+
 function potoroAddWeaponIfMissing(item){
-  if(!window.equipmentData || !equipmentData.weapons) return false;
+  if(!potoroHasEquipmentData()) return false;
   if(equipmentData.weapons.some(w => w.id === item.id)) return false;
+
   equipmentData.weapons.push(item);
   return true;
 }
 
 function potoroAddUniformIfMissing(item){
-  if(!window.equipmentData || !equipmentData.uniforms) return false;
+  if(!potoroHasEquipmentData()) return false;
   if(equipmentData.uniforms.some(u => u.id === item.id)) return false;
+
   equipmentData.uniforms.push(item);
   return true;
 }
 
 function potoroPatchEquipmentRarity(){
-  if(!window.equipmentData) return;
+  if(!potoroHasEquipmentData()) return false;
 
   const weaponRarity = {
-    rod:'C', frill_blade:'B', gokitaku_mace:'B'
+    rod:'C',
+    frill_blade:'B',
+    gokitaku_mace:'B'
   };
 
   const uniformRarity = {
-    maid_headband:'C', white_apron:'C', service_proof:'C',
-    heart_tiara:'B', long_maid:'B', legend_nameplate:'B',
-    rose_ribbon:'A', oshi_pendant:'A', first_maid:'EVENT'
+    maid_headband:'C',
+    white_apron:'C',
+    service_proof:'C',
+    heart_tiara:'B',
+    long_maid:'B',
+    legend_nameplate:'B',
+    rose_ribbon:'A',
+    oshi_pendant:'A',
+    first_maid:'EVENT'
   };
 
   equipmentData.weapons.forEach(w => {
@@ -32,9 +51,16 @@ function potoroPatchEquipmentRarity(){
   equipmentData.uniforms.forEach(u => {
     if(!u.rarity) u.rarity = uniformRarity[u.id] || 'B';
   });
+
+  return true;
 }
 
 function potoroInstallEquipmentRarityAddon(){
+  if(!potoroHasEquipmentData()){
+    console.warn('[PO・TORO QUEST] equipmentData が見つからないため、装備追加をスキップしました。読み込み順を確認してください。');
+    return false;
+  }
+
   potoroPatchEquipmentRarity();
 
   /* ===== Weapons ===== */
@@ -113,28 +139,198 @@ function potoroInstallEquipmentRarityAddon(){
     effect:{defDownChance:0.28,defDownDamageRate:0.25}
   });
 
-  /* ===== Uniforms / Accessories ===== */
-  potoroAddUniformIfMissing({id:'fuwamoko_headband',name:'ふわもこカチューシャ',slot:'head',rarity:'B',def:6,desc:'被ダメージ-10%。',effect:{damageCutRate:0.10}});
-  potoroAddUniformIfMissing({id:'kirarin_headdress',name:'きらりんヘッドドレス',slot:'head',rarity:'B',def:4,spd:4,desc:'すばやさ+4。'});
-  potoroAddUniformIfMissing({id:'lucky_headband',name:'ラッキーカチューシャ',slot:'head',rarity:'B',def:3,desc:'クリティカル率+10%、ドロップ率+10%。',effect:{criticalRateBonus:0.10,itemDropRateBonus:0.10}});
+  /* ===== Head ===== */
+  potoroAddUniformIfMissing({
+    id:'fuwamoko_headband',
+    name:'ふわもこカチューシャ',
+    slot:'head',
+    rarity:'B',
+    def:6,
+    desc:'被ダメージ-10%。',
+    effect:{damageCutRate:0.10}
+  });
 
-  potoroAddUniformIfMissing({id:'heart_apron',name:'ハートエプロン',slot:'body',rarity:'B',def:7,desc:'毎ターンHP+3。',effect:{turnHpRegen:3}});
-  potoroAddUniformIfMissing({id:'perfect_maid_dress',name:'完璧メイドドレス',slot:'body',rarity:'A',def:9,desc:'バフ効果ターン+1。',effect:{buffTurnBonus:1}});
-  potoroAddUniformIfMissing({id:'healing_apron',name:'癒しのエプロン',slot:'body',rarity:'A',def:6,desc:'回復量+30%。回復時、低確率で状態異常回復。',effect:{healRate:0.30,statusHealChance:0.20}});
-  potoroAddUniformIfMissing({id:'cool_maid_dress',name:'クールメイドドレス',slot:'body',rarity:'B',def:8,desc:'混乱・睡眠耐性+50%。',effect:{sleepResist:0.50,confuseResist:0.50}});
-  potoroAddUniformIfMissing({id:'heavy_maid_armor',name:'重装メイドアーマー',slot:'body',rarity:'S',def:14,spd:-5,desc:'被ダメージ-20%。すばやさ-5。',effect:{damageCutRate:0.20}});
+  potoroAddUniformIfMissing({
+    id:'kirarin_headdress',
+    name:'きらりんヘッドドレス',
+    slot:'head',
+    rarity:'B',
+    def:4,
+    spd:4,
+    desc:'すばやさ+4。'
+  });
 
-  potoroAddUniformIfMissing({id:'broMaid_photo',name:'推しのブロマイド',slot:'accessory',rarity:'A',def:0,desc:'トーク力+30%。防御-3。',effect:{talkRate:0.30,defPenalty:3}});
-  potoroAddUniformIfMissing({id:'magic_teacup',name:'魔法のティーカップ',slot:'accessory',rarity:'B',def:2,desc:'毎ターンMP+2。',effect:{turnMpRegen:2}});
-  potoroAddUniformIfMissing({id:'business_card',name:'ご主人様の名刺',slot:'accessory',rarity:'S',def:2,desc:'アイテムドロップ率+20%。',effect:{itemDropRateBonus:0.20}});
-  potoroAddUniformIfMissing({id:'forbidden_contract',name:'禁断の契約書',slot:'accessory',rarity:'A',def:0,desc:'攻撃+30%。毎ターンHP-5。',effect:{atkRate:0.30,turnHpCost:5}});
-  potoroAddUniformIfMissing({id:'magic_ribbon',name:'魔力のリボン',slot:'accessory',rarity:'A',def:1,desc:'おまじない威力+25%。MP消費+1。',effect:{magicDamageRate:0.25,magicMpPlus:1}});
-  potoroAddUniformIfMissing({id:'pocket_watch',name:'時間停止の懐中時計',slot:'accessory',rarity:'S',def:3,spd:-2,desc:'低確率で行動回数+1。',effect:{extraActionChance:0.12}});
-  potoroAddUniformIfMissing({id:'maid_note',name:'メイドの心得ノート',slot:'accessory',rarity:'A',def:3,desc:'状態異常ターン-1、バフターン+1。',effect:{statusTurnMinus:1,buffTurnBonus:1}});
-  potoroAddUniformIfMissing({id:'regular_proof',name:'常連の証',slot:'accessory',rarity:'A',def:4,desc:'ターン経過ごとに攻撃+1。',effect:{turnAtkStack:1,turnAtkStackMax:5}});
-  potoroAddUniformIfMissing({id:'point_card',name:'お給仕ポイントカード',slot:'accessory',rarity:'B',def:2,desc:'戦闘後のEXP+20%。低確率で追加報酬。',effect:{expRate:0.20,bonusRewardChance:0.08}});
+  potoroAddUniformIfMissing({
+    id:'lucky_headband',
+    name:'ラッキーカチューシャ',
+    slot:'head',
+    rarity:'B',
+    def:3,
+    desc:'クリティカル率+10%、ドロップ率+10%。',
+    effect:{criticalRateBonus:0.10,itemDropRateBonus:0.10}
+  });
 
-  console.log('[PO・TORO QUEST] equipment rarity addon installed');
+  /* ===== Body ===== */
+  potoroAddUniformIfMissing({
+    id:'heart_apron',
+    name:'ハートエプロン',
+    slot:'body',
+    rarity:'B',
+    def:7,
+    desc:'毎ターンHP+3。',
+    effect:{turnHpRegen:3}
+  });
+
+  potoroAddUniformIfMissing({
+    id:'perfect_maid_dress',
+    name:'完璧メイドドレス',
+    slot:'body',
+    rarity:'A',
+    def:9,
+    desc:'バフ効果ターン+1。',
+    effect:{buffTurnBonus:1}
+  });
+
+  potoroAddUniformIfMissing({
+    id:'healing_apron',
+    name:'癒しのエプロン',
+    slot:'body',
+    rarity:'A',
+    def:6,
+    desc:'回復量+30%。回復時、低確率で状態異常回復。',
+    effect:{healRate:0.30,statusHealChance:0.20}
+  });
+
+  potoroAddUniformIfMissing({
+    id:'cool_maid_dress',
+    name:'クールメイドドレス',
+    slot:'body',
+    rarity:'B',
+    def:8,
+    desc:'混乱・睡眠耐性+50%。',
+    effect:{sleepResist:0.50,confuseResist:0.50}
+  });
+
+  potoroAddUniformIfMissing({
+    id:'heavy_maid_armor',
+    name:'重装メイドアーマー',
+    slot:'body',
+    rarity:'S',
+    def:14,
+    spd:-5,
+    desc:'被ダメージ-20%。すばやさ-5。',
+    effect:{damageCutRate:0.20}
+  });
+
+  /* ===== Accessory ===== */
+  potoroAddUniformIfMissing({
+    id:'broMaid_photo',
+    name:'推しのブロマイド',
+    slot:'accessory',
+    rarity:'A',
+    def:0,
+    desc:'トーク力+30%。防御-3。',
+    effect:{talkRate:0.30,defPenalty:3}
+  });
+
+  potoroAddUniformIfMissing({
+    id:'magic_teacup',
+    name:'魔法のティーカップ',
+    slot:'accessory',
+    rarity:'B',
+    def:2,
+    desc:'毎ターンMP+2。',
+    effect:{turnMpRegen:2}
+  });
+
+  potoroAddUniformIfMissing({
+    id:'business_card',
+    name:'ご主人様の名刺',
+    slot:'accessory',
+    rarity:'S',
+    def:2,
+    desc:'アイテムドロップ率+20%。',
+    effect:{itemDropRateBonus:0.20}
+  });
+
+  potoroAddUniformIfMissing({
+    id:'forbidden_contract',
+    name:'禁断の契約書',
+    slot:'accessory',
+    rarity:'A',
+    def:0,
+    desc:'攻撃+30%。毎ターンHP-5。',
+    effect:{atkRate:0.30,turnHpCost:5}
+  });
+
+  potoroAddUniformIfMissing({
+    id:'magic_ribbon',
+    name:'魔力のリボン',
+    slot:'accessory',
+    rarity:'A',
+    def:1,
+    desc:'おまじない威力+25%。MP消費+1。',
+    effect:{magicDamageRate:0.25,magicMpPlus:1}
+  });
+
+  potoroAddUniformIfMissing({
+    id:'pocket_watch',
+    name:'時間停止の懐中時計',
+    slot:'accessory',
+    rarity:'S',
+    def:3,
+    spd:-2,
+    desc:'低確率で行動回数+1。',
+    effect:{extraActionChance:0.12}
+  });
+
+  potoroAddUniformIfMissing({
+    id:'maid_note',
+    name:'メイドの心得ノート',
+    slot:'accessory',
+    rarity:'A',
+    def:3,
+    desc:'状態異常ターン-1、バフターン+1。',
+    effect:{statusTurnMinus:1,buffTurnBonus:1}
+  });
+
+  potoroAddUniformIfMissing({
+    id:'regular_proof',
+    name:'常連の証',
+    slot:'accessory',
+    rarity:'A',
+    def:4,
+    desc:'ターン経過ごとに攻撃+1。',
+    effect:{turnAtkStack:1,turnAtkStackMax:5}
+  });
+
+  potoroAddUniformIfMissing({
+    id:'point_card',
+    name:'お給仕ポイントカード',
+    slot:'accessory',
+    rarity:'B',
+    def:2,
+    desc:'戦闘後のEXP+20%。低確率で追加報酬。',
+    effect:{expRate:0.20,bonusRewardChance:0.08}
+  });
+
+  console.log('[PO・TORO QUEST] equipment rarity addon installed', {
+    weapons:equipmentData.weapons.length,
+    uniforms:equipmentData.uniforms.length
+  });
+
+  return true;
+}
+
+function potoroEquipmentAddonReport(){
+  const report = {
+    hasEquipmentData:potoroHasEquipmentData(),
+    weapons:potoroHasEquipmentData() ? equipmentData.weapons.map(w => ({id:w.id,name:w.name,rarity:w.rarity})) : [],
+    uniforms:potoroHasEquipmentData() ? equipmentData.uniforms.map(u => ({id:u.id,name:u.name,slot:u.slot,rarity:u.rarity})) : []
+  };
+
+  console.log('[PO・TORO QUEST equipment addon]',report);
+  return report;
 }
 
 potoroInstallEquipmentRarityAddon();
