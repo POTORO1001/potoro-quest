@@ -12,40 +12,46 @@ function showMagicLearnEffect(name){
 
   document.body.appendChild(el);
 
+  if(typeof tone === 'function'){
+    tone(659,.12,'triangle',.07,0);
+    tone(784,.14,'triangle',.07,.12);
+    tone(988,.24,'triangle',.08,.28);
+  }
+
   setTimeout(() => {
     if(el && el.parentNode) el.remove();
-  }, 1600);
+  },1600);
 }
 
-/* ===== レベルアップ時チェック ===== */
+/* ===== おまじない習得チェック ===== */
 function checkMagicLearnOnLevelUp(){
   if(!state || !state.player) return;
+  if(typeof getAllMagicConfigs !== 'function') return;
 
   const lv = state.player.lv;
+  const all = getAllMagicConfigs();
 
-  Object.entries(POTORO_MAGIC_CONFIG.learnLevels).forEach(([key, needLv]) => {
-    if(lv === needLv){
-      const name = getMagicName(key);
-      showMagicLearnEffect(name);
+  Object.keys(all).forEach(kind => {
+    const config = all[kind];
+    if(!config) return;
+
+    if((config.requiredLv || 1) === lv){
+      showMagicLearnEffect(config.name || kind);
     }
   });
 }
 
-/* ===== おまじない名取得 ===== */
-function getMagicName(kind){
-  const names = {
-    moe:'もえもえぎゅー',
-    cook:'おいしくなーれ',
-    aura:'キラキラオーラ',
-    sleep:'おやすみなさい',
-    flash:'チェキフラッシュ',
-    charge2:'完璧なお給仕',
-    multi:'ご奉仕連撃',
-    charge:'萌えちゃーじ',
-    rush:'ご帰宅ラッシュ',
-    fullheal:'ひなたぼっこ',
-    ultimate:'にしきぬやまー'
+/* ===== デバッグ確認 ===== */
+function potoroMagicLearnEffectReport(){
+  const report = {
+    loaded:true,
+    playerLv:state && state.player ? state.player.lv : null,
+    canReadMagicConfig:typeof getAllMagicConfigs === 'function',
+    magicConfigs:typeof getAllMagicConfigs === 'function' ? getAllMagicConfigs() : null
   };
 
-  return names[kind] || kind;
+  console.log('[PO・TORO QUEST magic learn effect]',report);
+  return report;
 }
+
+console.log('[PO・TORO QUEST] magic-learn-effect.js fixed loaded');
