@@ -7,6 +7,130 @@
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+  <div id="helpModal" class="help-modal hidden">
+
+  <div class="help-overlay" onclick="closeHelp()"></div>
+
+  <div class="help-box">
+
+    <div class="help-header">
+      📖 ポトロクエスト 効果一覧
+      <button class="help-close" onclick="closeHelp()">×</button>
+    </div>
+
+    <div class="help-content">
+
+      <div class="help-section">
+        <h2>✨ おまじない</h2>
+        <div class="help-table">
+          <div><b>もえもえぎゅー</b><span>単体ダメージ</span></div>
+          <div><b>おいしくなーれ</b><span>HP回復</span></div>
+          <div><b>キラキラオーラ</b><span>トーク力・すばやさUP</span></div>
+          <div><b>おやすみなさい</b><span>敵を眠らせる</span></div>
+          <div><b>チェキフラッシュ</b><span>敵全体ダメージ</span></div>
+          <div><b>完璧なお給仕</b><span>次の威力2.5倍</span></div>
+          <div><b>ご奉仕連撃</b><span>2〜3回攻撃</span></div>
+          <div><b>萌えちゃーじ</b><span>MP回復</span></div>
+          <div><b>ご帰宅ラッシュ</b><span>高ダメージ＋混乱</span></div>
+          <div><b>ひなたぼっこ</b><span>HP全回復＋状態回復</span></div>
+          <div><b>にしきぬやまー</b><span>超高火力</span></div>
+        </div>
+      </div>
+
+      <div class="help-section">
+        <h2>🍰 どうぐ</h2>
+        <div class="help-table">
+          <div><b>オムライス</b><span>HP回復</span></div>
+          <div><b>紅茶</b><span>MP回復</span></div>
+          <div><b>ふわふわパンケーキ</b><span>HP中回復</span></div>
+          <div><b>ロイヤルミルクティー</b><span>MP大回復</span></div>
+          <div><b>ご褒美スイーツプレート</b><span>HP＋MP回復</span></div>
+          <div><b>目覚ましベル</b><span>睡眠回復</span></div>
+          <div><b>冷静の紅茶</b><span>混乱回復</span></div>
+          <div><b>リフレッシュアロマ</b><span>状態異常回復</span></div>
+          <div><b>応援のボイスメッセージ</b><span>攻撃UP</span></div>
+          <div><b>キラキラパウダー</b><span>おまじない強化</span></div>
+          <div><b>お給仕マニュアル</b><span>防御・トーク・速さUP</span></div>
+          <div><b>禁断のエナジードリンク</b><span>攻撃大UP・防御低下</span></div>
+          <div><b>運命のコイントス</b><span>ランダム大効果</span></div>
+          <div><b>？？？ドリンク</b><span>ランダム効果</span></div>
+        </div>
+        <p class="help-note">通常どうぐは最大5個まで。強いどうぐは1個制限です。</p>
+      </div>
+
+      <div class="help-section">
+        <h2>🗡 武器</h2>
+        <div class="help-table">
+          <div><b>ご奉仕ロッド <em>C</em></b><span>攻撃+2 / 初期武器</span></div>
+          <div><b>フリルブレード <em>B</em></b><span>攻撃+6 / 序盤の主力</span></div>
+          <div><b>ご帰宅メイス <em>B</em></b><span>攻撃+11 / 2F向け武器</span></div>
+          <div><b>シルバーティースプーン <em>A</em></b><span>攻撃+6 / トーク力UP・MP消費軽減</span></div>
+          <div><b>お仕置きフライパン <em>A</em></b><span>攻撃+12 / スタン付与・すばやさ低下</span></div>
+          <div><b>きらめきトレイ <em>A</em></b><span>攻撃+5 / 追撃・連撃強化</span></div>
+          <div><b>スピードトレイ <em>A</em></b><span>攻撃+5 / 先手を取りやすい</span></div>
+          <div><b>お給仕ハンマー <em>A</em></b><span>攻撃+9 / 防御ダウン付与</span></div>
+          <div><b>おまじないステッキ <em>B</em></b><span>攻撃+4 / MP消費軽減・回復魔法強化</span></div>
+          <div><b>ご主人様呼び鈴 <em>B</em></b><span>攻撃+3 / 防御時の被ダメ軽減</span></div>
+          <div><b>伝説のメニュー表 <em>S</em></b><span>攻撃+8 / ボス特効</span></div>
+        </div>
+      </div>
+
+      <div class="help-section">
+        <h2>🎀 頭装備</h2>
+        <div class="help-table">
+          <div><b>メイドカチューシャ <em>C</em></b><span>防御+3 / 基本装備</span></div>
+          <div><b>ハートティアラ <em>B</em></b><span>防御+6 / 安定防御</span></div>
+          <div><b>ローズリボン <em>A</em></b><span>防御+10 / 高防御</span></div>
+          <div><b>ふわもこカチューシャ <em>B</em></b><span>防御+6 / 被ダメージ軽減</span></div>
+          <div><b>きらりんヘッドドレス <em>B</em></b><span>防御+4 / すばやさUP</span></div>
+          <div><b>ラッキーカチューシャ <em>B</em></b><span>防御+3 / クリティカル率・ドロップ率UP</span></div>
+        </div>
+      </div>
+
+      <div class="help-section">
+        <h2>👗 体装備</h2>
+        <div class="help-table">
+          <div><b>純白エプロン <em>C</em></b><span>防御+4 / 基本防具</span></div>
+          <div><b>ロングメイド服 <em>B</em></b><span>防御+9 / 安定防具</span></div>
+          <div><b>ハートエプロン <em>B</em></b><span>防御+7 / 毎ターンHP回復</span></div>
+          <div><b>癒しのエプロン <em>A</em></b><span>防御+6 / 回復量UP</span></div>
+          <div><b>完璧メイドドレス <em>A</em></b><span>防御+9 / バフ効果延長</span></div>
+          <div><b>クールメイドドレス <em>B</em></b><span>防御+8 / 睡眠・混乱耐性</span></div>
+          <div><b>重装メイドアーマー <em>S</em></b><span>防御+14 / 被ダメ軽減・すばやさ低下</span></div>
+          <div><b>初代メイド服 <em>EVENT</em></b><span>防御+28 / たまちゃん限定</span></div>
+        </div>
+      </div>
+
+      <div class="help-section">
+        <h2>💎 アクセサリー</h2>
+        <div class="help-table">
+          <div><b>お給仕の証 <em>C</em></b><span>防御+3 / 基本アクセ</span></div>
+          <div><b>推し活ペンダント <em>A</em></b><span>防御+7 / トーク力UP</span></div>
+          <div><b>伝説の名札 <em>B</em></b><span>防御+12 / 高防御アクセ</span></div>
+          <div><b>推しのブロマイド <em>A</em></b><span>トーク力大UP / 防御低下</span></div>
+          <div><b>魔法のティーカップ <em>B</em></b><span>防御+2 / 毎ターンMP回復</span></div>
+          <div><b>ご主人様の名刺 <em>S</em></b><span>防御+2 / ドロップ率UP</span></div>
+          <div><b>禁断の契約書 <em>A</em></b><span>攻撃UP / 毎ターンHP減少</span></div>
+          <div><b>魔力のリボン <em>A</em></b><span>防御+1 / おまじない威力UP・MP消費増</span></div>
+          <div><b>時間停止の懐中時計 <em>S</em></b><span>防御+3 / 低確率で追加行動</span></div>
+          <div><b>メイドの心得ノート <em>A</em></b><span>防御+3 / 状態異常短縮・バフ延長</span></div>
+          <div><b>常連の証 <em>A</em></b><span>防御+4 / ターンごとに攻撃UP</span></div>
+          <div><b>お給仕ポイントカード <em>B</em></b><span>防御+2 / EXP増加・追加報酬</span></div>
+        </div>
+      </div>
+
+      <div class="help-section">
+        <h2>💡 装備のコツ</h2>
+        <p>
+          攻撃型なら武器、安定型なら体装備、魔法型ならトーク力・MP関連アクセを重視しましょう。<br>
+          ボス戦では「伝説のメニュー表」「ひなたぼっこ」「完璧なお給仕」の組み合わせが強力です。
+        </p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
 
 <section id="loadingScreen" class="loading-screen">
   <div class="loading-card">
