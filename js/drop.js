@@ -261,6 +261,16 @@ function addTreasureEquipment(drop){
   return false;
 }
 
+function refreshEquipMenuAfterTreasure(){
+  const menu = document.getElementById('equipMenu');
+
+  if(!menu || menu.classList.contains('hidden')) return;
+
+  if(typeof openEquipMenu === 'function'){
+    openEquipMenu();
+  }
+}
+
 function rollTreasureEquipment(floor){
   const rarity = rollTreasureRarity(floor);
 
@@ -290,6 +300,7 @@ function giveMapTreasureEquipment(){
 
   if(!drop){
     setMapMessage('宝箱を開けた！ しかし、この階の装備品はすでに揃っていた。');
+    refreshEquipMenuAfterTreasure();
     return null;
   }
 
@@ -304,6 +315,9 @@ function giveMapTreasureEquipment(){
   if(typeof showTreasureRarityEffect === 'function') showTreasureRarityEffect(rarity,name);
   if(typeof seTreasure === 'function') seTreasure();
   if(typeof updateUI === 'function') updateUI();
+
+  // 宝箱取得直後、装備メニューが開いている場合は再描画して即反映する
+  refreshEquipMenuAfterTreasure();
 
   return {drop,name,rarity,statText};
 }
