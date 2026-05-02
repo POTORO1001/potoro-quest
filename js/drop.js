@@ -78,6 +78,21 @@ const POTORO_DROP_CONFIG = {
   }
 };
 
+const POTORO_DROP_CONFIG = { ... };
+
+/* ===== 所持制限設定（ここに追加） ===== */
+const POTORO_ITEM_LIMIT = {
+  defaultMax: 5,
+
+  limits: {
+    'royal_milk_tea': 1,
+    'refresh_aroma': 1,
+    'forbidden_energy': 1,
+    'coin_toss': 1,
+    'unknown_drink': 1
+  }
+};
+
 function pickWeightedDrop(list){
   if(!list || !list.length) return null;
   const total = list.reduce((sum,item) => sum + (item.rate || 0),0);
