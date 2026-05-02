@@ -307,7 +307,6 @@ function checkTileEvent(){
   if(chest){
     chest.opened = true;
     giveMapChestEquipment();
-    seTreasure();
     drawMaze();
     return;
   }
