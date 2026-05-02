@@ -221,7 +221,7 @@ function placeChests(){
 
   floors.sort(() => Math.random() - .5);
 
-  state.chests = floors.slice(0,4).map((point,index) => ({
+  state.chests = floors.slice(0,6).map((point,index) => ({
     ...point,
     opened:false,
     id:`${state.floor}-${index}`
