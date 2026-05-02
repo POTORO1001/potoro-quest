@@ -97,6 +97,21 @@ function rollItemDrop(enemyId){
   return pickWeightedDrop(table);
 }
 
+/* ===== 所持制限チェック ===== */
+function canAddItem(itemId, amount = 1){
+  const p = state.player;
+  if(!p.items) p.items = {};
+
+  const current = p.items[itemId] || 0;
+
+  const limit = POTORO_ITEM_LIMIT.limits[itemId];
+  if(limit !== undefined){
+    return current + amount <= limit;
+  }
+
+  return current + amount <= POTORO_ITEM_LIMIT.defaultMax;
+}
+
 function applyItemDrop(drop){
   if(!drop) return false;
   const p = state.player;
