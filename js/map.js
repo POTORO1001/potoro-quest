@@ -124,7 +124,7 @@ function updateVisibility(){
     for(let x=px-range;x<=px+range;x++){
       if(x<0 || y<0 || x>=MAZE_W || y>=MAZE_H) continue;
 
-      const dist = Math.abs(px-x) + Math.abs(py-y);
+      const dist = Math.sqrt((px-x)*(px-x) + (py-y)*(py-y));
 
       if(dist <= range){
         state.visibleMap[y][x] = true;
