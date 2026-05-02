@@ -99,6 +99,23 @@ const state={
   enemyActedFirst:false
 };
 
+window.enemies = enemies;
+window.equipmentData = equipmentData;
+window.initialPlayer = initialPlayer;
+window.state = state;
+
+window.getWeaponById = window.getWeaponById || function(id){
+  return equipmentData.weapons.find(item => item.id === id) || null;
+};
+
+window.getUniformById = window.getUniformById || function(id){
+  return equipmentData.uniforms.find(item => item.id === id) || null;
+};
+
+window.getEquipmentById = window.getEquipmentById || function(id){
+  return window.getWeaponById(id) || window.getUniformById(id);
+};
+
 function makePlayer(){return JSON.parse(JSON.stringify(initialPlayer));}
 function cloneEnemy(base){const c=JSON.parse(JSON.stringify(base));c.sleepTurns=0;return c;}
 function ensurePlayerStatus(){
@@ -332,11 +349,9 @@ function setupFloor(floor){
   if(floor===1){
     state.stairs={x:far.x,y:far.y};
     state.boss={x:-1,y:-1};
-    setMapMessage('1Fのお屋敷が生成されました。階段を探しましょう。');
   }else{
     state.stairs=null;
     state.boss={x:far.x,y:far.y};
-    setMapMessage('2Fに到着しました。鬼奴夜魔さんの気配を探しましょう。');
   }
 
   placeChests();
@@ -434,48 +449,27 @@ function movePlayer(dx,dy){
 
 function goToSecondFloor(){
   setupFloor(2);
-  setMapMessage('階段を上がって2Fへ。もう1Fには戻れません。');
 }
 
 function giveMapChestEquipment(){
-  const p=state.player;
-  let candidates=[];
-
-  if(state.floor===1){
-    if(!p.inventory.weapons.includes('frill_blade')) candidates.push({type:'weapon',id:'frill_blade',text:'フリルブレード'});
-    if(!p.inventory.uniforms.includes('maid_headband')) candidates.push({type:'uniform',id:'maid_headband',text:'メイドカチューシャ'});
-    if(!p.inventory.uniforms.includes('white_apron')) candidates.push({type:'uniform',id:'white_apron',text:'純白エプロン'});
-    if(!p.inventory.uniforms.includes('service_proof')) candidates.push({type:'uniform',id:'service_proof',text:'お給仕の証'});
-  }else{
-    if(!p.inventory.weapons.includes('gokitaku_mace')) candidates.push({type:'weapon',id:'gokitaku_mace',text:'ご帰宅メイス'});
-    if(!p.inventory.uniforms.includes('heart_tiara')) candidates.push({type:'uniform',id:'heart_tiara',text:'ハートティアラ'});
-    if(!p.inventory.uniforms.includes('rose_ribbon')) candidates.push({type:'uniform',id:'rose_ribbon',text:'ローズリボン'});
-    if(!p.inventory.uniforms.includes('long_maid')) candidates.push({type:'uniform',id:'long_maid',text:'ロングメイド服'});
-    if(!p.inventory.uniforms.includes('oshi_pendant')) candidates.push({type:'uniform',id:'oshi_pendant',text:'推し活ペンダント'});
-    if(!p.inventory.uniforms.includes('legend_nameplate')) candidates.push({type:'uniform',id:'legend_nameplate',text:'伝説の名札'});
-  }
-
-  if(!candidates.length){
-    setMapMessage('宝箱を開けた！ しかし、この階の装備品はすでに揃っていた。');
+  // 新仕様：宝箱の中身・レア度・装備追加は drop.js 側に委譲します。
+  if(typeof giveMapTreasureEquipment === 'function'){
+    giveMapTreasureEquipment();
     return;
   }
 
-  const reward=candidates[Math.floor(Math.random()*candidates.length)];
-  if(reward.type==='weapon') p.inventory.weapons.push(reward.id);
-  if(reward.type==='uniform') p.inventory.uniforms.push(reward.id);
-  setMapMessage(`宝箱を開けた！ ${reward.text} を手に入れた！`);
+  setMapMessage('宝箱を開けた！');
 }
 
 function checkTileEvent(){
   const p=state.player;
   const chest=state.chests.find(c=>!c.opened&&c.x===p.mapX&&c.y===p.mapY);
-  if(chest){
-    chest.opened=true;
-    giveMapChestEquipment();
-    seTreasure();
-    drawMaze();
-    return;
-  }
+ if(chest){
+  chest.opened=true;
+  giveMapChestEquipment();
+  drawMaze();
+  return;
+}
 
   if(state.floor===1 && state.stairs && p.mapX===state.stairs.x && p.mapY===state.stairs.y){
     goToSecondFloor();
@@ -505,7 +499,6 @@ function checkTileEvent(){
 
     startBattle(cloneEnemy(enemy),false);
   }else{
-    setMapMessage(`${state.floor}Fを探索中...`);
   }
 }
 
@@ -1230,32 +1223,9 @@ function giveReward(enemyId){
 }
 
 function treasureDrop(enemyId){
-  const p=state.player;
-
-  // 戦闘後の宝箱も装備品のみ。初代メイド服はたまちゃん限定。
-  if(Math.floor(Math.random()*4)!==0) return false;
-
-  const candidates=[];
-  if(!p.inventory.weapons.includes('frill_blade')) candidates.push({type:'weapon',id:'frill_blade',text:'フリルブレード を発見した！ 攻撃 +6'});
-  if(!p.inventory.weapons.includes('gokitaku_mace')) candidates.push({type:'weapon',id:'gokitaku_mace',text:'ご帰宅メイス を発見した！ 攻撃 +11'});
-  if(!p.inventory.uniforms.includes('maid_headband')) candidates.push({type:'uniform',id:'maid_headband',text:'メイドカチューシャ を発見した！ 防御 +3'});
-  if(!p.inventory.uniforms.includes('heart_tiara')) candidates.push({type:'uniform',id:'heart_tiara',text:'ハートティアラ を発見した！ 防御 +6'});
-  if(!p.inventory.uniforms.includes('rose_ribbon')) candidates.push({type:'uniform',id:'rose_ribbon',text:'ローズリボン を発見した！ 防御 +10'});
-  if(!p.inventory.uniforms.includes('white_apron')) candidates.push({type:'uniform',id:'white_apron',text:'純白エプロン を発見した！ 防御 +4'});
-  if(!p.inventory.uniforms.includes('long_maid')) candidates.push({type:'uniform',id:'long_maid',text:'ロングメイド服 を発見した！ 防御 +9'});
-  if(!p.inventory.uniforms.includes('service_proof')) candidates.push({type:'uniform',id:'service_proof',text:'お給仕の証 を発見した！ 防御 +3'});
-  if(!p.inventory.uniforms.includes('oshi_pendant')) candidates.push({type:'uniform',id:'oshi_pendant',text:'推し活ペンダント を発見した！ 防御 +7'});
-  if(!p.inventory.uniforms.includes('legend_nameplate')) candidates.push({type:'uniform',id:'legend_nameplate',text:'伝説の名札 を発見した！ 防御 +12'});
-
-  if(!candidates.length) return false;
-
-  const reward=candidates[Math.floor(Math.random()*candidates.length)];
-  if(reward.type==='weapon') p.inventory.weapons.push(reward.id);
-  if(reward.type==='uniform') p.inventory.uniforms.push(reward.id);
-
-  openTreasureMenu(reward.text);
-  setMessage('宝箱から装備品を入手！');
-  return true;
+  // 新仕様：敵から装備品はドロップしません。
+  // 装備品はマップ宝箱、またはたまちゃんイベントのみで入手します。
+  return false;
 }
 
 async function winBattle(){
