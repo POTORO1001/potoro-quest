@@ -286,54 +286,12 @@ function goToSecondFloor(){
 
 /* ===== Map Chest Reward ===== */
 function giveMapChestEquipment(){
-  const p = state.player;
-  let candidates = [];
-
-  if(state.floor === 1){
-    if(!p.inventory.weapons.includes('frill_blade')){
-      candidates.push({type:'weapon',id:'frill_blade',text:'フリルブレード'});
-    }
-    if(!p.inventory.uniforms.includes('maid_headband')){
-      candidates.push({type:'uniform',id:'maid_headband',text:'メイドカチューシャ'});
-    }
-    if(!p.inventory.uniforms.includes('white_apron')){
-      candidates.push({type:'uniform',id:'white_apron',text:'純白エプロン'});
-    }
-    if(!p.inventory.uniforms.includes('service_proof')){
-      candidates.push({type:'uniform',id:'service_proof',text:'お給仕の証'});
-    }
-  }else{
-    if(!p.inventory.weapons.includes('gokitaku_mace')){
-      candidates.push({type:'weapon',id:'gokitaku_mace',text:'ご帰宅メイス'});
-    }
-    if(!p.inventory.uniforms.includes('heart_tiara')){
-      candidates.push({type:'uniform',id:'heart_tiara',text:'ハートティアラ'});
-    }
-    if(!p.inventory.uniforms.includes('rose_ribbon')){
-      candidates.push({type:'uniform',id:'rose_ribbon',text:'ローズリボン'});
-    }
-    if(!p.inventory.uniforms.includes('long_maid')){
-      candidates.push({type:'uniform',id:'long_maid',text:'ロングメイド服'});
-    }
-    if(!p.inventory.uniforms.includes('oshi_pendant')){
-      candidates.push({type:'uniform',id:'oshi_pendant',text:'推し活ペンダント'});
-    }
-    if(!p.inventory.uniforms.includes('legend_nameplate')){
-      candidates.push({type:'uniform',id:'legend_nameplate',text:'伝説の名札'});
-    }
-  }
-
-  if(!candidates.length){
-    setMapMessage('宝箱を開けた！ しかし、この階の装備品はすでに揃っていた。');
+  if(typeof giveMapTreasureEquipment === 'function'){
+    giveMapTreasureEquipment();
     return;
   }
 
-  const reward = candidates[Math.floor(Math.random()*candidates.length)];
-
-  if(reward.type === 'weapon') p.inventory.weapons.push(reward.id);
-  if(reward.type === 'uniform') p.inventory.uniforms.push(reward.id);
-
-  setMapMessage(`宝箱を開けた！ ${reward.text} を手に入れた！`);
+  setMapMessage('宝箱を開けた！');
 }
 
 /* ===== Tile Event ===== */
