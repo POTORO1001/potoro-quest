@@ -1706,7 +1706,6 @@ body.potoro-boss-criticalhp .enemy-slot.selected{
 @keyframes treasureCardPop{0%{opacity:0;transform:scale(.72) rotate(-3deg);}22%{opacity:1;transform:scale(1.08) rotate(1deg);}70%{opacity:1;transform:scale(1);}100%{opacity:0;transform:scale(.98) translateY(-18px);}}
 @keyframes treasureSGlow{0%,100%{filter:brightness(1);}50%{filter:brightness(1.28);}}
 
-/* ===== おまじない習得演出 ===== */
 .magic-learn-effect{
   position:fixed;
   inset:0;
@@ -1715,6 +1714,8 @@ body.potoro-boss-criticalhp .enemy-slot.selected{
   justify-content:center;
   z-index:600;
   pointer-events:none;
+  background:radial-gradient(circle,rgba(255,255,255,.18),rgba(0,0,0,.20));
+  animation:magicLearnScreenFade 1.6s ease forwards;
 }
 
 .magic-learn-card{
@@ -1723,26 +1724,38 @@ body.potoro-boss-criticalhp .enemy-slot.selected{
   background:linear-gradient(135deg,#fdf2f8,#fff7ed);
   border:3px solid #f9a8d4;
   text-align:center;
+  box-shadow:
+    0 0 0 5px rgba(244,114,182,.16),
+    0 20px 60px rgba(0,0,0,.35),
+    0 0 34px rgba(244,114,182,.45);
   animation:magicLearnPop 1.6s ease forwards;
 }
 
 .magic-learn-title{
   font-size:14px;
-  font-weight:bold;
+  font-weight:1000;
   color:#db2777;
-  letter-spacing:0.1em;
+  letter-spacing:0.12em;
 }
 
 .magic-learn-name{
   font-size:22px;
-  font-weight:bold;
+  font-weight:1000;
   margin-top:8px;
   color:#7c3aed;
+  text-shadow:0 0 10px rgba(168,85,247,.35);
+}
+
+@keyframes magicLearnScreenFade{
+  0%{opacity:0;}
+  16%{opacity:1;}
+  78%{opacity:1;}
+  100%{opacity:0;}
 }
 
 @keyframes magicLearnPop{
-  0%{opacity:0;transform:scale(0.7);}
-  20%{opacity:1;transform:scale(1.1);}
-  70%{opacity:1;}
-  100%{opacity:0;transform:scale(0.95);}
+  0%{opacity:0;transform:scale(0.7) rotate(-2deg);}
+  20%{opacity:1;transform:scale(1.1) rotate(1deg);}
+  70%{opacity:1;transform:scale(1);}
+  100%{opacity:0;transform:scale(0.95) translateY(-18px);}
 }
