@@ -101,7 +101,14 @@ function applyItemDrop(drop){
   if(!drop) return false;
   const p = state.player;
   if(!p.items) p.items = {};
-  p.items[drop.id] = (p.items[drop.id] || 0) + (drop.count || 1);
+  const amount = drop.count || 1;
+
+if(!canAddItem(drop.id, amount)){
+  setMessage(`${drop.name} はこれ以上持てない！`);
+  return false;
+}
+
+p.items[drop.id] = (p.items[drop.id] || 0) + amount;
   setMessage(`${drop.name} を ${drop.count || 1}個 手に入れた！`);
   if(typeof seTreasure === 'function') seTreasure();
   if(typeof updateUI === 'function') updateUI();
