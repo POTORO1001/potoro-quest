@@ -253,6 +253,7 @@
 
 <section class="utility-panel utility-grid">
 <button id="guideBtn" class="sub-btn">説明</button>
+<button onclick="openHelp()" class="sub-btn">効果一覧</button>
 <button id="equipBtn" class="sub-btn">装備</button>
 <button id="soundBtn" class="sub-btn">音: ON</button>
 <button id="restartBtn" class="sub-btn danger">最初から</button>
@@ -317,6 +318,17 @@
   setTimeout(window.__potoroHideLoading, 3500);
 </script>
 
+
+<script>
+function openHelp(){
+  const modal = document.getElementById('helpModal');
+  if(modal) modal.classList.remove('hidden');
+}
+function closeHelp(){
+  const modal = document.getElementById('helpModal');
+  if(modal) modal.classList.add('hidden');
+}
+</script>
 <script src="js/game.js"></script>
 <script src="js/core.js"></script>
 <script src="js/data.js"></script>
