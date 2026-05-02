@@ -78,41 +78,41 @@ const POTORO_DROP_CONFIG = {
   }
 };
 
-const POTORO_DROP_CONFIG = {
-  version:'treasure-rarity-edition',
-  ...
-  }
-};
-
 /* ===== 所持制限設定 ===== */
 const POTORO_ITEM_LIMIT = {
   defaultMax: 5,
 
   limits: {
-    'royal_milk_tea': 1,
-    'refresh_aroma': 1,
-    'forbidden_energy': 1,
-    'coin_toss': 1,
-    'unknown_drink': 1
+    royal_milk_tea: 1,
+    refresh_aroma: 1,
+    forbidden_energy: 1,
+    coin_toss: 1,
+    unknown_drink: 1
   }
 };
 
 function pickWeightedDrop(list){
   if(!list || !list.length) return null;
+
   const total = list.reduce((sum,item) => sum + (item.rate || 0),0);
   if(total <= 0) return list[Math.floor(Math.random()*list.length)];
+
   let roll = Math.random() * total;
+
   for(const item of list){
     roll -= item.rate || 0;
     if(roll <= 0) return item;
   }
+
   return list[list.length-1];
 }
 
 function rollItemDrop(enemyId){
   if(Math.random() >= POTORO_DROP_CONFIG.itemDropRate) return null;
+
   const table = POTORO_DROP_CONFIG.items[enemyId];
   if(!table || !table.length) return null;
+
   return pickWeightedDrop(table);
 }
 
@@ -122,8 +122,8 @@ function canAddItem(itemId, amount = 1){
   if(!p.items) p.items = {};
 
   const current = p.items[itemId] || 0;
-
   const limit = POTORO_ITEM_LIMIT.limits[itemId];
+
   if(limit !== undefined){
     return current + amount <= limit;
   }
@@ -131,42 +131,57 @@ function canAddItem(itemId, amount = 1){
   return current + amount <= POTORO_ITEM_LIMIT.defaultMax;
 }
 
-function applyItemDrop(drop){
-  if(!drop) return false;
-  const p = state.player;
-  if(!p.items) p.items = {};
-  const amount = drop.count || 1;
-
-if(!canAddItem(drop.id, amount)){
-  setMessage(`${drop.name} はこれ以上持てない！`);
-  return false;
+function getItemLimit(itemId){
+  return POTORO_ITEM_LIMIT.limits[itemId] ?? POTORO_ITEM_LIMIT.defaultMax;
 }
 
-p.items[drop.id] = (p.items[drop.id] || 0) + amount;
-  setMessage(`${drop.name} を ${drop.count || 1}個 手に入れた！`);
+function applyItemDrop(drop){
+  if(!drop) return false;
+
+  const p = state.player;
+  if(!p.items) p.items = {};
+
+  const amount = drop.count || 1;
+
+  if(!canAddItem(drop.id, amount)){
+    setMessage(`${drop.name} はこれ以上持てない！`);
+    return false;
+  }
+
+  p.items[drop.id] = (p.items[drop.id] || 0) + amount;
+
+  setMessage(`${drop.name} を ${amount}個 手に入れた！`);
+
   if(typeof seTreasure === 'function') seTreasure();
   if(typeof updateUI === 'function') updateUI();
+
   return true;
 }
 
 function giveReward(enemyId){
   if(enemyId === 'tamachan' || enemyId === 'boss') return false;
+
   const drop = rollItemDrop(enemyId);
   if(!drop) return false;
+
   return applyItemDrop(drop);
 }
 
-function treasureDrop(enemyId){ return false; }
+function treasureDrop(enemyId){
+  return false;
+}
 
 function setItemDropRate(rate){
   POTORO_DROP_CONFIG.itemDropRate = Math.max(0,Math.min(1,rate));
   return POTORO_DROP_CONFIG.itemDropRate;
 }
+
 function setEquipmentDropRate(rate){
   console.warn('敵からの装備品ドロップは廃止されています。');
   POTORO_DROP_CONFIG.equipmentDropRate = 0;
   return 0;
 }
+
 function setRareEquipmentDropRate(rate){
   console.warn('敵からのレア装備ドロップは廃止されています。');
   POTORO_DROP_CONFIG.rareEquipmentDropRate = 0;
@@ -174,99 +189,166 @@ function setRareEquipmentDropRate(rate){
 }
 
 function rollTreasureRarity(floor){
-  const rates = floor === 1 ? POTORO_DROP_CONFIG.treasureRates.floor1 : POTORO_DROP_CONFIG.treasureRates.floor2;
+  const rates = floor === 1
+    ? POTORO_DROP_CONFIG.treasureRates.floor1
+    : POTORO_DROP_CONFIG.treasureRates.floor2;
+
   return pickWeightedDrop(rates)?.rarity || 'B';
 }
+
 function getTreasureTableByFloorAndRarity(floor,rarity){
   const floorKey = floor === 1 ? 'floor1' : 'floor2';
   return POTORO_DROP_CONFIG.treasureTables[floorKey][rarity] || [];
 }
+
 function isTreasureEquipmentOwned(drop){
   const p = state.player;
+
   if(drop.type === 'weapon') return p.inventory.weapons.includes(drop.id);
   if(drop.type === 'uniform') return p.inventory.uniforms.includes(drop.id);
+
   return true;
 }
+
 function getTreasureEquipmentName(drop){
   if(drop.type === 'weapon') return getWeaponById(drop.id)?.name || drop.id;
   if(drop.type === 'uniform') return getUniformById(drop.id)?.name || drop.id;
+
   return drop.id;
 }
+
 function getTreasureEquipmentRarity(drop){
   if(drop.type === 'weapon') return getWeaponById(drop.id)?.rarity || 'B';
   if(drop.type === 'uniform') return getUniformById(drop.id)?.rarity || 'B';
+
   return 'B';
 }
+
 function getTreasureEquipmentStatText(drop){
-  const item = drop.type === 'weapon' ? getWeaponById(drop.id) : getUniformById(drop.id);
+  const item = drop.type === 'weapon'
+    ? getWeaponById(drop.id)
+    : getUniformById(drop.id);
+
   if(!item) return '';
+
   const parts = [];
+
   if(item.atk) parts.push(`攻撃 ${item.atk > 0 ? '+' : ''}${item.atk}`);
   if(item.def) parts.push(`防御 ${item.def > 0 ? '+' : ''}${item.def}`);
   if(item.spd) parts.push(`速さ ${item.spd > 0 ? '+' : ''}${item.spd}`);
   if(item.talk) parts.push(`話術 ${item.talk > 0 ? '+' : ''}${item.talk}`);
+
   return parts.length ? `（${parts.join(' / ')}）` : '';
 }
+
 function addTreasureEquipment(drop){
   const p = state.player;
+
   if(drop.type === 'weapon'){
-    if(!p.inventory.weapons.includes(drop.id)){ p.inventory.weapons.push(drop.id); return true; }
+    if(!p.inventory.weapons.includes(drop.id)){
+      p.inventory.weapons.push(drop.id);
+      return true;
+    }
   }
+
   if(drop.type === 'uniform'){
-    if(!p.inventory.uniforms.includes(drop.id)){ p.inventory.uniforms.push(drop.id); return true; }
+    if(!p.inventory.uniforms.includes(drop.id)){
+      p.inventory.uniforms.push(drop.id);
+      return true;
+    }
   }
+
   return false;
 }
+
 function rollTreasureEquipment(floor){
   const rarity = rollTreasureRarity(floor);
-  let candidates = getTreasureTableByFloorAndRarity(floor,rarity).filter(drop => !isTreasureEquipmentOwned(drop));
+
+  let candidates = getTreasureTableByFloorAndRarity(floor,rarity)
+    .filter(drop => !isTreasureEquipmentOwned(drop));
+
   if(!candidates.length){
     const floorKey = floor === 1 ? 'floor1' : 'floor2';
-    candidates = Object.values(POTORO_DROP_CONFIG.treasureTables[floorKey]).flat().filter(drop => !isTreasureEquipmentOwned(drop));
+
+    candidates = Object.values(POTORO_DROP_CONFIG.treasureTables[floorKey])
+      .flat()
+      .filter(drop => !isTreasureEquipmentOwned(drop));
   }
+
   if(!candidates.length) return null;
+
   const drop = candidates[Math.floor(Math.random()*candidates.length)];
-  return {...drop,rarity:getTreasureEquipmentRarity(drop)};
+
+  return {
+    ...drop,
+    rarity:getTreasureEquipmentRarity(drop)
+  };
 }
+
 function giveMapTreasureEquipment(){
   const drop = rollTreasureEquipment(state.floor);
+
   if(!drop){
     setMapMessage('宝箱を開けた！ しかし、この階の装備品はすでに揃っていた。');
     return null;
   }
+
   addTreasureEquipment(drop);
+
   const name = getTreasureEquipmentName(drop);
   const rarity = getTreasureEquipmentRarity(drop);
   const statText = getTreasureEquipmentStatText(drop);
+
   setMapMessage(`宝箱を開けた！ 【${rarity}】${name} を手に入れた！ ${statText}`);
+
   if(typeof showTreasureRarityEffect === 'function') showTreasureRarityEffect(rarity,name);
   if(typeof seTreasure === 'function') seTreasure();
   if(typeof updateUI === 'function') updateUI();
+
   return {drop,name,rarity,statText};
 }
+
 function potoroDropReport(){
   const report = JSON.parse(JSON.stringify(POTORO_DROP_CONFIG));
   console.log('[PO・TORO QUEST drop config]',report);
   return report;
 }
+
+function potoroItemLimitReport(){
+  const report = {
+    config:JSON.parse(JSON.stringify(POTORO_ITEM_LIMIT)),
+    items:state.player ? JSON.parse(JSON.stringify(state.player.items || {})) : null
+  };
+
+  console.log('[PO・TORO QUEST item limits]',report);
+  return report;
+}
+
 function testDrop(enemyId='teiji',times=20){
   const result = {enemyId,item:{},equipment:'disabled',rare:'disabled'};
+
   for(let i=0;i<times;i++){
     const item = rollItemDrop(enemyId);
     if(item) result.item[item.id] = (result.item[item.id] || 0) + 1;
   }
+
   console.log('[PO・TORO QUEST drop test]',result);
   return result;
 }
+
 function testTreasure(floor=1,times=50){
   const result = {floor,C:0,B:0,A:0,S:0,items:{}};
+
   for(let i=0;i<times;i++){
     const rarity = rollTreasureRarity(floor);
     result[rarity] = (result[rarity] || 0) + 1;
+
     const table = getTreasureTableByFloorAndRarity(floor,rarity);
     const item = table[Math.floor(Math.random()*table.length)];
+
     if(item) result.items[item.id] = (result.items[item.id] || 0) + 1;
   }
+
   console.log('[PO・TORO QUEST treasure test]',result);
   return result;
 }
