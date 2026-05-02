@@ -1,12 +1,15 @@
 /* =========================
-   ポトロクエスト balance.js（序盤さらに緩和版）
+   ポトロクエスト balance.js（最終バランス調整版）
+   Final Balance Edition
 ========================= */
 
 const POTORO_BALANCE = {
-  version: 'balance-early-game-easier',
+  version: 'final-balance-edition',
   autoApply: true,
 
-  encounter: { rate: 0.145 },
+  encounter: {
+    rate: 0.145
+  },
 
   enemyAi: {
     drainRate: 0.22,
@@ -17,51 +20,56 @@ const POTORO_BALANCE = {
     drunkRate: 0.30,
     drunkSelfHitRate: 0.40,
     defdownRate: 0.25,
-    bossRate: 0.35
+    bossRate: 0.38
   },
 
   player: {
-    hp:38,
-    maxHp:38,
-    mp:16,
-    maxMp:16,
+    hp:40,
+    maxHp:40,
+    mp:18,
+    maxMp:18,
     baseAtk:11,
     baseDef:6,
     baseSpd:7,
     baseTalk:9,
-    nextExp:36
+    nextExp:34
   },
 
   enemies: {
-    teiji: { hp:32, maxHp:32, atk:5, def:1, spd:4, talk:3, exp:13 },
-    kuufuku: { hp:48, maxHp:48, atk:7, def:2, spd:5, talk:5, exp:17 },
-    zangyo: { hp:66, maxHp:66, atk:10, def:4, spd:6, talk:6, exp:25 },
-    meisou: { hp:86, maxHp:86, atk:12, def:6, spd:9, talk:10, exp:36 },
+    teiji: { hp:30, maxHp:30, atk:5, def:1, spd:4, talk:3, exp:14 },
+    kuufuku: { hp:46, maxHp:46, atk:7, def:2, spd:5, talk:5, exp:18 },
+    zangyo: { hp:64, maxHp:64, atk:10, def:4, spd:6, talk:6, exp:26 },
+    meisou: { hp:84, maxHp:84, atk:12, def:6, spd:9, talk:10, exp:38 },
 
-    gekimu: { hp:145, maxHp:145, atk:18, def:10, spd:12, talk:11, exp:45 },
-    neochi: { hp:124, maxHp:124, atk:15, def:9, spd:9, talk:12, exp:40 },
-    deisui: { hp:172, maxHp:172, atk:20, def:12, spd:8, talk:14, exp:58 },
-    shisseki: { hp:230, maxHp:230, atk:25, def:15, spd:14, talk:16, exp:78 },
+    gekimu: { hp:142, maxHp:142, atk:18, def:10, spd:12, talk:11, exp:48 },
+    neochi: { hp:122, maxHp:122, atk:15, def:9, spd:9, talk:12, exp:44 },
+    deisui: { hp:168, maxHp:168, atk:20, def:12, spd:8, talk:14, exp:62 },
+    shisseki: { hp:220, maxHp:220, atk:24, def:15, spd:14, talk:16, exp:82 },
 
-    boss: { hp:380, maxHp:380, atk:32, def:20, spd:18, talk:22, exp:120 }
+    boss: { hp:420, maxHp:420, atk:33, def:21, spd:18, talk:24, exp:140 }
   },
 
   weapons: {
     rod: { atk:4 },
     frill_blade: { atk:8 },
-    gokitaku_mace: { atk:12 }
+    gokitaku_mace: { atk:13 }
   },
 
   uniforms: {
     maid_headband:{def:4},
     white_apron:{def:5},
     service_proof:{def:4},
-    first_maid:{def:28}
+    heart_tiara:{def:7},
+    rose_ribbon:{def:8},
+    long_maid:{def:12},
+    oshi_pendant:{def:7},
+    legend_nameplate:{def:10},
+    first_maid:{def:30}
   },
 
   items: {
-    omurice:{amount:40},
-    tea:{amount:14}
+    omurice:{amount:42},
+    tea:{amount:15}
   }
 };
 
@@ -188,7 +196,7 @@ function setPotoroDifficultyNormal(){
   POTORO_BALANCE.enemyAi.sleepRate = 0.20;
   POTORO_BALANCE.enemyAi.drunkRate = 0.30;
   POTORO_BALANCE.enemyAi.defdownRate = 0.25;
-  POTORO_BALANCE.enemyAi.bossRate = 0.35;
+  POTORO_BALANCE.enemyAi.bossRate = 0.38;
   return applyPotoroBalance();
 }
 
@@ -201,7 +209,7 @@ function setPotoroDifficultyHard(){
   POTORO_BALANCE.enemyAi.sleepRate = 0.30;
   POTORO_BALANCE.enemyAi.drunkRate = 0.40;
   POTORO_BALANCE.enemyAi.defdownRate = 0.36;
-  POTORO_BALANCE.enemyAi.bossRate = 0.42;
+  POTORO_BALANCE.enemyAi.bossRate = 0.45;
   return applyPotoroBalance();
 }
 
@@ -213,8 +221,10 @@ function setEncounterRate(rate){
 function setEnemyAiRate(skill,rate){
   const key = `${skill}Rate`;
   if(typeof POTORO_BALANCE.enemyAi[key] === 'undefined') return false;
+
   POTORO_BALANCE.enemyAi[key] = Math.max(0,Math.min(1,rate));
   applyEnemyAiBalance();
+
   return true;
 }
 
@@ -241,8 +251,12 @@ function buffItem(id,patch){
 function potoroBalanceReport(){
   const report = {
     config:JSON.parse(JSON.stringify(POTORO_BALANCE)),
-    enemyAi:typeof POTORO_ENEMY_AI !== 'undefined' ? JSON.parse(JSON.stringify(POTORO_ENEMY_AI)) : null,
-    encounterRate:typeof getEncounterRate === 'function' ? getEncounterRate() : null
+    enemyAi:typeof POTORO_ENEMY_AI !== 'undefined'
+      ? JSON.parse(JSON.stringify(POTORO_ENEMY_AI))
+      : null,
+    encounterRate:typeof getEncounterRate === 'function'
+      ? getEncounterRate()
+      : null
   };
 
   console.log('[PO・TORO QUEST balance]',report);
