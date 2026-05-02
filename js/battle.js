@@ -359,6 +359,9 @@ async function winBattle(){
     setMessage(`${p.name} は レベル ${p.lv} に あがった！`);
 
     updateUI();
+
+   checkMagicLearnOnLevelUp();
+     
     await sleep(1200);
   }
 
