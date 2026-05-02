@@ -1,34 +1,19 @@
 /* =========================
-   ポトロクエスト effects.js（STEP19）
-   UI・演出強化ファイル
-
-   読み込み順：
-   magic.js の後、compatibility.js の前に読み込んでください。
-
-   目的：
-   - ダメージ演出強化
-   - 回復演出強化
-   - おまじない演出強化
-   - レベルアップ演出強化
-   - ボス演出強化
-   - 状態異常演出強化
-
-   注意：
-   - 既存関数を後読みで拡張します。
-   - 既存仕様・数値バランスは変更しません。
+   ポトロクエスト effects.js（ボス戦強化版）
+   Final Boss Presentation Edition
 ========================= */
 
-/* ===== Effects Config ===== */
 const POTORO_EFFECTS = {
   enabled:true,
   damageEmoji:true,
   magicAura:true,
   bossWarning:true,
+  bossPhase:true,
+  bossLowHpAura:true,
   levelBurst:true,
   statusPulse:true
 };
 
-/* ===== Effect DOM Helper ===== */
 function createPotoroEffect(className,text,parent=document.body){
   const el = document.createElement('div');
   el.className = className;
@@ -43,28 +28,29 @@ function removeAfter(el,ms){
   },ms);
 }
 
-/* ===== Floating Text ===== */
 function showFloatingText(text,type='normal'){
   if(!POTORO_EFFECTS.enabled) return;
-
   const el = createPotoroEffect(`potoro-floating-text ${type}`,text);
   removeAfter(el,1200);
 }
 
-/* ===== Battle Burst ===== */
 function showBattleBurst(text,type='magic'){
   if(!POTORO_EFFECTS.enabled) return;
-
   const area = document.querySelector('.battle-screen') || document.body;
   const el = createPotoroEffect(`potoro-battle-burst ${type}`,text,area);
   removeAfter(el,950);
 }
 
-/* ===== Screen Glow ===== */
 function potoroScreenGlow(type='magic'){
   if(!POTORO_EFFECTS.enabled) return;
 
-  document.body.classList.remove('potoro-glow-magic','potoro-glow-heal','potoro-glow-boss','potoro-glow-critical');
+  document.body.classList.remove(
+    'potoro-glow-magic',
+    'potoro-glow-heal',
+    'potoro-glow-boss',
+    'potoro-glow-critical'
+  );
+
   void document.body.offsetWidth;
   document.body.classList.add(`potoro-glow-${type}`);
 
@@ -73,7 +59,47 @@ function potoroScreenGlow(type='magic'){
   },650);
 }
 
-/* ===== Enhanced Damage ===== */
+let potoroBossPhaseShown = false;
+let potoroBossLowHpShown = false;
+
+function resetPotoroBossEffectState(){
+  potoroBossPhaseShown = false;
+  potoroBossLowHpShown = false;
+  document.body.classList.remove('potoro-boss-lowhp');
+}
+
+function getCurrentBossEnemy(){
+  if(!state || !state.enemiesInBattle) return null;
+  return state.enemiesInBattle.find(enemy => enemy && enemy.boss && enemy.hp > 0) || null;
+}
+
+function checkBossHpEffects(){
+  if(!POTORO_EFFECTS.enabled || !POTORO_EFFECTS.bossLowHpAura) return;
+
+  const boss = getCurrentBossEnemy();
+  if(!boss) return;
+
+  const rate = boss.hp / boss.maxHp;
+
+  if(rate <= 0.5 && !potoroBossPhaseShown){
+    potoroBossPhaseShown = true;
+    showBossPhaseCutin('鬼奴夜魔さんの圧が増した…！');
+    potoroScreenGlow('boss');
+  }
+
+  if(rate <= 0.25 && !potoroBossLowHpShown){
+    potoroBossLowHpShown = true;
+    document.body.classList.add('potoro-boss-lowhp');
+    showBossPhaseCutin('あと少し…！最後のお給仕です！');
+    showBattleBurst('FINAL PHASE','critical');
+  }
+}
+
+function showBossPhaseCutin(text){
+  const el = createPotoroEffect('potoro-boss-phase-cutin',text);
+  removeAfter(el,1500);
+}
+
 const _potoroEffectsShowDamage = showDamage;
 
 showDamage = function(value,target,extraClass){
@@ -84,7 +110,7 @@ showDamage = function(value,target,extraClass){
   if(target === 'enemy' && value > 0){
     if(extraClass === 'critical-text'){
       showBattleBurst('CRITICAL!', 'critical');
-    }else if(value >= 60){
+    }else if(value >= 70){
       showBattleBurst('BIG HIT!', 'big');
     }
   }
@@ -93,9 +119,10 @@ showDamage = function(value,target,extraClass){
     showBattleBurst('HEAL', 'heal');
     potoroScreenGlow('heal');
   }
+
+  setTimeout(checkBossHpEffects,120);
 };
 
-/* ===== Enhanced Cutin ===== */
 const _potoroEffectsShowCutin = showCutin;
 
 showCutin = async function(title,text){
@@ -113,7 +140,6 @@ showCutin = async function(title,text){
   return _potoroEffectsShowCutin(title,text);
 };
 
-/* ===== Enhanced Critical ===== */
 const _potoroEffectsCriticalFlash = criticalFlash;
 
 criticalFlash = function(){
@@ -125,23 +151,28 @@ criticalFlash = function(){
   showBattleBurst('会心！','critical');
 };
 
-/* ===== Enhanced Boss Entrance ===== */
 const _potoroEffectsBossEntrance = bossEntrance;
 
 bossEntrance = function(){
+  resetPotoroBossEffectState();
+
   if(POTORO_EFFECTS.enabled && POTORO_EFFECTS.bossWarning){
-    showBossWarning();
+    showBossWarningSequence();
   }
 
   _potoroEffectsBossEntrance();
 };
 
-function showBossWarning(){
-  const el = createPotoroEffect('potoro-boss-warning','WARNING');
-  removeAfter(el,1300);
+function showBossWarningSequence(){
+  const warning = createPotoroEffect('potoro-boss-warning','WARNING');
+  removeAfter(warning,1300);
+
+  setTimeout(() => {
+    const name = createPotoroEffect('potoro-boss-name-cutin','鬼奴夜魔さん 降臨');
+    removeAfter(name,1500);
+  },900);
 }
 
-/* ===== Enhanced Level Up ===== */
 const _potoroEffectsShowLevelToast = showLevelToast;
 
 showLevelToast = function(text){
@@ -168,7 +199,6 @@ function createLevelParticles(){
   }
 }
 
-/* ===== Enhanced Enemy Flash ===== */
 const _potoroEffectsEnemyFlash = enemyFlash;
 
 enemyFlash = function(){
@@ -183,9 +213,10 @@ enemyFlash = function(){
     selected.classList.add('potoro-hit-ring');
     setTimeout(() => selected.classList.remove('potoro-hit-ring'),500);
   }
+
+  checkBossHpEffects();
 };
 
-/* ===== Enhanced Player Flash ===== */
 const _potoroEffectsPlayerFlash = playerFlash;
 
 playerFlash = function(){
@@ -202,7 +233,6 @@ playerFlash = function(){
   }
 };
 
-/* ===== Status UI Pulse ===== */
 const _potoroEffectsUpdateUI = updateUI;
 
 updateUI = function(){
@@ -211,35 +241,39 @@ updateUI = function(){
   if(!POTORO_EFFECTS.enabled || !POTORO_EFFECTS.statusPulse) return;
 
   const statusEl = document.getElementById('playerStatusEffects');
-  if(!statusEl) return;
+  if(statusEl){
+    const hasBadStatus = typeof statusText === 'function' && statusText() !== 'なし';
+    statusEl.classList.toggle('potoro-status-alert',hasBadStatus);
+  }
 
-  const hasBadStatus = statusText && statusText() !== 'なし';
-
-  statusEl.classList.toggle('potoro-status-alert',hasBadStatus);
+  checkBossHpEffects();
 };
 
-/* ===== Magic-Specific Visual Hooks ===== */
 const _potoroEffectsUseMagic = useMagic;
 
 useMagic = async function(kind){
   if(POTORO_EFFECTS.enabled){
-    if(kind === 'aura'){
-      showFloatingText('キラキラ☆','aura');
-    }else if(kind === 'charge2'){
-      showFloatingText('集中…！','charge');
-    }else if(kind === 'multi'){
-      showFloatingText('連撃！','attack');
-    }else if(kind === 'rush'){
-      showFloatingText('ご帰宅！','critical');
-    }else if(kind === 'fullheal'){
-      showFloatingText('ぽかぽか☀','heal');
-    }
+    if(kind === 'aura') showFloatingText('キラキラ☆','aura');
+    else if(kind === 'charge2') showFloatingText('集中…！','charge');
+    else if(kind === 'multi') showFloatingText('連撃！','attack');
+    else if(kind === 'rush') showFloatingText('ご帰宅！','critical');
+    else if(kind === 'fullheal') showFloatingText('ぽかぽか☀','heal');
   }
 
-  return _potoroEffectsUseMagic(kind);
+  const result = await _potoroEffectsUseMagic(kind);
+  checkBossHpEffects();
+  return result;
 };
 
-/* ===== Toggle Effects ===== */
+if(typeof endBattleToMap === 'function'){
+  const _potoroEffectsEndBattleToMap = endBattleToMap;
+
+  endBattleToMap = function(){
+    resetPotoroBossEffectState();
+    return _potoroEffectsEndBattleToMap();
+  };
+}
+
 function togglePotoroEffects(){
   POTORO_EFFECTS.enabled = !POTORO_EFFECTS.enabled;
   console.log('[PO・TORO QUEST effects]',POTORO_EFFECTS.enabled ? 'ON' : 'OFF');
