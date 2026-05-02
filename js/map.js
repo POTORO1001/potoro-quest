@@ -77,6 +77,64 @@ function generateRandomMaze(){
   return maze;
 }
 
+/* ===== Fog of War Settings ===== */
+const POTORO_FOG_CONFIG = {
+  enabled:true,
+  visionRange:2,
+  showExplored:true
+};
+
+function createVisibilityMap(){
+  return Array.from({length:MAZE_H},()=>Array(MAZE_W).fill(false));
+}
+
+function ensureVisibilityMaps(){
+  if(!state.visibleMap) state.visibleMap = createVisibilityMap();
+  if(!state.exploredMap) state.exploredMap = createVisibilityMap();
+}
+
+function resetVisibilityMaps(){
+  state.visibleMap = createVisibilityMap();
+  state.exploredMap = createVisibilityMap();
+}
+
+function updateVisibility(){
+  if(!POTORO_FOG_CONFIG.enabled) return;
+
+  ensureVisibilityMaps();
+
+  state.visibleMap = createVisibilityMap();
+
+  const px = state.player.mapX;
+  const py = state.player.mapY;
+  const range = POTORO_FOG_CONFIG.visionRange;
+
+  for(let y=py-range;y<=py+range;y++){
+    for(let x=px-range;x<=px+range;x++){
+      if(x<0 || y<0 || x>=MAZE_W || y>=MAZE_H) continue;
+
+      const dist = Math.abs(px-x) + Math.abs(py-y);
+
+      if(dist <= range){
+        state.visibleMap[y][x] = true;
+        state.exploredMap[y][x] = true;
+      }
+    }
+  }
+}
+
+function isTileVisible(x,y){
+  if(!POTORO_FOG_CONFIG.enabled) return true;
+  ensureVisibilityMaps();
+  return !!state.visibleMap[y]?.[x];
+}
+
+function isTileExplored(x,y){
+  if(!POTORO_FOG_CONFIG.enabled) return true;
+  ensureVisibilityMaps();
+  return !!state.exploredMap[y]?.[x];
+}
+
 /* ===== New Game Map ===== */
 function makeMaze(){
   setupFloor(1);
@@ -89,6 +147,9 @@ function setupFloor(floor){
 
   state.player.mapX = 1;
   state.player.mapY = 1;
+
+resetVisibilityMaps();
+updateVisibility();
 
   const far = findFarthest();
 
@@ -158,32 +219,101 @@ function placeChests(){
 
 /* ===== Draw Maze ===== */
 function drawMaze(){
-  const canvas = getMapCanvas();
-  const ctx = getMapContext();
+  if(!mapCtx) return;
 
-  if(!canvas || !ctx) return;
+  if(typeof updateVisibility === 'function'){
+    updateVisibility();
+  }
 
-  ctx.clearRect(0,0,canvas.width,canvas.height);
+  mapCtx.clearRect(0,0,cvs.width,cvs.height);
 
-  const size = canvas.width / MAZE_W;
+  const size = cvs.width / MAZE_W;
 
   for(let y=0;y<MAZE_H;y++){
     for(let x=0;x<MAZE_W;x++){
-      ctx.fillStyle = state.maze[y][x] === 1 ? '#172033' : '#8a6b3a';
-      ctx.fillRect(x*size,y*size,size,size);
+      const visible = isTileVisible(x,y);
+      const explored = isTileExplored(x,y);
 
-      if(state.maze[y][x] === 0){
-        ctx.fillStyle = 'rgba(255,255,255,.08)';
-        ctx.fillRect(x*size,y*size+size*.65,size,1);
+      if(!visible && !explored){
+        mapCtx.fillStyle = '#030712';
+        mapCtx.fillRect(x*size,y*size,size,size);
+        continue;
+      }
+
+      if(state.maze[y][x]===1){
+        mapCtx.fillStyle = visible ? '#172033' : '#0b1120';
+      }else{
+        mapCtx.fillStyle = visible ? '#8a6b3a' : '#3f321f';
+      }
+
+      mapCtx.fillRect(x*size,y*size,size,size);
+
+      if(state.maze[y][x]===0){
+        mapCtx.fillStyle = visible ? 'rgba(255,255,255,.10)' : 'rgba(255,255,255,.03)';
+        mapCtx.fillRect(x*size,y*size+size*.65,size,1);
+      }
+
+      if(!visible && explored){
+        mapCtx.fillStyle = 'rgba(0,0,0,.42)';
+        mapCtx.fillRect(x*size,y*size,size,size);
       }
     }
   }
 
-  drawChests(ctx,size);
-  drawStairs(ctx,size);
-  drawBossMark(ctx,size);
-  drawPlayerMark(ctx,size);
-  updateMapStatusPanel();
+  /* ===== 宝箱：探索済みまたは視界内のみ表示 ===== */
+  for(const chest of state.chests){
+    if(chest.opened) continue;
+    if(!isTileVisible(chest.x,chest.y) && !isTileExplored(chest.x,chest.y)) continue;
+
+    mapCtx.fillStyle = isTileVisible(chest.x,chest.y) ? '#facc15' : '#7c5f13';
+    mapCtx.fillRect(chest.x*size+size*.25,chest.y*size+size*.32,size*.5,size*.42);
+  }
+
+  /* ===== 階段：見えている/探索済みの時だけ表示 ===== */
+  if(state.floor===1 && state.stairs){
+    if(isTileVisible(state.stairs.x,state.stairs.y) || isTileExplored(state.stairs.x,state.stairs.y)){
+      mapCtx.fillStyle = isTileVisible(state.stairs.x,state.stairs.y) ? '#a78bfa' : '#5b4a8c';
+      mapCtx.fillRect(state.stairs.x*size+size*.2,state.stairs.y*size+size*.2,size*.6,size*.6);
+
+      mapCtx.fillStyle = '#fff';
+      mapCtx.font = `${Math.floor(size*.55)}px sans-serif`;
+      mapCtx.textAlign = 'center';
+      mapCtx.textBaseline = 'middle';
+      mapCtx.fillText('⇧',state.stairs.x*size+size/2,state.stairs.y*size+size/2);
+    }
+  }
+
+  /* ===== ボス：見えている/探索済みの時だけ表示 ===== */
+  if(state.floor===2){
+    if(isTileVisible(state.boss.x,state.boss.y) || isTileExplored(state.boss.x,state.boss.y)){
+      mapCtx.fillStyle = isTileVisible(state.boss.x,state.boss.y) ? '#dc2626' : '#6f1d1b';
+      mapCtx.fillRect(state.boss.x*size+size*.25,state.boss.y*size+size*.25,size*.5,size*.5);
+    }
+  }
+
+  /* ===== プレイヤー：常に表示 ===== */
+  mapCtx.fillStyle = '#ff7ad6';
+  mapCtx.beginPath();
+  mapCtx.arc(state.player.mapX*size+size/2,state.player.mapY*size+size/2,size*.32,0,Math.PI*2);
+  mapCtx.fill();
+
+  /* ===== 現在地周辺の光 ===== */
+  if(POTORO_FOG_CONFIG.enabled){
+    const gradient = mapCtx.createRadialGradient(
+      state.player.mapX*size+size/2,
+      state.player.mapY*size+size/2,
+      size*.2,
+      state.player.mapX*size+size/2,
+      state.player.mapY*size+size/2,
+      size*2.4
+    );
+
+    gradient.addColorStop(0,'rgba(255,255,255,.10)');
+    gradient.addColorStop(1,'rgba(255,255,255,0)');
+
+    mapCtx.fillStyle = gradient;
+    mapCtx.fillRect(0,0,cvs.width,cvs.height);
+  }
 }
 
 /* ===== Draw Parts ===== */
@@ -272,11 +402,11 @@ function movePlayer(dx,dy){
     return;
   }
 
-  state.player.mapX = nx;
-  state.player.mapY = ny;
-
-  drawMaze();
-  checkTileEvent();
+state.player.mapX=nx;
+state.player.mapY=ny;
+updateVisibility();
+drawMaze();
+checkTileEvent();
 }
 
 /* ===== Floor Change ===== */
