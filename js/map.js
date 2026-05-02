@@ -99,7 +99,18 @@ function resetVisibilityMaps(){
 }
 
 function updateVisibility(){
-  if(!POTORO_FOG_CONFIG.enabled) return;
+  if(!POTORO_FOG_CONFIG.enabled){
+  state.visibleMap = createVisibilityMap();
+  state.exploredMap = createVisibilityMap();
+
+  for(let y=0;y<MAZE_H;y++){
+    for(let x=0;x<MAZE_W;x++){
+      state.visibleMap[y][x] = true;
+      state.exploredMap[y][x] = true;
+    }
+  }
+  return;
+}
 
   ensureVisibilityMaps();
 
