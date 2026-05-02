@@ -78,9 +78,13 @@ const POTORO_DROP_CONFIG = {
   }
 };
 
-const POTORO_DROP_CONFIG = { ... };
+const POTORO_DROP_CONFIG = {
+  version:'treasure-rarity-edition',
+  ...
+  }
+};
 
-/* ===== 所持制限設定（ここに追加） ===== */
+/* ===== 所持制限設定 ===== */
 const POTORO_ITEM_LIMIT = {
   defaultMax: 5,
 
