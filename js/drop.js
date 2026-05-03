@@ -1,23 +1,110 @@
+/* =========================
+   ポトロクエスト drop.js
+   どうぐドロップ整理版
+
+   差し替え対象：
+   js/drop.js
+
+   仕様：
+   - 敵からは「どうぐのみ」ドロップ
+   - 装備品は敵からドロップしない
+   - 装備品は宝箱・たまちゃん限定
+   - レア枠は低確率ドロップのみ
+   - 条件付きボーナスなし
+========================= */
+
 const POTORO_DROP_CONFIG = {
-  version:'treasure-rarity-edition',
+  version:'item-drop-rare-only-edition',
+
   itemDropRate:0.42,
+
+  rareItemDropRateByFloor:{
+    floor1:0.08,
+    floor2:0.14
+  },
+
   equipmentDropRate:0,
   rareEquipmentDropRate:0,
 
   items:{
-    teiji:[{id:'tea',name:'紅茶',count:1,rate:0.72},{id:'omurice',name:'オムライス',count:1,rate:0.28}],
-    kuufuku:[{id:'omurice',name:'オムライス',count:1,rate:0.88},{id:'tea',name:'紅茶',count:1,rate:0.12}],
-    zangyo:[{id:'tea',name:'紅茶',count:1,rate:0.75},{id:'omurice',name:'オムライス',count:1,rate:0.25}],
-    meisou:[{id:'tea',name:'紅茶',count:1,rate:0.64},{id:'omurice',name:'オムライス',count:1,rate:0.34},{id:'horse',name:'くろれきし',count:1,rate:0.02}],
-    gekimu:[{id:'omurice',name:'オムライス',count:1,rate:0.58},{id:'tea',name:'紅茶',count:1,rate:0.39},{id:'horse',name:'くろれきし',count:1,rate:0.03}],
-    neochi:[{id:'tea',name:'紅茶',count:1,rate:0.72},{id:'omurice',name:'オムライス',count:1,rate:0.28}],
-    deisui:[{id:'tea',name:'紅茶',count:1,rate:0.47},{id:'omurice',name:'オムライス',count:1,rate:0.48},{id:'horse',name:'くろれきし',count:1,rate:0.05}],
-    shisseki:[{id:'tea',name:'紅茶',count:1,rate:0.44},{id:'omurice',name:'オムライス',count:1,rate:0.50},{id:'horse',name:'くろれきし',count:1,rate:0.06}]
+    teiji:[
+      {id:'tea',name:'紅茶',count:1,rate:0.70},
+      {id:'omurice',name:'オムライス',count:1,rate:0.30}
+    ],
+
+    kuufuku:[
+      {id:'omurice',name:'オムライス',count:1,rate:0.85},
+      {id:'tea',name:'紅茶',count:1,rate:0.15}
+    ],
+
+    zangyo:[
+      {id:'tea',name:'紅茶',count:1,rate:0.75},
+      {id:'omurice',name:'オムライス',count:1,rate:0.25}
+    ],
+
+    meisou:[
+      {id:'cool_tea',name:'冷静の紅茶',count:1,rate:0.45},
+      {id:'tea',name:'紅茶',count:1,rate:0.40},
+      {id:'omurice',name:'オムライス',count:1,rate:0.15}
+    ],
+
+    gekimu:[
+      {id:'omurice',name:'オムライス',count:1,rate:0.45},
+      {id:'voice_message',name:'応援のボイスメッセージ',count:1,rate:0.35},
+      {id:'tea',name:'紅茶',count:1,rate:0.20}
+    ],
+
+    neochi:[
+      {id:'alarm_bell',name:'目覚ましベル',count:1,rate:0.55},
+      {id:'tea',name:'紅茶',count:1,rate:0.35},
+      {id:'omurice',name:'オムライス',count:1,rate:0.10}
+    ],
+
+    deisui:[
+      {id:'refresh_aroma',name:'リフレッシュアロマ',count:1,rate:0.40},
+      {id:'unknown_drink',name:'？？？ドリンク',count:1,rate:0.25},
+      {id:'tea',name:'紅茶',count:1,rate:0.20},
+      {id:'omurice',name:'オムライス',count:1,rate:0.15}
+    ],
+
+    shisseki:[
+      {id:'service_manual',name:'お給仕マニュアル',count:1,rate:0.40},
+      {id:'kira_powder',name:'キラキラパウダー',count:1,rate:0.30},
+      {id:'omurice',name:'オムライス',count:1,rate:0.20},
+      {id:'tea',name:'紅茶',count:1,rate:0.10}
+    ]
+  },
+
+  rareItems:{
+    floor1:[
+      {id:'pancake',name:'ふわふわパンケーキ',count:1,rate:0.35},
+      {id:'royal_milk_tea',name:'ロイヤルミルクティー',count:1,rate:0.25},
+      {id:'sweets_plate',name:'ご褒美スイーツプレート',count:1,rate:0.20},
+      {id:'refresh_aroma',name:'リフレッシュアロマ',count:1,rate:0.12},
+      {id:'kira_powder',name:'キラキラパウダー',count:1,rate:0.08}
+    ],
+
+    floor2:[
+      {id:'pancake',name:'ふわふわパンケーキ',count:1,rate:0.25},
+      {id:'royal_milk_tea',name:'ロイヤルミルクティー',count:1,rate:0.20},
+      {id:'sweets_plate',name:'ご褒美スイーツプレート',count:1,rate:0.20},
+      {id:'refresh_aroma',name:'リフレッシュアロマ',count:1,rate:0.20},
+      {id:'kira_powder',name:'キラキラパウダー',count:1,rate:0.15}
+    ]
   },
 
   treasureRates:{
-    floor1:[{rarity:'C',rate:0.50},{rarity:'B',rate:0.35},{rarity:'A',rate:0.13},{rarity:'S',rate:0.02}],
-    floor2:[{rarity:'B',rate:0.45},{rarity:'A',rate:0.40},{rarity:'S',rate:0.15}]
+    floor1:[
+      {rarity:'C',rate:0.50},
+      {rarity:'B',rate:0.35},
+      {rarity:'A',rate:0.13},
+      {rarity:'S',rate:0.02}
+    ],
+    floor2:[
+      {rarity:'B',rate:0.45},
+      {rarity:'A',rate:0.40},
+      {rarity:'S',rate:0.15}
+    ]
   },
 
   treasureTables:{
@@ -47,6 +134,7 @@ const POTORO_DROP_CONFIG = {
         {type:'weapon',id:'legend_menu'}
       ]
     },
+
     floor2:{
       B:[
         {type:'weapon',id:'gokitaku_mace'},
@@ -78,16 +166,18 @@ const POTORO_DROP_CONFIG = {
   }
 };
 
-/* ===== 所持制限設定 ===== */
 const POTORO_ITEM_LIMIT = {
-  defaultMax: 5,
+  defaultMax:5,
 
-  limits: {
-    royal_milk_tea: 1,
-    refresh_aroma: 1,
-    forbidden_energy: 1,
-    coin_toss: 1,
-    unknown_drink: 1
+  limits:{
+    royal_milk_tea:1,
+    refresh_aroma:1,
+    forbidden_energy:1,
+    coin_toss:1,
+    unknown_drink:1,
+    kira_powder:1,
+    service_manual:1,
+    sweets_plate:1
   }
 };
 
@@ -104,10 +194,26 @@ function pickWeightedDrop(list){
     if(roll <= 0) return item;
   }
 
-  return list[list.length-1];
+  return list[list.length - 1];
 }
 
-function rollItemDrop(enemyId){
+function getFloorKey(){
+  return state.floor === 2 ? 'floor2' : 'floor1';
+}
+
+function rollRareItemDrop(){
+  const floorKey = getFloorKey();
+  const rate = POTORO_DROP_CONFIG.rareItemDropRateByFloor[floorKey] || 0;
+
+  if(Math.random() >= rate) return null;
+
+  const table = POTORO_DROP_CONFIG.rareItems[floorKey];
+  if(!table || !table.length) return null;
+
+  return pickWeightedDrop(table);
+}
+
+function rollNormalItemDrop(enemyId){
   if(Math.random() >= POTORO_DROP_CONFIG.itemDropRate) return null;
 
   const table = POTORO_DROP_CONFIG.items[enemyId];
@@ -116,8 +222,14 @@ function rollItemDrop(enemyId){
   return pickWeightedDrop(table);
 }
 
-/* ===== 所持制限チェック ===== */
-function canAddItem(itemId, amount = 1){
+function rollItemDrop(enemyId){
+  const rare = rollRareItemDrop();
+  if(rare) return {...rare,rare:true};
+
+  return rollNormalItemDrop(enemyId);
+}
+
+function canAddItem(itemId,amount=1){
   const p = state.player;
   if(!p.items) p.items = {};
 
@@ -143,14 +255,18 @@ function applyItemDrop(drop){
 
   const amount = drop.count || 1;
 
-  if(!canAddItem(drop.id, amount)){
+  if(!canAddItem(drop.id,amount)){
     setMessage(`${drop.name} はこれ以上持てない！`);
     return false;
   }
 
   p.items[drop.id] = (p.items[drop.id] || 0) + amount;
 
-  setMessage(`${drop.name} を ${amount}個 手に入れた！`);
+  if(drop.rare){
+    setMessage(`レアドロップ！ ${drop.name} を ${amount}個 手に入れた！`);
+  }else{
+    setMessage(`${drop.name} を ${amount}個 手に入れた！`);
+  }
 
   if(typeof seTreasure === 'function') seTreasure();
   if(typeof updateUI === 'function') updateUI();
@@ -174,6 +290,12 @@ function treasureDrop(enemyId){
 function setItemDropRate(rate){
   POTORO_DROP_CONFIG.itemDropRate = Math.max(0,Math.min(1,rate));
   return POTORO_DROP_CONFIG.itemDropRate;
+}
+
+function setRareItemDropRate(floor,rate){
+  const key = floor === 2 || floor === 'floor2' ? 'floor2' : 'floor1';
+  POTORO_DROP_CONFIG.rareItemDropRateByFloor[key] = Math.max(0,Math.min(1,rate));
+  return POTORO_DROP_CONFIG.rareItemDropRateByFloor[key];
 }
 
 function setEquipmentDropRate(rate){
@@ -210,25 +332,30 @@ function isTreasureEquipmentOwned(drop){
   return true;
 }
 
-function getTreasureEquipmentName(drop){
-  if(drop.type === 'weapon') return getWeaponById(drop.id)?.name || drop.id;
-  if(drop.type === 'uniform') return getUniformById(drop.id)?.name || drop.id;
+function getTreasureEquipmentObject(drop){
+  if(drop.type === 'weapon'){
+    if(typeof getWeaponById === 'function') return getWeaponById(drop.id);
+    if(typeof findWeapon === 'function') return findWeapon(drop.id);
+  }
 
-  return drop.id;
+  if(drop.type === 'uniform'){
+    if(typeof getUniformById === 'function') return getUniformById(drop.id);
+    if(typeof findUniform === 'function') return findUniform(drop.id);
+  }
+
+  return null;
+}
+
+function getTreasureEquipmentName(drop){
+  return getTreasureEquipmentObject(drop)?.name || drop.id;
 }
 
 function getTreasureEquipmentRarity(drop){
-  if(drop.type === 'weapon') return getWeaponById(drop.id)?.rarity || 'B';
-  if(drop.type === 'uniform') return getUniformById(drop.id)?.rarity || 'B';
-
-  return 'B';
+  return getTreasureEquipmentObject(drop)?.rarity || drop.rarity || 'B';
 }
 
 function getTreasureEquipmentStatText(drop){
-  const item = drop.type === 'weapon'
-    ? getWeaponById(drop.id)
-    : getUniformById(drop.id);
-
+  const item = getTreasureEquipmentObject(drop);
   if(!item) return '';
 
   const parts = [];
@@ -264,14 +391,24 @@ function addTreasureEquipment(drop){
 function refreshEquipMenuAfterTreasure(){
   const menu = document.getElementById('equipMenu');
 
-  if(!menu || menu.classList.contains('hidden')) return;
-
-  if(typeof openEquipMenu === 'function'){
+  if(menu && !menu.classList.contains('hidden') && typeof openEquipMenu === 'function'){
     openEquipMenu();
+    return true;
   }
+
+  if(typeof updateUI === 'function'){
+    updateUI();
+    return true;
+  }
+
+  return false;
 }
 
 function rollTreasureEquipment(floor){
+  if(typeof potoroInstallEquipmentRarityAddon === 'function'){
+    potoroInstallEquipmentRarityAddon();
+  }
+
   const rarity = rollTreasureRarity(floor);
 
   let candidates = getTreasureTableByFloorAndRarity(floor,rarity)
@@ -316,7 +453,6 @@ function giveMapTreasureEquipment(){
   if(typeof seTreasure === 'function') seTreasure();
   if(typeof updateUI === 'function') updateUI();
 
-  // 宝箱取得直後、装備メニューが開いている場合は再描画して即反映する
   refreshEquipMenuAfterTreasure();
 
   return {drop,name,rarity,statText};
@@ -338,12 +474,27 @@ function potoroItemLimitReport(){
   return report;
 }
 
-function testDrop(enemyId='teiji',times=20){
-  const result = {enemyId,item:{},equipment:'disabled',rare:'disabled'};
+function testDrop(enemyId='teiji',times=50){
+  const result = {
+    enemyId,
+    normal:{},
+    rare:{},
+    none:0
+  };
 
   for(let i=0;i<times;i++){
     const item = rollItemDrop(enemyId);
-    if(item) result.item[item.id] = (result.item[item.id] || 0) + 1;
+
+    if(!item){
+      result.none++;
+      continue;
+    }
+
+    if(item.rare){
+      result.rare[item.id] = (result.rare[item.id] || 0) + 1;
+    }else{
+      result.normal[item.id] = (result.normal[item.id] || 0) + 1;
+    }
   }
 
   console.log('[PO・TORO QUEST drop test]',result);
