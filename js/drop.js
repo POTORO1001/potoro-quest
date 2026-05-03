@@ -13,7 +13,7 @@
    - 条件付きボーナスなし
 ========================= */
 
-const POTORO_DROP_CONFIG = {
+var POTORO_DROP_CONFIG = {
   version:'item-drop-rare-only-edition',
 
   itemDropRate:0.42,
@@ -166,7 +166,7 @@ const POTORO_DROP_CONFIG = {
   }
 };
 
-const POTORO_ITEM_LIMIT = {
+var POTORO_ITEM_LIMIT = {
   defaultMax:5,
 
   limits:{
