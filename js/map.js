@@ -48,7 +48,7 @@ function generateRandomMaze(){
 /* ===== Fog of War Settings ===== */
 const POTORO_FOG_CONFIG = {
   enabled:true,
-  visionRange:2.5,
+  visionRange:2,
   showExplored:true
 };
 
