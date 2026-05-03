@@ -48,7 +48,7 @@ function generateRandomMaze(){
 /* ===== Fog of War Settings ===== */
 const POTORO_FOG_CONFIG = {
   enabled:true,
-  visionRange:2,
+  visionRange:2.5,
   showExplored:true
 };
 
@@ -170,7 +170,7 @@ function placeChests(){
     }
   }
   floors.sort(() => Math.random() - .5);
-  const chestCount = state.floor === 1 ? 7 : 8;
+  const chestCount = state.floor === 1 ? 5 : 7;
   state.chests = floors.slice(0,chestCount).map((point,index) => ({...point, opened:false, id:`${state.floor}-${index}`}));
 }
 
@@ -312,10 +312,31 @@ function checkTileEvent(){
 function getEncounterRate(){ return 0.18; }
 
 function selectRandomMapEnemy(){
-  let zone;
-  if(state.floor === 1){ zone = enemies.filter(enemy => ['teiji','kuufuku','zangyo','meisou'].includes(enemy.id)); }
-  else{ zone = enemies.filter(enemy => ['gekimu','neochi','deisui','shisseki'].includes(enemy.id)); }
-  return zone[Math.floor(Math.random()*zone.length)];
+  const progressZone = getMapProgressZone();
+
+  const encounterTables = {
+    1:{
+      early:['teiji','kuufuku'],
+      middle:['kuufuku','zangyo'],
+      late:['zangyo','meisou']
+    },
+    2:{
+      early:['neochi','gekimu'],
+      middle:['gekimu','deisui'],
+      late:['deisui','shisseki']
+    }
+  };
+
+  const floorTable = encounterTables[state.floor] || encounterTables[1];
+  const ids = floorTable[progressZone] || floorTable.middle;
+
+  const candidates = enemies.filter(enemy => ids.includes(enemy.id));
+
+  if(!candidates.length){
+    return enemies.find(enemy => enemy.id === 'teiji') || enemies[0];
+  }
+
+  return candidates[Math.floor(Math.random()*candidates.length)];
 }
 
 function regenerateCurrentFloor(){ setupFloor(state.floor || 1); }
@@ -474,6 +495,11 @@ function potoroMapReport(){
     floor:state.floor,
     player:{x:state.player.mapX,y:state.player.mapY},
     fog:POTORO_FOG_CONFIG,
+    progress:typeof potoroMapProgressReport === 'function' ? {
+      percent:Math.round(getMapDistanceProgress()*100),
+      zone:getMapProgressZone(),
+      label:getMapProgressLabel()
+    } : null,
     chests:state.chests,
     stairs:state.stairs,
     boss:state.boss
