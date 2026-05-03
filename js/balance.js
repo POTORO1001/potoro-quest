@@ -1,268 +1,354 @@
 /* =========================
-   ポトロクエスト balance.js（最終バランス調整版）
-   Final Balance Edition
+   ポトロクエスト balance.js
+   BFS敵配置対応・敵/主人公バランス調整版
+
+   差し替え対象：
+   js/balance.js
+
+   目的：
+   - BFS距離による敵出現ランクに合わせて敵の強さを整理
+   - 序盤に中〜強敵が出ても事故りにくくする
+   - 中盤以降は回復・装備・おまじないを使う緊張感を出す
+   - ボスは Lv15 前後で撃破を想定
+
+   想定敵配置：
+   1F序盤：定時 / 空腹
+   1F中盤：空腹 / 残業
+   1F終盤：残業 / 迷走
+
+   2F序盤：寝落 / 激務
+   2F中盤：激務 / 泥酔
+   2F終盤：泥酔 / 叱責
 ========================= */
 
-const POTORO_BALANCE = {
-  version: 'final-balance-edition',
-  autoApply: true,
+(function(){
+  if(window.__potoroBalanceBfsInstalled) return;
+  window.__potoroBalanceBfsInstalled = true;
 
-  encounter: {
-    rate: 0.145
-  },
-
-  enemyAi: {
-    drainRate: 0.22,
-    doubleRate: 0.18,
-    confuseRate: 0.23,
-    powerupRate: 0.22,
-    sleepRate: 0.20,
-    drunkRate: 0.30,
-    drunkSelfHitRate: 0.40,
-    defdownRate: 0.25,
-    bossRate: 0.38
-  },
-
-  player: {
-    hp:40,
-    maxHp:40,
-    mp:18,
-    maxMp:18,
-    baseAtk:11,
-    baseDef:6,
-    baseSpd:7,
-    baseTalk:9,
-    nextExp:34
-  },
-
-  enemies: {
-    teiji: { hp:30, maxHp:30, atk:5, def:1, spd:4, talk:3, exp:14 },
-    kuufuku: { hp:46, maxHp:46, atk:7, def:2, spd:5, talk:5, exp:18 },
-    zangyo: { hp:64, maxHp:64, atk:10, def:4, spd:6, talk:6, exp:26 },
-    meisou: { hp:84, maxHp:84, atk:12, def:6, spd:9, talk:10, exp:38 },
-
-    gekimu: { hp:142, maxHp:142, atk:18, def:10, spd:12, talk:11, exp:48 },
-    neochi: { hp:122, maxHp:122, atk:15, def:9, spd:9, talk:12, exp:44 },
-    deisui: { hp:168, maxHp:168, atk:20, def:12, spd:8, talk:14, exp:62 },
-    shisseki: { hp:220, maxHp:220, atk:24, def:15, spd:14, talk:16, exp:82 },
-
-    boss: { hp:420, maxHp:420, atk:33, def:21, spd:18, talk:24, exp:140 }
-  },
-
-  weapons: {
-    rod: { atk:4 },
-    frill_blade: { atk:8 },
-    gokitaku_mace: { atk:13 }
-  },
-
-  uniforms: {
-    maid_headband:{def:4},
-    white_apron:{def:5},
-    service_proof:{def:4},
-    heart_tiara:{def:7},
-    rose_ribbon:{def:8},
-    long_maid:{def:12},
-    oshi_pendant:{def:7},
-    legend_nameplate:{def:10},
-    first_maid:{def:30}
-  },
-
-  items: {
-    omurice:{amount:42},
-    tea:{amount:15}
+  function hasEnemies(){
+    return typeof enemies !== 'undefined' && Array.isArray(enemies);
   }
-};
 
-function getEncounterRate(){
-  return POTORO_BALANCE.encounter.rate;
-}
+  function findEnemy(id){
+    if(!hasEnemies()) return null;
+    return enemies.find(enemy => enemy.id === id) || null;
+  }
 
-function applyEnemyAiBalance(){
-  if(typeof POTORO_ENEMY_AI === 'undefined') return false;
+  function patchEnemy(id, patch){
+    const enemy = findEnemy(id);
 
-  POTORO_ENEMY_AI.drain.rate = POTORO_BALANCE.enemyAi.drainRate;
-  POTORO_ENEMY_AI.double.rate = POTORO_BALANCE.enemyAi.doubleRate;
-  POTORO_ENEMY_AI.confuse.rate = POTORO_BALANCE.enemyAi.confuseRate;
-  POTORO_ENEMY_AI.powerup.rate = POTORO_BALANCE.enemyAi.powerupRate;
-  POTORO_ENEMY_AI.sleep.rate = POTORO_BALANCE.enemyAi.sleepRate;
-  POTORO_ENEMY_AI.drunk.rate = POTORO_BALANCE.enemyAi.drunkRate;
-  POTORO_ENEMY_AI.drunk.selfHitRate = POTORO_BALANCE.enemyAi.drunkSelfHitRate;
-  POTORO_ENEMY_AI.defdown.rate = POTORO_BALANCE.enemyAi.defdownRate;
-  POTORO_ENEMY_AI.boss.rate = POTORO_BALANCE.enemyAi.bossRate;
-
-  return true;
-}
-
-function applyPlayerBalance(){
-  if(!POTORO_BALANCE.player || !Object.keys(POTORO_BALANCE.player).length) return false;
-  Object.assign(initialPlayer,POTORO_BALANCE.player);
-  return true;
-}
-
-function applyEnemyStatusBalance(){
-  const patches = POTORO_BALANCE.enemies || {};
-  let count = 0;
-
-  Object.keys(patches).forEach(id => {
-    const enemy = typeof getEnemyById === 'function'
-      ? getEnemyById(id)
-      : enemies.find(e => e.id === id);
-
-    if(enemy){
-      Object.assign(enemy,patches[id]);
-      count++;
+    if(!enemy){
+      console.warn(`[PO・TORO QUEST balance] enemy not found: ${id}`);
+      return false;
     }
-  });
 
-  return count;
-}
+    Object.assign(enemy, patch);
+    return true;
+  }
 
-function applyEquipmentBalance(){
-  let count = 0;
+  function patchPlayerBase(){
+    if(typeof initialPlayer === 'undefined') return false;
 
-  const weaponPatches = POTORO_BALANCE.weapons || {};
-  Object.keys(weaponPatches).forEach(id => {
-    const item = typeof getWeaponById === 'function'
-      ? getWeaponById(id)
-      : equipmentData.weapons.find(w => w.id === id);
+    /*
+      主人公の初期値：
+      序盤事故を防ぐため、少しだけ耐久寄り。
+      火力は装備・おまじないで伸びる設計。
+    */
+    initialPlayer.maxHp = 36;
+    initialPlayer.hp = 36;
+    initialPlayer.maxMp = 12;
+    initialPlayer.mp = 12;
 
-    if(item){
-      Object.assign(item,weaponPatches[id]);
-      count++;
+    initialPlayer.baseAtk = 8;
+    initialPlayer.baseDef = 5;
+    initialPlayer.baseSpd = 7;
+    initialPlayer.baseTalk = 8;
+
+    initialPlayer.level = initialPlayer.level || 1;
+    initialPlayer.exp = initialPlayer.exp || 0;
+    initialPlayer.nextExp = 18;
+
+    return true;
+  }
+
+  function patchLevelGrowth(){
+    /*
+      levelUp 関数が既存である場合、成長量だけ安全に補正します。
+      既存の演出・おまじない習得処理は壊さないため、
+      レベルアップ後のステータス補正として動きます。
+    */
+    if(typeof levelUp !== 'function') return false;
+    if(window.__potoroLevelGrowthPatchedForBfsBalance) return true;
+
+    window.__potoroLevelGrowthPatchedForBfsBalance = true;
+
+    const originalLevelUp = levelUp;
+
+    levelUp = function(){
+      const p = state.player;
+      const beforeLv = p.level;
+      const beforeMaxHp = p.maxHp;
+      const beforeMaxMp = p.maxMp;
+      const beforeAtk = p.baseAtk || 0;
+      const beforeDef = p.baseDef || 0;
+      const beforeSpd = p.baseSpd || 0;
+      const beforeTalk = p.baseTalk || 0;
+
+      const result = originalLevelUp.apply(this, arguments);
+
+      const afterLv = p.level;
+
+      if(afterLv > beforeLv){
+        const gained = afterLv - beforeLv;
+
+        /*
+          既存levelUpがすでに上げている場合もあるため、
+          目標成長に満たない分だけ補う。
+        */
+        const targetHpGain = 5 * gained;
+        const targetMpGain = 2 * gained;
+        const targetAtkGain = 3 * gained;
+        const targetDefGain = 2 * gained;
+        const targetSpdGain = 1 * gained;
+        const targetTalkGain = 3 * gained;
+
+        const actualHpGain = p.maxHp - beforeMaxHp;
+        const actualMpGain = p.maxMp - beforeMaxMp;
+        const actualAtkGain = (p.baseAtk || 0) - beforeAtk;
+        const actualDefGain = (p.baseDef || 0) - beforeDef;
+        const actualSpdGain = (p.baseSpd || 0) - beforeSpd;
+        const actualTalkGain = (p.baseTalk || 0) - beforeTalk;
+
+        if(actualHpGain < targetHpGain){
+          const diff = targetHpGain - actualHpGain;
+          p.maxHp += diff;
+          p.hp += diff;
+        }
+
+        if(actualMpGain < targetMpGain){
+          const diff = targetMpGain - actualMpGain;
+          p.maxMp += diff;
+          p.mp += diff;
+        }
+
+        if(actualAtkGain < targetAtkGain) p.baseAtk = (p.baseAtk || 0) + (targetAtkGain - actualAtkGain);
+        if(actualDefGain < targetDefGain) p.baseDef = (p.baseDef || 0) + (targetDefGain - actualDefGain);
+        if(actualSpdGain < targetSpdGain) p.baseSpd = (p.baseSpd || 0) + (targetSpdGain - actualSpdGain);
+        if(actualTalkGain < targetTalkGain) p.baseTalk = (p.baseTalk || 0) + (targetTalkGain - actualTalkGain);
+
+        /*
+          次レベル必要EXP：
+          Lv15前後でボス到達しやすいテンポ。
+        */
+        p.nextExp = Math.floor(18 + p.level * p.level * 7.2);
+      }
+
+      if(typeof updateUI === 'function') updateUI();
+      if(typeof updateMapStatusPanel === 'function') updateMapStatusPanel();
+
+      return result;
+    };
+
+    return true;
+  }
+
+  function installEnemyBalance(){
+    if(!hasEnemies()){
+      console.warn('[PO・TORO QUEST balance] enemies が見つかりません。');
+      return false;
     }
-  });
 
-  const uniformPatches = POTORO_BALANCE.uniforms || {};
-  Object.keys(uniformPatches).forEach(id => {
-    const item = typeof getUniformById === 'function'
-      ? getUniformById(id)
-      : equipmentData.uniforms.find(u => u.id === id);
+    /*
+      1F序盤：定時 / 空腹
+      目標：Lv1〜3で安定。回復なしでも数戦できる。
+    */
+    patchEnemy('teiji', {
+      name:'定時のご主人様',
+      hp:24,
+      maxHp:24,
+      atk:7,
+      def:2,
+      spd:5,
+      talk:4,
+      exp:8
+    });
 
-    if(item){
-      Object.assign(item,uniformPatches[id]);
-      count++;
-    }
-  });
+    patchEnemy('kuufuku', {
+      name:'空腹のご主人様',
+      hp:30,
+      maxHp:30,
+      atk:8,
+      def:3,
+      spd:5,
+      talk:5,
+      exp:11
+    });
 
-  return count;
-}
+    /*
+      1F中盤：空腹 / 残業
+      目標：Lv3〜5で適正。装備なしでも勝てるが消耗する。
+    */
+    patchEnemy('zangyo', {
+      name:'残業のご主人様',
+      hp:42,
+      maxHp:42,
+      atk:11,
+      def:5,
+      spd:6,
+      talk:7,
+      exp:17
+    });
 
-function applyItemBalance(){
-  if(typeof patchItem !== 'function') return 0;
+    /*
+      1F終盤：残業 / 迷走
+      目標：Lv5〜7。状態異常やおまじないを使う価値が出る。
+    */
+    patchEnemy('meisou', {
+      name:'迷走のご主人様',
+      hp:48,
+      maxHp:48,
+      atk:10,
+      def:5,
+      spd:8,
+      talk:9,
+      exp:22
+    });
 
-  const patches = POTORO_BALANCE.items || {};
-  let count = 0;
+    /*
+      2F序盤：寝落 / 激務
+      目標：Lv7〜9。2F突入直後の壁。ただし即死しない。
+    */
+    patchEnemy('neochi', {
+      name:'寝落のご主人様',
+      hp:56,
+      maxHp:56,
+      atk:13,
+      def:7,
+      spd:5,
+      talk:9,
+      exp:28
+    });
 
-  Object.keys(patches).forEach(id => {
-    if(patchItem(id,patches[id])) count++;
-  });
+    patchEnemy('gekimu', {
+      name:'激務のご主人様',
+      hp:64,
+      maxHp:64,
+      atk:15,
+      def:8,
+      spd:7,
+      talk:10,
+      exp:34
+    });
 
-  return count;
-}
+    /*
+      2F中盤：激務 / 泥酔
+      目標：Lv9〜12。装備と回復の重要性が増す。
+    */
+    patchEnemy('deisui', {
+      name:'泥酔のご主人様',
+      hp:72,
+      maxHp:72,
+      atk:17,
+      def:9,
+      spd:6,
+      talk:12,
+      exp:42
+    });
 
-function applyPotoroBalance(){
-  const result = {
-    enemyAi:applyEnemyAiBalance(),
-    player:applyPlayerBalance(),
-    enemies:applyEnemyStatusBalance(),
-    equipment:applyEquipmentBalance(),
-    items:applyItemBalance(),
-    encounterRate:POTORO_BALANCE.encounter.rate
+    /*
+      2F終盤：泥酔 / 叱責
+      目標：Lv12〜14。ボス前の緊張感。
+    */
+    patchEnemy('shisseki', {
+      name:'叱責のご主人様',
+      hp:86,
+      maxHp:86,
+      atk:20,
+      def:11,
+      spd:9,
+      talk:14,
+      exp:55
+    });
+
+    /*
+      たまちゃん：
+      イベント敵。強すぎないが特別感。
+    */
+    patchEnemy('tamachan', {
+      hp:45,
+      maxHp:45,
+      atk:10,
+      def:8,
+      spd:10,
+      talk:10,
+      exp:1
+    });
+
+    /*
+      ボス：
+      目標：Lv15前後 + 2F装備 + 回復どうぐで撃破。
+      ごり押しだけではやや危険。
+    */
+    patchEnemy('boss', {
+      hp:230,
+      maxHp:230,
+      atk:24,
+      def:14,
+      spd:10,
+      talk:18,
+      exp:0,
+      boss:true
+    });
+
+    return true;
+  }
+
+  function installPotoroBfsBalance(){
+    patchPlayerBase();
+    installEnemyBalance();
+    patchLevelGrowth();
+
+    if(typeof updateUI === 'function') updateUI();
+    if(typeof updateMapStatusPanel === 'function') updateMapStatusPanel();
+
+    console.log('[PO・TORO QUEST] BFS enemy/player balance installed', potoroBalanceReport());
+
+    return true;
+  }
+
+  window.installPotoroBfsBalance = installPotoroBfsBalance;
+
+  window.potoroBalanceReport = function(){
+    const p = typeof state !== 'undefined' && state.player ? state.player : null;
+
+    return {
+      installed:true,
+      version:'bfs-enemy-zone-balance',
+      player:p ? {
+        level:p.level,
+        hp:p.hp,
+        maxHp:p.maxHp,
+        mp:p.mp,
+        maxMp:p.maxMp,
+        baseAtk:p.baseAtk,
+        baseDef:p.baseDef,
+        baseSpd:p.baseSpd,
+        baseTalk:p.baseTalk,
+        nextExp:p.nextExp
+      } : null,
+      enemies:hasEnemies() ? enemies.map(enemy => ({
+        id:enemy.id,
+        name:enemy.name,
+        hp:enemy.hp,
+        maxHp:enemy.maxHp,
+        atk:enemy.atk,
+        def:enemy.def,
+        spd:enemy.spd,
+        talk:enemy.talk,
+        exp:enemy.exp
+      })) : []
+    };
   };
 
-  console.log('[PO・TORO QUEST balance applied]',result);
-  return result;
-}
-
-function setPotoroDifficultyEasy(){
-  POTORO_BALANCE.encounter.rate = 0.12;
-  POTORO_BALANCE.enemyAi.drainRate = 0.18;
-  POTORO_BALANCE.enemyAi.doubleRate = 0.14;
-  POTORO_BALANCE.enemyAi.confuseRate = 0.18;
-  POTORO_BALANCE.enemyAi.powerupRate = 0.18;
-  POTORO_BALANCE.enemyAi.sleepRate = 0.16;
-  POTORO_BALANCE.enemyAi.drunkRate = 0.24;
-  POTORO_BALANCE.enemyAi.defdownRate = 0.20;
-  POTORO_BALANCE.enemyAi.bossRate = 0.30;
-  return applyPotoroBalance();
-}
-
-function setPotoroDifficultyNormal(){
-  POTORO_BALANCE.encounter.rate = 0.145;
-  POTORO_BALANCE.enemyAi.drainRate = 0.22;
-  POTORO_BALANCE.enemyAi.doubleRate = 0.18;
-  POTORO_BALANCE.enemyAi.confuseRate = 0.23;
-  POTORO_BALANCE.enemyAi.powerupRate = 0.22;
-  POTORO_BALANCE.enemyAi.sleepRate = 0.20;
-  POTORO_BALANCE.enemyAi.drunkRate = 0.30;
-  POTORO_BALANCE.enemyAi.defdownRate = 0.25;
-  POTORO_BALANCE.enemyAi.bossRate = 0.38;
-  return applyPotoroBalance();
-}
-
-function setPotoroDifficultyHard(){
-  POTORO_BALANCE.encounter.rate = 0.21;
-  POTORO_BALANCE.enemyAi.drainRate = 0.32;
-  POTORO_BALANCE.enemyAi.doubleRate = 0.28;
-  POTORO_BALANCE.enemyAi.confuseRate = 0.34;
-  POTORO_BALANCE.enemyAi.powerupRate = 0.32;
-  POTORO_BALANCE.enemyAi.sleepRate = 0.30;
-  POTORO_BALANCE.enemyAi.drunkRate = 0.40;
-  POTORO_BALANCE.enemyAi.defdownRate = 0.36;
-  POTORO_BALANCE.enemyAi.bossRate = 0.45;
-  return applyPotoroBalance();
-}
-
-function setEncounterRate(rate){
-  POTORO_BALANCE.encounter.rate = Math.max(0,Math.min(1,rate));
-  return POTORO_BALANCE.encounter.rate;
-}
-
-function setEnemyAiRate(skill,rate){
-  const key = `${skill}Rate`;
-  if(typeof POTORO_BALANCE.enemyAi[key] === 'undefined') return false;
-
-  POTORO_BALANCE.enemyAi[key] = Math.max(0,Math.min(1,rate));
-  applyEnemyAiBalance();
-
-  return true;
-}
-
-function buffEnemy(id,patch){
-  POTORO_BALANCE.enemies[id] = { ...(POTORO_BALANCE.enemies[id] || {}), ...patch };
-  return applyEnemyStatusBalance();
-}
-
-function buffWeapon(id,patch){
-  POTORO_BALANCE.weapons[id] = { ...(POTORO_BALANCE.weapons[id] || {}), ...patch };
-  return applyEquipmentBalance();
-}
-
-function buffUniform(id,patch){
-  POTORO_BALANCE.uniforms[id] = { ...(POTORO_BALANCE.uniforms[id] || {}), ...patch };
-  return applyEquipmentBalance();
-}
-
-function buffItem(id,patch){
-  POTORO_BALANCE.items[id] = { ...(POTORO_BALANCE.items[id] || {}), ...patch };
-  return applyItemBalance();
-}
-
-function potoroBalanceReport(){
-  const report = {
-    config:JSON.parse(JSON.stringify(POTORO_BALANCE)),
-    enemyAi:typeof POTORO_ENEMY_AI !== 'undefined'
-      ? JSON.parse(JSON.stringify(POTORO_ENEMY_AI))
-      : null,
-    encounterRate:typeof getEncounterRate === 'function'
-      ? getEncounterRate()
-      : null
-  };
-
-  console.log('[PO・TORO QUEST balance]',report);
-  return report;
-}
-
-if(POTORO_BALANCE.autoApply){
-  applyPotoroBalance();
-}
+  installPotoroBfsBalance();
+})();
