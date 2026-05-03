@@ -117,6 +117,8 @@ function makeMaze(){ setupFloor(1); }
 function setupFloor(floor){
   state.floor = floor;
   state.maze = generateRandomMaze();
+
+  buildDistanceMapFromStart();
   state.player.mapX = 1;
   state.player.mapY = 1;
 
