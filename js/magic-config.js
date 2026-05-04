@@ -27,7 +27,7 @@ const POTORO_MAGIC_CONFIG = {
       mp:4,
       minTurns:1,
       maxTurns:3,
-      requiredLv:4
+      requiredLv:3
     },
     shower: {
       id:'shower',
@@ -36,7 +36,7 @@ const POTORO_MAGIC_CONFIG = {
       mp:12,
       base:32,
       bossRate:0.8,
-      requiredLv:5
+      requiredLv:6
     },
     charge: {
       id:'charge',
@@ -44,7 +44,7 @@ const POTORO_MAGIC_CONFIG = {
       label:'萌えちゃーじ　MP0 / MP20回復',
       mp:0,
       mpRecover:20,
-      requiredLv:8
+      requiredLv:9
     },
     nishiki: {
       id:'nishiki',
@@ -53,7 +53,7 @@ const POTORO_MAGIC_CONFIG = {
       mp:16,
       bossBase:50,
       normalBase:75,
-      requiredLv:11
+      requiredLv:12
     }
   },
 
@@ -66,7 +66,7 @@ const POTORO_MAGIC_CONFIG = {
       turns:2,
       spdBonus:5,
       talkBonus:5,
-      requiredLv:3
+      requiredLv:5
     },
     charge2: {
       id:'charge2',
@@ -74,7 +74,7 @@ const POTORO_MAGIC_CONFIG = {
       label:'完璧なお給仕　MP8 / 次ダメージ2.5倍',
       mp:8,
       multiplier:2.5,
-      requiredLv:6
+      requiredLv:7
     },
     multi: {
       id:'multi',
@@ -84,7 +84,7 @@ const POTORO_MAGIC_CONFIG = {
       minHits:2,
       maxHits:3,
       atkRate:0.6,
-      requiredLv:7
+      requiredLv:8
     },
     rush: {
       id:'rush',
@@ -94,14 +94,14 @@ const POTORO_MAGIC_CONFIG = {
       base:60,
       confuseRate:0.30,
       confuseTurns:1,
-      requiredLv:9
+      requiredLv:10
     },
     fullheal: {
       id:'fullheal',
       name:'ひなたぼっこ',
       label:'ひなたぼっこ　MP10 / 全回復＋状態異常解除',
       mp:10,
-      requiredLv:10
+      requiredLv:11
     }
   }
 };
