@@ -796,13 +796,23 @@ function openSubMenu(kind){
   const body=document.getElementById('subMenuBody');
   body.innerHTML='';
   if(kind==='magic'){
-    title.textContent='おまじない';
-    addSubButton('もえもえぎゅー　MP5 / 敵に25〜30ダメージ',()=>useMagic('moe'));
-    if(state.player.lv>=3) addSubButton('おいしくなーれ　MP8 / HP回復',()=>useMagic('heal'));
-    if(state.player.lv>=4) addSubButton('おやすみなさい　MP4 / 眠り',()=>useMagic('sleep'));
-    if(state.player.lv>=10) addSubButton('にしきぬやまー　MP16 / 大ダメージ',()=>useMagic('nishiki'));
-    if(state.player.lv>=6) addSubButton('チェキフラッシュ　MP12 / 敵全体ダメージ',()=>useMagic('shower'));
-    if(state.player.lv>=7) addSubButton('萌えちゃーじ　MP0 / MP20回復',()=>useMagic('charge'));
+  title.textContent='おまじない';
+
+  const p = state.player;
+
+  if(p.lv>=1) addSubButton('もえもえぎゅー　MP5 / 単体ダメージ',()=>useMagic('moe'));
+  if(p.lv>=2) addSubButton('おいしくなーれ　MP8 / HP回復',()=>useMagic('heal'));
+  if(p.lv>=3) addSubButton('おやすみなさい　MP4 / 眠り',()=>useMagic('sleep'));
+  if(p.lv>=4) addSubButton('ご主人様ファースト　MP6 / 先制攻撃',()=>useMagic('first_strike'));
+  if(p.lv>=5) addSubButton('キラキラオーラ　MP7 / バフ',()=>useMagic('aura'));
+  if(p.lv>=6) addSubButton('チェキフラッシュ　MP12 / 全体攻撃',()=>useMagic('shower'));
+  if(p.lv>=7) addSubButton('完璧なお給仕　MP10 / 次2.5倍',()=>useMagic('perfect_service'));
+  if(p.lv>=8) addSubButton('ご奉仕連撃　MP9 / 2〜3回攻撃',()=>useMagic('combo'));
+  if(p.lv>=9) addSubButton('萌えちゃーじ　MP0 / MP回復',()=>useMagic('charge'));
+  if(p.lv>=10) addSubButton('ご帰宅ラッシュ　MP14 / 高ダメージ',()=>useMagic('rush'));
+  if(p.lv>=11) addSubButton('ひなたぼっこ　MP18 / 全回復',()=>useMagic('sunny'));
+  if(p.lv>=12) addSubButton('にしきぬやまー　MP16 / 超ダメージ',()=>useMagic('nishiki'));
+}
   }else if(kind==='item'){
     title.textContent='どうぐ';
     addSubButton(`オムライス　HP30回復　残り${state.player.items.omurice}`,()=>useItem('omurice'));
