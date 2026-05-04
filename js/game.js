@@ -812,7 +812,6 @@ function openSubMenu(kind){
   if(p.lv>=10) addSubButton('ご帰宅ラッシュ　MP14 / 高ダメージ',()=>useMagic('rush'));
   if(p.lv>=11) addSubButton('ひなたぼっこ　MP18 / 全回復',()=>useMagic('sunny'));
   if(p.lv>=12) addSubButton('にしきぬやまー　MP16 / 超ダメージ',()=>useMagic('nishiki'));
-}
   }else if(kind==='item'){
     title.textContent='どうぐ';
     addSubButton(`オムライス　HP30回復　残り${state.player.items.omurice}`,()=>useItem('omurice'));
