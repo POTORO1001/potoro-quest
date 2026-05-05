@@ -1415,19 +1415,36 @@ function closeOpening(){
 }
 
 /* ===== Events ===== */
-document.getElementById('startBtn').addEventListener('click',startGame);
-document.getElementById('openingBtn').addEventListener('click',openOpening);
-document.getElementById('openingSkipBtn').addEventListener('click',closeOpening);
-document.getElementById('restartBtn').addEventListener('click',resetGame);
-document.getElementById('equipBtn').addEventListener('click',openEquipMenu);
-document.getElementById('soundBtn').addEventListener('click',toggleSound);
-document.getElementById('guideBtn').addEventListener('click',openGuide);
-document.getElementById('guideCloseBtn').addEventListener('click',closeGuide);
-document.getElementById('guideModal').addEventListener('click',function(e){if(e.target===this) closeGuide();});
-document.getElementById('newMapBtn').addEventListener('click',()=>setupFloor(state.floor||1));
-document.getElementById('mapItemBtn').addEventListener('click',()=>openSubMenu('item'));
-document.getElementById('mapEquipBtn').addEventListener('click',openEquipMenu);
-document.getElementById('endingRestartBtn').addEventListener('click',restartFromEnding);
+/*
+  安全イベント登録版：
+  HTML側に存在しないIDがあっても game.js 全体が停止しないようにする。
+*/
+function safeBind(id,event,handler,options){
+  const el = document.getElementById(id);
+
+  if(!el){
+    console.warn('[PO・TORO QUEST] event target not found:', id);
+    return false;
+  }
+
+  el.addEventListener(event,handler,options);
+  return true;
+}
+
+safeBind('startBtn','click',startGame);
+safeBind('openingBtn','click',openOpening);
+safeBind('openingSkipBtn','click',closeOpening);
+safeBind('restartBtn','click',resetGame);
+safeBind('equipBtn','click',openEquipMenu);
+safeBind('battleEquipBtn','click',openEquipMenu);
+safeBind('soundBtn','click',toggleSound);
+safeBind('guideBtn','click',openGuide);
+safeBind('guideCloseBtn','click',closeGuide);
+safeBind('guideModal','click',function(e){if(e.target===this) closeGuide();});
+safeBind('newMapBtn','click',()=>setupFloor(state.floor||1));
+safeBind('mapItemBtn','click',()=>openSubMenu('item'));
+safeBind('mapEquipBtn','click',openEquipMenu);
+safeBind('endingRestartBtn','click',restartFromEnding);
 
 document.querySelectorAll('[data-move]').forEach(btn=>{
   btn.addEventListener('click',()=>{
@@ -1440,7 +1457,8 @@ document.querySelectorAll('[data-move]').forEach(btn=>{
 });
 
 document.addEventListener('keydown',e=>{
-  if(document.getElementById('mapScreen').classList.contains('hidden')) return;
+  const mapScreen = document.getElementById('mapScreen');
+  if(!mapScreen || mapScreen.classList.contains('hidden')) return;
   if(e.key==='ArrowUp'){e.preventDefault();movePlayer(0,-1);}
   if(e.key==='ArrowDown'){e.preventDefault();movePlayer(0,1);}
   if(e.key==='ArrowLeft'){e.preventDefault();movePlayer(-1,0);}
