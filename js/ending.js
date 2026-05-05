@@ -476,7 +476,7 @@ function ensureMoeSelectTicket(){
   ticket.className = 'cheki-ticket moe-select-ticket-special hidden';
   ticket.innerHTML = `
     <div class="ticket-label">ULTRA SPECIAL DROP</div>
-    <h2>萌えセレクト券</h2>
+    <h2>萌えセレクト30分無料券</h2>
     <p>この画面のスクリーンショットをお屋敷でご提示ください。</p>
     <div class="cheki-time">
       <span>発行日時</span>
@@ -554,7 +554,7 @@ function showMoeSelectTicket(){
 
   if(message){
     message.textContent =
-      '超大当たり！萌えセレクト券を獲得しました！！\n' +
+      '超大当たり！萌えセレクト30分無料券を獲得しました！！\n' +
       'この画面をスクリーンショットで保存してください。';
   }
 
@@ -690,7 +690,7 @@ window.potoroForceChekiTicket = function(){
 };
 
 window.potoroForceMoeSelectTicket = function(){
-  const prize = {type:'moe_select',label:'萌えセレクト券',message:'超大当たり！萌えセレクト券が当たった！！'};
+  const prize = {type:'moe_select',label:'萌えセレクト券',message:'超大当たり！萌えセレクト30分無料券が当たった！！'};
   window.__potoroLastBossRoulettePrize = prize;
   finalizeBossRouletteResult(prize);
 };
