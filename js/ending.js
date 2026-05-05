@@ -10,12 +10,12 @@
    - 見た目は8分割
      ハズレ：5マス
      チェキ券：2マス
-     萌えセレクト券：1マス
+     萌えセレクト券(30分)：1マス
    - 実際の内部当選確率
      チェキ券：1/1000
-     萌えセレクト券：1/10000
+     萌えセレクト券(30分)：1/10000
      ハズレ：残り
-   - チェキ券 / 萌えセレクト券 当選時は派手な演出
+   - チェキ券 / 萌えセレクト券(30分) 当選時は派手な演出
    - 当選券には必ず日時を表示
    - 日時が写っていないスクリーンショットは無効という注意文を表示
 ========================= */
@@ -36,7 +36,7 @@ function drawBossRoulettePrize(){
   /*
     roll: 1〜10000
 
-    萌えセレクト券：1/10000
+    萌えセレクト券(30分)：1/10000
     チェキ券：10/10000 = 1/1000
     ハズレ：9989/10000
   */
@@ -45,8 +45,8 @@ function drawBossRoulettePrize(){
   if(roll === 1){
     return {
       type:'moe_select',
-      label:'萌えセレクト券',
-      message:'超大当たり！萌えセレクト券が当たった！！'
+      label:'萌えセレクト券(30分)',
+      message:'超大当たり！萌えセレクト券(30分)が当たった！！'
     };
   }
 
@@ -72,7 +72,7 @@ function getBossRouletteSegments(){
     {type:'cheki',label:'チェキ券'},
     {type:'miss',label:'ハズレ'},
     {type:'miss',label:'ハズレ'},
-    {type:'moe_select',label:'萌えセレクト券'},
+    {type:'moe_select',label:'萌えセレクト券(30分)'},
     {type:'miss',label:'ハズレ'},
     {type:'cheki',label:'チェキ券'},
     {type:'miss',label:'ハズレ'}
@@ -476,7 +476,7 @@ function ensureMoeSelectTicket(){
   ticket.className = 'cheki-ticket moe-select-ticket-special hidden';
   ticket.innerHTML = `
     <div class="ticket-label">ULTRA SPECIAL DROP</div>
-    <h2>萌えセレクト券</h2>
+    <h2>萌えセレクト券(30分)</h2>
     <p>この画面のスクリーンショットをお屋敷でご提示ください。</p>
     <div class="cheki-time">
       <span>発行日時</span>
@@ -554,7 +554,7 @@ function showMoeSelectTicket(){
 
   if(message){
     message.textContent =
-      '超大当たり！萌えセレクト券を獲得しました！！\n' +
+      '超大当たり！萌えセレクト券(30分)を獲得しました！！\n' +
       'この画面をスクリーンショットで保存してください。';
   }
 
@@ -690,7 +690,7 @@ window.potoroForceChekiTicket = function(){
 };
 
 window.potoroForceMoeSelectTicket = function(){
-  const prize = {type:'moe_select',label:'萌えセレクト券',message:'超大当たり！萌えセレクト券が当たった！！'};
+  const prize = {type:'moe_select',label:'萌えセレクト券(30分)',message:'超大当たり！萌えセレクト券(30分)が当たった！！'};
   window.__potoroLastBossRoulettePrize = prize;
   finalizeBossRouletteResult(prize);
 };
