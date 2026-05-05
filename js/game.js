@@ -218,7 +218,6 @@ function enemyActsFirstThisTurn(){
 async function enemyFirstCheck(){
   state.enemyActedFirst=false;
   if(enemyActsFirstThisTurn()){
-    setMessage('相手のほうがすばやい！');
     updateUI();
     await sleep(600);
     await enemyTurn();
