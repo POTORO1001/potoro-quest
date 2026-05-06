@@ -1,29 +1,19 @@
 /* =========================
    ポトロクエスト map-enemy-zone-lock.js
-   BFS距離別 敵出現テーブル固定パッチ
+   BFS距離別 敵出現テーブル完全固定パッチ v2
 
-   追加対象：
+   差し替え対象：
    js/map-enemy-zone-lock.js
 
-   読み込み順：
-   map-bfs-progress-patch.js の後
-   balance.js より後でもOK
-   できれば effects.js より前
-
-   index.html 推奨：
-   <script src="js/map.js"></script>
-   <script src="js/map-bfs-progress-patch.js"></script>
-   <script src="js/map-enemy-zone-lock.js"></script>
-   <script src="js/map-status-sync.js"></script>
-
    目的：
-   - 1Fで寝落 / 激務が出る問題を防ぐ
-   - 通常敵出現をBFS進行度テーブルに完全固定
+   - 1Fに2F敵が混ざる問題を防ぐ
+   - 2Fに1F敵が混ざる問題を防ぐ
+   - 2体出現時の追加敵も、現在フロア・現在ゾーンの許可敵だけに固定
 ========================= */
 
 (function(){
-  if(window.__potoroEnemyZoneLockInstalled) return;
-  window.__potoroEnemyZoneLockInstalled = true;
+  if(window.__potoroEnemyZoneLockV2Installed) return;
+  window.__potoroEnemyZoneLockV2Installed = true;
 
   const POTORO_ENEMY_ZONE_TABLE = {
     1:{
@@ -38,11 +28,21 @@
     }
   };
 
+  const POTORO_FLOOR_ENEMY_IDS = {
+    1:['teiji','kuufuku','zangyo','meisou'],
+    2:['neochi','gekimu','deisui','shisseki']
+  };
+
+  function getCurrentFloorSafe(){
+    const floor = Number(state && state.floor ? state.floor : 1);
+    return floor === 2 ? 2 : 1;
+  }
+
   function safeGetProgressZone(){
     if(typeof getMapProgressZone === 'function'){
-      return getMapProgressZone();
+      const zone = getMapProgressZone();
+      if(zone === 'early' || zone === 'middle' || zone === 'late') return zone;
     }
-
     return 'early';
   }
 
@@ -51,19 +51,29 @@
     return enemies.find(enemy => enemy.id === id) || null;
   }
 
+  function cloneEnemySafe(enemy){
+    if(typeof cloneEnemy === 'function') return cloneEnemy(enemy);
+    return JSON.parse(JSON.stringify(enemy));
+  }
+
   function getAllowedEnemyIdsByCurrentZone(){
-    const floor = Number(state.floor || 1);
+    const floor = getCurrentFloorSafe();
     const zone = safeGetProgressZone();
-
     const floorTable = POTORO_ENEMY_ZONE_TABLE[floor] || POTORO_ENEMY_ZONE_TABLE[1];
-
     return floorTable[zone] || floorTable.middle || floorTable.early;
+  }
+
+  function getAllowedEnemiesByCurrentZone(){
+    return getAllowedEnemyIdsByCurrentZone()
+      .map(id => findEnemyByIdSafe(id))
+      .filter(Boolean);
   }
 
   function pickEnemyFromIds(ids){
     const candidates = ids
       .map(id => findEnemyByIdSafe(id))
-      .filter(Boolean);
+      .filter(Boolean)
+      .filter(enemy => !enemy.boss && !enemy.helper);
 
     if(!candidates.length){
       return findEnemyByIdSafe('teiji') || (Array.isArray(enemies) ? enemies[0] : null);
@@ -72,27 +82,71 @@
     return candidates[Math.floor(Math.random() * candidates.length)];
   }
 
-  /*
-    通常敵抽選を完全上書き。
-    これ以後、selectRandomMapEnemy() は必ず指定テーブルから返す。
-  */
+  function isEnemyAllowedOnCurrentFloor(enemy){
+    if(!enemy) return false;
+    if(enemy.boss || enemy.helper) return true;
+
+    const floor = getCurrentFloorSafe();
+    const floorIds = POTORO_FLOOR_ENEMY_IDS[floor] || POTORO_FLOOR_ENEMY_IDS[1];
+
+    return floorIds.includes(enemy.id);
+  }
+
   window.selectRandomMapEnemy = function(){
     const ids = getAllowedEnemyIdsByCurrentZone();
-    return pickEnemyFromIds(ids);
+    const enemy = pickEnemyFromIds(ids);
+
+    if(enemy && !isEnemyAllowedOnCurrentFloor(enemy)){
+      console.warn('[PO・TORO QUEST enemy zone] blocked wrong-floor enemy', {
+        floor:getCurrentFloorSafe(),
+        enemy:enemy.id,
+        name:enemy.name
+      });
+
+      return pickEnemyFromIds(ids);
+    }
+
+    return enemy;
   };
 
-  /*
-    一部環境では function 宣言の selectRandomMapEnemy が window 参照されないケースがあるため、
-    evalスコープにも再代入を試みる。
-  */
   try{
     selectRandomMapEnemy = window.selectRandomMapEnemy;
   }catch(e){}
 
   /*
-    checkTileEvent も安全版に上書き。
-    これで通常遭遇時に必ず window.selectRandomMapEnemy を使う。
+    重要：
+    game.js の buildEnemyParty() は、2体目を全通常敵から選ぶ実装になっている場合がある。
+    それが「1Fに2F敵が混ざる」主原因になりやすいため、ここで上書きする。
   */
+  window.buildEnemyParty = function(enemyBase){
+    const main = cloneEnemySafe(enemyBase);
+
+    if(main.boss || main.helper) return [main];
+
+    const party = [main];
+
+    if(Math.random() < 0.42){
+      const allowed = getAllowedEnemiesByCurrentZone()
+        .filter(enemy => enemy.id !== main.id)
+        .filter(enemy => isEnemyAllowedOnCurrentFloor(enemy));
+
+      const pool = allowed.length
+        ? allowed
+        : getAllowedEnemiesByCurrentZone().filter(enemy => isEnemyAllowedOnCurrentFloor(enemy));
+
+      if(pool.length){
+        const subBase = pool[Math.floor(Math.random() * pool.length)];
+        party.push(cloneEnemySafe(subBase));
+      }
+    }
+
+    return party;
+  };
+
+  try{
+    buildEnemyParty = window.buildEnemyParty;
+  }catch(e){}
+
   window.checkTileEvent = function(){
     const p = state.player;
 
@@ -133,16 +187,16 @@
       p.mapY === state.boss.y
     ){
       const boss = findEnemyByIdSafe('boss');
-      if(boss && typeof startBattle === 'function' && typeof cloneEnemy === 'function'){
-        startBattle(cloneEnemy(boss), true);
+      if(boss && typeof startBattle === 'function'){
+        startBattle(cloneEnemySafe(boss), true);
       }
       return;
     }
 
     if(!state.player.metTamachan && Math.random() < 1/80){
       const tama = findEnemyByIdSafe('tamachan');
-      if(tama && typeof startBattle === 'function' && typeof cloneEnemy === 'function'){
-        startBattle(cloneEnemy(tama), false);
+      if(tama && typeof startBattle === 'function'){
+        startBattle(cloneEnemySafe(tama), false);
       }
       return;
     }
@@ -152,16 +206,16 @@
     if(Math.random() < rate){
       const enemy = window.selectRandomMapEnemy();
 
-      if(enemy && typeof startBattle === 'function' && typeof cloneEnemy === 'function'){
+      if(enemy && typeof startBattle === 'function'){
         console.log('[PO・TORO QUEST encounter]', {
-          floor:state.floor,
+          floor:getCurrentFloorSafe(),
           zone:safeGetProgressZone(),
           allowed:getAllowedEnemyIdsByCurrentZone(),
           selected:enemy.id,
           name:enemy.name
         });
 
-        startBattle(cloneEnemy(enemy), false);
+        startBattle(cloneEnemySafe(enemy), false);
       }
     }
   };
@@ -174,21 +228,27 @@
     const zone = safeGetProgressZone();
     const ids = getAllowedEnemyIdsByCurrentZone();
     const selected = window.selectRandomMapEnemy();
+    const party = selected ? window.buildEnemyParty(selected).map(enemy => ({
+      id:enemy.id,
+      name:enemy.name
+    })) : [];
 
     const report = {
       installed:true,
-      floor:state.floor,
+      version:'enemy-zone-lock-v2-party-fixed',
+      floor:getCurrentFloorSafe(),
       zone,
       label:typeof getMapProgressLabel === 'function' ? getMapProgressLabel() : zone,
       progress:typeof getMapDistanceProgress === 'function' ? Math.round(getMapDistanceProgress()*100) : null,
       allowedIds:ids,
       allowedNames:ids.map(id => findEnemyByIdSafe(id)?.name || id),
-      sample:selected ? {id:selected.id,name:selected.name} : null
+      sample:selected ? {id:selected.id,name:selected.name} : null,
+      sampleParty:party
     };
 
     console.log('[PO・TORO QUEST enemy zone]', report);
     return report;
   };
 
-  console.log('[PO・TORO QUEST] map-enemy-zone-lock.js loaded');
+  console.log('[PO・TORO QUEST] map-enemy-zone-lock.js v2 loaded');
 })();
