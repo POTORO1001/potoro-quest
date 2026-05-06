@@ -572,7 +572,7 @@ function showRouletteMissMessage(){
   const message = document.getElementById('endingMessage');
 
   if(message){
-    message.textContent = 'ルーレットはハズレでした。でも、鬼奴夜魔さんをいやした！';
+    message.textContent = 'ルーレットはハズレでした。でも、鬼怒夜魔さんをいやした！';
   }
 }
 
@@ -600,7 +600,7 @@ async function showEnding(){
   setButtonsDisabled(true);
   state.busy = true;
 
-  setMessage('鬼奴夜魔さんをいやした！ ポ・トロに平和がもどった！');
+  setMessage('鬼怒夜魔さんをいやした！ ポ・トロに平和がもどった！');
 
   await sleep(900);
 
@@ -617,7 +617,7 @@ async function showEnding(){
   hideAllEndingTickets();
 
   const message = document.getElementById('endingMessage');
-  if(message) message.textContent = '鬼奴夜魔さんをいやした！ ご褒美ルーレット開始！';
+  if(message) message.textContent = '鬼怒夜魔さんをいやした！ ご褒美ルーレット開始！';
 
   await sleep(500);
   await runBossRoulette();
