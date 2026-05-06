@@ -1280,7 +1280,7 @@ async function showEnding(){
   stopBgm();
   setButtonsDisabled(true);
   state.busy=true;
-  setMessage('鬼奴夜魔さんをいやした！ ポ・トロに平和がもどった！');
+  setMessage('鬼怒夜魔さんをいやした！ ポ・トロに平和がもどった！');
   await sleep(900);
   document.getElementById('battleScreen').classList.add('hidden');
   document.getElementById('mapScreen').classList.add('hidden');
@@ -1288,13 +1288,13 @@ async function showEnding(){
   const cheki=document.getElementById('chekiTicket');
   cheki.classList.add('hidden');
   if(Math.random()<1/50){
-    document.getElementById('endingMessage').textContent='鬼奴夜魔さんがチェキ券を落とした！';
+    document.getElementById('endingMessage').textContent='鬼怒夜魔さんがチェキ券を落とした！';
     const issuedAt=document.getElementById('chekiIssuedAt');
     if(issuedAt) issuedAt.textContent=formatChekiIssuedAt(new Date());
     cheki.classList.remove('hidden');
     seCheki();
   }else{
-    document.getElementById('endingMessage').textContent='鬼奴夜魔さんをいやした！ 一人前のメイドに近づいた！';
+    document.getElementById('endingMessage').textContent='鬼怒夜魔さんをいやした！ 一人前のメイドに近づいた！';
   }
 }
 function restartFromEnding(){
@@ -1507,7 +1507,7 @@ document.addEventListener('gesturestart',function(e){
 /* ===== v29 Tamachan Once + Boss Rename =====
 - たまちゃんは一回の冒険で一度しか出会えない
 - 一度遭遇後はその冒険中は再出現しない
-- ボス名を「鬼奴夜魔さん」に変更
+- ボス名を「鬼怒夜魔さん」に変更
 */
 
 window.addEventListener('DOMContentLoaded', ()=>{
