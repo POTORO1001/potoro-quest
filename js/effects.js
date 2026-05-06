@@ -162,7 +162,7 @@ function checkBossHpEffects(){
 
     document.body.classList.add('potoro-boss-danger');
 
-    showBossPhaseCutin('鬼奴夜魔さんの圧が増した…！');
+    showBossPhaseCutin('鬼怒夜魔さんの圧が増した…！');
     showBattleBurst('PHASE SHIFT','critical');
     potoroScreenGlow('boss');
     playBossPhaseSound();
@@ -272,7 +272,7 @@ function showBossWarningSequence(){
   removeAfter(warning,1300);
 
   setTimeout(() => {
-    const name = createPotoroEffect('potoro-boss-name-cutin','鬼奴夜魔さん 降臨');
+    const name = createPotoroEffect('potoro-boss-name-cutin','鬼怒夜魔さん 降臨');
     removeAfter(name,1500);
   },900);
 
