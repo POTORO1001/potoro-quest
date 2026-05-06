@@ -1,26 +1,16 @@
 /* =========================
    ポトロクエスト ending.js
-   ボス撃破後ルーレット完全版
+   ボス撃破後ルーレット完全版 v3
 
    差し替え対象：
    js/ending.js
 
-   仕様：
-   - ボス撃破後、必ずルーレットが登場
-   - 見た目は8分割
-     ハズレ：5マス
-     チェキ券：2マス
-     萌えセレクト券(30分)：1マス
-   - 実際の内部当選確率
-     チェキ券：1/1000
-     萌えセレクト券(30分)：1/10000
-     ハズレ：残り
-   - チェキ券 / 萌えセレクト券(30分) 当選時は派手な演出
-   - 当選券には必ず日時を表示
-   - 日時が写っていないスクリーンショットは無効という注意文を表示
+   修正内容：
+   - ボス名を「鬼怒夜魔さん」に統一
+   - チェキ券当選時にハズレ扱いになる問題を修正
+   - ルーレット内部結果・停止マス・結果表示を同じ prize で固定
 ========================= */
 
-/* ===== 発行時刻 ===== */
 function formatChekiIssuedAt(date){
   const y = date.getFullYear();
   const m = String(date.getMonth()+1).padStart(2,'0');
@@ -31,41 +21,20 @@ function formatChekiIssuedAt(date){
   return `${y}/${m}/${d} ${hh}:${mm}:${ss}`;
 }
 
-/* ===== ルーレット内部抽選 ===== */
 function drawBossRoulettePrize(){
-  /*
-    roll: 1〜10000
-
-    萌えセレクト券(30分)：1/10000
-    チェキ券：10/10000 = 1/1000
-    ハズレ：9989/10000
-  */
   const roll = Math.floor(Math.random() * 10000) + 1;
 
   if(roll === 1){
-    return {
-      type:'moe_select',
-      label:'萌えセレクト券(30分)',
-      message:'超大当たり！萌えセレクト券(30分)が当たった！！'
-    };
+    return {type:'moe_select',label:'萌えセレクト券(30分)',message:'超大当たり！萌えセレクト券(30分)が当たった！！'};
   }
 
   if(roll >= 2 && roll <= 11){
-    return {
-      type:'cheki',
-      label:'チェキ券',
-      message:'大当たり！チェキ券が当たった！'
-    };
+    return {type:'cheki',label:'チェキ券',message:'大当たり！チェキ券が当たった！'};
   }
 
-  return {
-    type:'miss',
-    label:'ハズレ',
-    message:'残念…今回はハズレでした。'
-  };
+  return {type:'miss',label:'ハズレ',message:'残念…今回はハズレでした。'};
 }
 
-/* ===== 8分割ルーレット表示用マス ===== */
 function getBossRouletteSegments(){
   return [
     {type:'miss',label:'ハズレ'},
@@ -91,7 +60,6 @@ function getStopIndexForPrize(prizeType){
   return candidates[Math.floor(Math.random() * candidates.length)];
 }
 
-/* ===== ルーレットDOM ===== */
 function ensureBossRouletteModal(){
   let modal = document.getElementById('bossRouletteModal');
   if(modal) return modal;
@@ -124,8 +92,9 @@ function ensureBossRouletteModal(){
   if(closeBtn && !closeBtn.dataset.boundRouletteClose){
     closeBtn.dataset.boundRouletteClose = '1';
     closeBtn.addEventListener('click',function(){
+      const prize = window.__potoroLastBossRoulettePrize;
       modal.classList.add('hidden');
-      finalizeBossRouletteResult(window.__potoroLastBossRoulettePrize || {type:'miss'});
+      finalizeBossRouletteResult(prize);
     });
   }
 
@@ -361,7 +330,6 @@ function renderBossRouletteSegments(){
   });
 }
 
-/* ===== 派手演出 ===== */
 function playBigWinEffect(prizeType){
   const modal = document.getElementById('bossRouletteModal');
   const card = modal ? modal.querySelector('.boss-roulette-card') : null;
@@ -398,13 +366,13 @@ function playBigWinEffect(prizeType){
   }, 650);
 }
 
-/* ===== ルーレット実行 ===== */
 function runBossRoulette(){
   return new Promise(resolve => {
     const prize = drawBossRoulettePrize();
     const stopIndex = getStopIndexForPrize(prize.type);
 
     window.__potoroLastBossRoulettePrize = prize;
+    window.__potoroLastBossRouletteStopIndex = stopIndex;
 
     const modal = ensureBossRouletteModal();
     const wheel = document.getElementById('bossRouletteWheel');
@@ -423,7 +391,7 @@ function runBossRoulette(){
 
       const centerAngle = stopIndex * 45 + 22.5;
       const spins = 360 * 7;
-      const finalRotation = spins + (360 - centerAngle);
+      const finalRotation = spins - centerAngle;
 
       wheel.style.transition = 'transform 3.6s cubic-bezier(.12,.72,.08,1)';
       wheel.style.transform = `rotate(${finalRotation}deg)`;
@@ -455,7 +423,6 @@ function runBossRoulette(){
   });
 }
 
-/* ===== 結果表示 ===== */
 function hideAllEndingTickets(){
   const cheki = document.getElementById('chekiTicket');
   if(cheki) cheki.classList.add('hidden');
@@ -577,14 +544,16 @@ function showRouletteMissMessage(){
 }
 
 function finalizeBossRouletteResult(prize){
+  const finalPrize = prize || window.__potoroLastBossRoulettePrize || {type:'miss'};
+
   hideAllEndingTickets();
 
-  if(prize.type === 'cheki'){
+  if(finalPrize.type === 'cheki'){
     showChekiTicket();
     return;
   }
 
-  if(prize.type === 'moe_select'){
+  if(finalPrize.type === 'moe_select'){
     showMoeSelectTicket();
     return;
   }
@@ -592,7 +561,6 @@ function finalizeBossRouletteResult(prize){
   showRouletteMissMessage();
 }
 
-/* ===== エンディング ===== */
 async function showEnding(){
   stopBgm();
   if(typeof stopAllBgm === 'function') stopAllBgm();
@@ -623,7 +591,6 @@ async function showEnding(){
   await runBossRoulette();
 }
 
-/* ===== エンディングからタイトルへ ===== */
 function restartFromEnding(){
   playBgm('bgmOpening');
 
@@ -654,7 +621,6 @@ function restartFromEnding(){
   stopBgm();
 }
 
-/* ===== エンディング Event Bind ===== */
 function bindEndingEvents(){
   const btn = document.getElementById('endingRestartBtn');
 
@@ -664,18 +630,18 @@ function bindEndingEvents(){
   }
 }
 
-/* ===== デバッグ・確認用 ===== */
 window.potoroBossRouletteReport = function(){
   return {
     installed:true,
-    version:'boss-roulette-complete-v2',
+    version:'boss-roulette-complete-v3-result-fixed',
     visualSegments:getBossRouletteSegments(),
     rates:{
       cheki:'1/1000',
       moeSelect:'1/10000',
       miss:'9989/10000'
     },
-    lastPrize:window.__potoroLastBossRoulettePrize || null
+    lastPrize:window.__potoroLastBossRoulettePrize || null,
+    lastStopIndex:window.__potoroLastBossRouletteStopIndex ?? null
   };
 };
 
@@ -686,12 +652,14 @@ window.potoroTestBossRoulette = function(){
 window.potoroForceChekiTicket = function(){
   const prize = {type:'cheki',label:'チェキ券',message:'大当たり！チェキ券が当たった！'};
   window.__potoroLastBossRoulettePrize = prize;
+  window.__potoroLastBossRouletteStopIndex = getStopIndexForPrize(prize.type);
   finalizeBossRouletteResult(prize);
 };
 
 window.potoroForceMoeSelectTicket = function(){
   const prize = {type:'moe_select',label:'萌えセレクト券(30分)',message:'超大当たり！萌えセレクト券(30分)が当たった！！'};
   window.__potoroLastBossRoulettePrize = prize;
+  window.__potoroLastBossRouletteStopIndex = getStopIndexForPrize(prize.type);
   finalizeBossRouletteResult(prize);
 };
 
