@@ -18,7 +18,6 @@
    13. js/map.js
    14. js/event.js
    15. js/magic.js
-   16. js/compatibility.js
 
    重要：
    - scene.js は startBattle / endBattleToMap / たまちゃん / ガイド / 宝箱表示を管理します。

@@ -20,7 +20,6 @@
    15. js/map.js
    16. js/event.js
    17. js/magic.js
-   18. js/compatibility.js
 
    重要：
    - game.js 内の ASSETS_TO_PRELOAD と同じ内容を安全に参照するための分離版です。
