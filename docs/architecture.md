@@ -73,10 +73,9 @@
 ### 装備・報酬・道具
 
 - `equipment.js`: 装備メニュー、装備ステータス、装備処理、装備データの追加、レアリティ付与、装備ステータスの調整。
-- `drop.js`: アイテム・装備ドロップ、宝箱報酬。`giveReward`、`treasureDrop` を上書き。
+- `drop.js`: アイテム・装備ドロップ、宝箱報酬、宝箱レアリティ演出。`giveReward`、`treasureDrop` を上書き。
 - `item.js`: 道具効果、道具メニュー、バフ。`openSubMenu`、ステータス計算系を一部上書き。
 - `item-name-rename.js`: アイテム名の調整。
-- `treasure-effects.js`: 宝箱レアリティ演出。
 
 ### 魔法
 
@@ -147,6 +146,8 @@
   - `magic-learn-message-v2.js` を削除。
 - 2026-05-21: 魔法設定ブリッジを `magic-config.js` に統合。
   - `magic-config-bridge.js` を削除。
+- 2026-05-21: 宝箱レアリティ演出を `drop.js` に統合。
+  - `treasure-effects.js` を削除。
 
 ## 作業ルール
 
