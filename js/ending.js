@@ -22,6 +22,21 @@ function formatChekiIssuedAt(date){
 }
 
 function drawBossRoulettePrize(){
+  if(window.__potoroForceNextRoulettePrize){
+    const forced = window.__potoroForceNextRoulettePrize;
+    window.__potoroForceNextRoulettePrize = null;
+
+    if(forced === 'cheki'){
+      return {type:'cheki',label:'チェキ券',message:'大当たり！チェキ券が当たった！'};
+    }
+
+    if(forced === 'moe_select'){
+      return {type:'moe_select',label:'萌えセレクト券(30分)',message:'超大当たり！萌えセレクト券(30分)が当たった！！'};
+    }
+
+    return {type:'miss',label:'ハズレ',message:'残念…今回はハズレでした。'};
+  }
+
   const roll = Math.floor(Math.random() * 10000) + 1;
 
   if(roll === 1){
@@ -185,6 +200,7 @@ function injectBossRouletteStyle(){
       border-radius: 50%;
       border: 8px solid #fff;
       background: conic-gradient(
+        from -22.5deg,
         #f8fafc 0deg 45deg,
         #fde68a 45deg 90deg,
         #f8fafc 90deg 135deg,
@@ -222,7 +238,7 @@ function injectBossRouletteStyle(){
       line-height: 1.1;
       color: #7e22ce;
       text-shadow: 0 1px 0 rgba(255,255,255,.9);
-      width: 80px;
+      width: 86px;
       text-align: center;
       z-index: 2;
     }
@@ -320,11 +336,11 @@ function renderBossRouletteSegments(){
     label.className = `boss-roulette-seg-label ${seg.type}`;
     label.textContent = seg.label;
 
-    const angle = index * 45 + 22.5;
-    const radius = 74;
+    const angle = index * 45;
+    const radius = 76;
 
     label.style.transform =
-      `rotate(${angle}deg) translate(${radius}px) rotate(90deg) translate(-40px,-8px)`;
+      `rotate(${angle}deg) translateY(-${radius}px) rotate(${-angle}deg) translate(-43px,-8px)`;
 
     wheel.appendChild(label);
   });
@@ -389,9 +405,7 @@ function runBossRoulette(){
       wheel.style.transform = 'rotate(0deg)';
       void wheel.offsetWidth;
 
-      const centerAngle = stopIndex * 45 + 22.5;
-      const spins = 360 * 7;
-      const finalRotation = spins - centerAngle;
+      const finalRotation = 360 * 7 - (stopIndex * 45);
 
       wheel.style.transition = 'transform 3.6s cubic-bezier(.12,.72,.08,1)';
       wheel.style.transform = `rotate(${finalRotation}deg)`;
@@ -633,7 +647,7 @@ function bindEndingEvents(){
 window.potoroBossRouletteReport = function(){
   return {
     installed:true,
-    version:'boss-roulette-complete-v3-result-fixed',
+    version:'boss-roulette-complete-v4-visual-sync-integrated',
     visualSegments:getBossRouletteSegments(),
     rates:{
       cheki:'1/1000',
@@ -645,8 +659,23 @@ window.potoroBossRouletteReport = function(){
   };
 };
 
+window.potoroRouletteVisualSyncReport = function(){
+  return {
+    installed:true,
+    version:'roulette-visual-sync-integrated',
+    segments:getBossRouletteSegments(),
+    lastPrize:window.__potoroLastBossRoulettePrize || null,
+    lastStopIndex:window.__potoroLastBossRouletteStopIndex ?? null
+  };
+};
+
 window.potoroTestBossRoulette = function(){
   return runBossRoulette();
+};
+
+window.potoroForceNextBossRoulette = function(type){
+  window.__potoroForceNextRoulettePrize = type || 'miss';
+  return '次回のルーレット結果を ' + window.__potoroForceNextRoulettePrize + ' に固定しました。potoroTestBossRoulette() を実行してください。';
 };
 
 window.potoroForceChekiTicket = function(){

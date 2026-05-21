@@ -30,6 +30,7 @@ function startGame(){
   state.busy = false;
   state.started = true;
   state.inBattle = false;
+  state.firstBattleHintShown = false;
 
   setButtonsDisabled(false);
   setupFloor(1);

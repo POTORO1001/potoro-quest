@@ -238,3 +238,38 @@ function potoroLearnedMagicReport(){
   console.log('[PO・TORO QUEST learned magic]',report);
   return report;
 }
+
+/* ===== Magic Config Bridge Helpers ===== */
+function getMagicMpCost(kind){
+  const config = getMagicConfig(kind);
+  return config ? (config.mp || 0) : 0;
+}
+
+function calcConfiguredMoeDamage(){
+  const config = getMagicConfig('moe');
+
+  if(!config){
+    return moeMagicDamage();
+  }
+
+  const min = config.baseDamageMin || 25;
+  const max = config.baseDamageMax || 30;
+  const base = min + Math.floor(Math.random() * (max - min + 1));
+  const talkScale = config.talkScale || 1.2;
+  const talkBonus = Math.max(0,Math.floor((totalTalk() - 7) * talkScale));
+
+  return base + talkBonus;
+}
+
+function potoroMagicSummary(){
+  const all = getAllMagicConfigs();
+  const summary = Object.keys(all).map(key => ({
+    id:key,
+    name:all[key].name,
+    mp:all[key].mp,
+    label:all[key].label
+  }));
+
+  console.table(summary);
+  return summary;
+}

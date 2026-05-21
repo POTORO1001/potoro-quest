@@ -52,6 +52,20 @@ function selectTarget(index){
   setMessage(`${state.enemiesInBattle[index].name}を対象にした！`);
 }
 
+/* ===== 初回戦闘ヒント ===== */
+function getBattleOpeningMessage(){
+  const baseMessage = state.enemiesInBattle.length > 1
+    ? `${state.enemiesInBattle[0].name}たちが あらわれた！`
+    : (state.enemy.intro || `${state.enemy.name} が あらわれた！`);
+
+  if(!state.firstBattleHintShown){
+    state.firstBattleHintShown = true;
+    return `${baseMessage} はじめての戦闘です。「おまじない」や「どうぐ」も使ってみましょう。`;
+  }
+
+  return baseMessage;
+}
+
 /* ===== 戦闘開始 ===== */
 function startBattle(enemy,fromMap){
   playBgm(
@@ -86,11 +100,7 @@ function startBattle(enemy,fromMap){
     return;
   }
 
-  if(state.enemiesInBattle.length > 1){
-    setMessage(`${state.enemiesInBattle[0].name}たちが あらわれた！`);
-  }else{
-    setMessage(state.enemy.intro || `${state.enemy.name} が あらわれた！`);
-  }
+  setMessage(getBattleOpeningMessage());
 
   startBgm(state.enemiesInBattle.some(e => e.boss) ? 'boss' : 'battle');
 }
