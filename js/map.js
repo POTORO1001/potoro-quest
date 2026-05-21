@@ -350,12 +350,34 @@ function setMapMessage(text){
   if(el) el.textContent = text;
 }
 
+function normalizeMoveDelta(dx,dy){
+  if(typeof dx === 'string' && typeof dy === 'undefined'){
+    const dir = dx.toLowerCase();
+    if(dir === 'up') return {dx:0,dy:-1};
+    if(dir === 'down') return {dx:0,dy:1};
+    if(dir === 'left') return {dx:-1,dy:0};
+    if(dir === 'right') return {dx:1,dy:0};
+  }
+
+  const nx = Number(dx);
+  const ny = Number(dy);
+  if(!Number.isFinite(nx) || !Number.isFinite(ny)) return null;
+
+  return {
+    dx:Math.max(-1,Math.min(1,nx)),
+    dy:Math.max(-1,Math.min(1,ny))
+  };
+}
+
 function movePlayer(dx,dy){
   if(state.inBattle || state.busy) return;
   if(!potoroCanMoveOneStep()) return;
 
-  dx = Math.max(-1,Math.min(1,dx));
-  dy = Math.max(-1,Math.min(1,dy));
+  const delta = normalizeMoveDelta(dx,dy);
+  if(!delta) return;
+
+  dx = delta.dx;
+  dy = delta.dy;
   const nx = state.player.mapX + dx;
   const ny = state.player.mapY + dy;
 
