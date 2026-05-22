@@ -27,6 +27,11 @@ function requireMagicConfig(kind){
   return config;
 }
 
+function playOmajinaiSe(){
+  if(typeof seOmajinai === 'function') seOmajinai();
+  else if(typeof seMagic === 'function') seMagic();
+}
+
 function tickBuffs(){
   if(buffState.aura > 0) buffState.aura--;
 }
@@ -250,7 +255,7 @@ async function useMagicAura(){
   await showCutin('おまじない','キラキラオーラ☆');
   setMessage(`トーク力とすばやさが ${buffState.aura}ターン アップ！`);
 
-  seMagic();
+  playOmajinaiSe();
   updateUI();
 
   await sleep(700);
@@ -265,7 +270,7 @@ async function useMagicCharge2(){
   await showCutin('おまじない','完璧なお給仕♡');
   setMessage('次の攻撃・おまじないダメージが強化された！');
 
-  seMagic();
+  playOmajinaiSe();
   updateUI();
 
   await sleep(700);
@@ -299,7 +304,7 @@ async function useMagicMulti(){
     if(target.hp <= 0) state.lastDefeatedEnemy = target;
 
     showDamage(damage,'enemy');
-    seAttack();
+    playOmajinaiSe();
     enemyFlash();
     updateUI();
 
@@ -345,7 +350,7 @@ async function useMagicRush(){
   setMessage(message);
 
   showDamage(damage,'enemy','critical-text');
-  seMagic();
+  playOmajinaiSe();
   screenFlash();
   enemyFlash();
   updateUI();
@@ -409,7 +414,7 @@ async function useMagicMoeConfigured(){
 
   damage = applyChargeIfNeeded(damage);
 
-  await damageEnemy('もえもえぎゅー！！',damage);
+  await damageEnemy('もえもえぎゅー！！',damage,playOmajinaiSe);
 }
 
 async function useMagicHealConfigured(){
@@ -449,7 +454,7 @@ async function useMagicSleepConfigured(){
 
   setMessage(`${target.name} は ${turns}ターン 眠った！`);
 
-  seMagic();
+  playOmajinaiSe();
   updateUI();
 
   await sleep(800);
@@ -471,7 +476,7 @@ async function useMagicNishikiConfigured(){
   let damage = magicPower(base);
   damage = applyChargeIfNeeded(damage);
 
-  await damageEnemy('にしきぬやまー！！',damage);
+  await damageEnemy('にしきぬやまー！！',damage,playOmajinaiSe);
 }
 
 async function useMagicShowerConfigured(){
@@ -504,7 +509,7 @@ async function damageAllEnemiesConfigured(message,baseDamage,bossRate){
   setMessage(`${message} 敵全体にダメージ！`);
 
   showDamage(baseDamage,'enemy','critical-text');
-  seMagic();
+  playOmajinaiSe();
   enemyFlash();
   updateUI();
 

@@ -60,6 +60,11 @@
     return MAGIC_COMPLETE_CONFIG[kind] || null;
   }
 
+  function playOmajinaiSe(){
+    if(typeof seOmajinai === 'function') seOmajinai();
+    else if(typeof seMagic === 'function') seMagic();
+  }
+
   async function failMagic(message){
     if(typeof failAction === 'function'){
       await failAction(message);
@@ -157,7 +162,7 @@
 
     setMessage(`ご主人様ファースト！ ${target.name} に ${damage} ダメージ！`);
     showDamage(damage,'enemy');
-    seAttack();
+    playOmajinaiSe();
     enemyFlash();
     updateUI();
 
@@ -185,7 +190,7 @@
     buffs.kiraAura = 2;
 
     setMessage('キラキラオーラ！ トーク力とすばやさが上がった！');
-    seMagic();
+    playOmajinaiSe();
     screenFlash();
     updateUI();
 
@@ -205,7 +210,7 @@
     buffs.perfectService = 1;
 
     setMessage('完璧なお給仕！ 次の攻撃・おまじない威力が2.5倍！');
-    seMagic();
+    playOmajinaiSe();
     screenFlash();
     updateUI();
 
@@ -241,7 +246,7 @@
 
       setMessage(`ご奉仕連撃！ ${i+1}回目！ ${damage} ダメージ！`);
       showDamage(damage,'enemy');
-      seAttack();
+      playOmajinaiSe();
       enemyFlash();
       updateUI();
 
@@ -287,7 +292,7 @@
     }
 
     showDamage(damage,'enemy','critical-text');
-    seMagic();
+    playOmajinaiSe();
     enemyFlash();
     updateUI();
 

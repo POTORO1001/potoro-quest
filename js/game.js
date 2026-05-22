@@ -267,6 +267,7 @@ function seAttack(){playSeq([{f:520,d:.06,g:.09},{f:260,d:.08,g:.08}]);}
 function seHit(){playSeq([{f:110,d:.09,type:'sawtooth',g:.08},{f:85,d:.08,type:'sawtooth',g:.06}]);}
 function seHeal(){playSeq([{f:523,d:.08,type:'sine',g:.08},{f:659,d:.08,type:'sine',g:.08},{f:784,d:.12,type:'sine',g:.08}]);}
 function seMagic(){playSeq([{f:740,d:.07,type:'triangle',g:.07},{f:988,d:.07,type:'triangle',g:.07},{f:1175,d:.12,type:'triangle',g:.07}]);}
+function seOmajinai(){playSeq([{f:659,d:.05,type:'sine',g:.06},{f:988,d:.06,type:'triangle',g:.07,wait:.07},{f:1318,d:.08,type:'sine',g:.06,wait:.08},{f:1760,d:.12,type:'triangle',g:.05}]);}
 function seTreasure(){playSeq([{f:659,d:.08,type:'sine',g:.08},{f:784,d:.08,type:'sine',g:.08},{f:988,d:.12,type:'sine',g:.09}]);}
 function seLevelUp(){playSeq([{f:523,d:.09,type:'sine',g:.08},{f:659,d:.09,type:'sine',g:.08},{f:784,d:.09,type:'sine',g:.08},{f:1046,d:.18,type:'sine',g:.08}]);}
 function seVictory(){playSeq([{f:392,d:.12,type:'triangle',g:.08},{f:523,d:.12,type:'triangle',g:.08},{f:659,d:.12,type:'triangle',g:.08},{f:784,d:.2,type:'triangle',g:.08}]);}

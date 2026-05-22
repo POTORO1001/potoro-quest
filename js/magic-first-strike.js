@@ -84,7 +84,8 @@
     setMessage(`${FIRST_STRIKE_MAGIC.name}！ 先に動いて ${target.name} に ${damage} ダメージ！`);
 
     if(typeof showDamage === 'function') showDamage(damage,'enemy');
-    if(typeof seMagic === 'function') seMagic();
+    if(typeof seOmajinai === 'function') seOmajinai();
+    else if(typeof seMagic === 'function') seMagic();
     if(typeof enemyFlash === 'function') enemyFlash();
     if(typeof updateUI === 'function') updateUI();
 

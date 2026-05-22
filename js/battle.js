@@ -139,7 +139,7 @@ async function playerAction(type){
 }
 
 /* ===== Damage Helpers ===== */
-async function damageEnemy(message,damage){
+async function damageEnemy(message,damage,playSe){
   const target = currentEnemy();
 
   target.hp = Math.max(0,target.hp - damage);
@@ -147,7 +147,8 @@ async function damageEnemy(message,damage){
 
   setMessage(`${message} ${target.name} に ${damage} ダメージ！`);
   showDamage(damage,'enemy');
-  seMagic();
+  if(typeof playSe === 'function') playSe();
+  else seMagic();
   enemyFlash();
   updateUI();
 

@@ -180,6 +180,15 @@ function seMagic(){
   ]);
 }
 
+function seOmajinai(){
+  playSeq([
+    {f:659,d:.05,type:'sine',g:.06},
+    {f:988,d:.06,type:'triangle',g:.07,wait:.07},
+    {f:1318,d:.08,type:'sine',g:.06,wait:.08},
+    {f:1760,d:.12,type:'triangle',g:.05}
+  ]);
+}
+
 function seTreasure(){
   playSeq([
     {f:659,d:.08,type:'sine',g:.08},
