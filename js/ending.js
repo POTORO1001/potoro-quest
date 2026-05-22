@@ -8,7 +8,7 @@
    修正内容：
    - ボス名を「鬼怒夜魔さん」に統一
    - ボス撃破後は必ず挑戦券が出るルーレットに変更
-   - 挑戦券の内容に応じた特別くじ当選確率を表示
+   - 挑戦券をお屋敷の特別くじに接続
 ========================= */
 
 function formatChekiIssuedAt(date){
@@ -29,7 +29,6 @@ const BOSS_CHALLENGE_TICKETS = [
     ticketLabel:'LEGEND CHALLENGE',
     title:'萌えセレ60分挑戦券',
     freePrize:'萌えセレ60分無料券',
-    lotteryRate:'1/2000万',
     className:'challenge-60',
     burst:'LEGEND!'
   },
@@ -40,7 +39,6 @@ const BOSS_CHALLENGE_TICKETS = [
     ticketLabel:'SPECIAL CHALLENGE',
     title:'萌えセレ30分挑戦券',
     freePrize:'萌えセレ30分無料券',
-    lotteryRate:'1/200万',
     className:'challenge-30',
     burst:'SPECIAL!'
   },
@@ -51,7 +49,6 @@ const BOSS_CHALLENGE_TICKETS = [
     ticketLabel:'PHOTO CHALLENGE',
     title:'期間限定チェキ挑戦券',
     freePrize:'期間限定チェキ無料券',
-    lotteryRate:'1/20万',
     className:'challenge-cheki',
     burst:'CHANCE!'
   }
@@ -509,7 +506,6 @@ function ensureChallengeTicket(){
       <strong id="challengeIssuedAt" class="ticket-issued-at-strong">--:--</strong>
     </div>
     <div class="ticket-required-note">
-      <span id="challengeLotteryRate">くじ当選確率：--</span><br>
       <span id="challengeFreePrize">当たり景品：--</span><br>
       ※この券は日時表記が写っているスクリーンショットのみ有効です。<br>
       ※当たりを引いた場合、挑戦券の内容に対応した無料券を獲得できます。
@@ -536,7 +532,6 @@ function showChallengeTicket(prize){
   const label = document.getElementById('challengeTicketLabel');
   const title = document.getElementById('challengeTicketTitle');
   const description = document.getElementById('challengeTicketDescription');
-  const lotteryRate = document.getElementById('challengeLotteryRate');
   const freePrize = document.getElementById('challengeFreePrize');
 
   if(ticket){
@@ -549,7 +544,6 @@ function showChallengeTicket(prize){
     description.textContent =
       'この画面のスクリーンショットをお屋敷でご提示ください。特別なくじ引きに挑戦できます。';
   }
-  if(lotteryRate) lotteryRate.textContent = `くじ当選確率：${finalPrize.lotteryRate}`;
   if(freePrize) freePrize.textContent = `当たり景品：${finalPrize.freePrize}`;
 
   if(message){
@@ -660,11 +654,6 @@ window.potoroBossRouletteReport = function(){
     installed:true,
     version:'boss-challenge-ticket-roulette-v1',
     visualSegments:getBossRouletteSegments(),
-    rates:{
-      moeSelect60Challenge:'special lottery 1/2000万',
-      moeSelect30Challenge:'special lottery 1/200万',
-      limitedChekiChallenge:'special lottery 1/20万'
-    },
     alwaysAwardsChallengeTicket:true,
     lastPrize:window.__potoroLastBossRoulettePrize || null,
     lastStopIndex:window.__potoroLastBossRouletteStopIndex ?? null
