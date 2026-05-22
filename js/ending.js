@@ -7,8 +7,8 @@
 
    修正内容：
    - ボス名を「鬼怒夜魔さん」に統一
-   - チェキ券当選時にハズレ扱いになる問題を修正
-   - ルーレット内部結果・停止マス・結果表示を同じ prize で固定
+   - ボス撃破後は必ず挑戦券が出るルーレットに変更
+   - 挑戦券の内容に応じた特別くじ当選確率を表示
 ========================= */
 
 function formatChekiIssuedAt(date){
@@ -21,45 +21,76 @@ function formatChekiIssuedAt(date){
   return `${y}/${m}/${d} ${hh}:${mm}:${ss}`;
 }
 
+const BOSS_CHALLENGE_TICKETS = [
+  {
+    type:'moe_select_60_challenge',
+    label:'萌えセレ60分挑戦券',
+    shortLabel:'60分挑戦',
+    ticketLabel:'LEGEND CHALLENGE',
+    title:'萌えセレ60分挑戦券',
+    freePrize:'萌えセレ60分無料券',
+    lotteryRate:'1/2000万',
+    className:'challenge-60',
+    burst:'LEGEND!'
+  },
+  {
+    type:'moe_select_30_challenge',
+    label:'萌えセレ30分挑戦券',
+    shortLabel:'30分挑戦',
+    ticketLabel:'SPECIAL CHALLENGE',
+    title:'萌えセレ30分挑戦券',
+    freePrize:'萌えセレ30分無料券',
+    lotteryRate:'1/200万',
+    className:'challenge-30',
+    burst:'SPECIAL!'
+  },
+  {
+    type:'limited_cheki_challenge',
+    label:'期間限定チェキ挑戦券',
+    shortLabel:'チェキ挑戦',
+    ticketLabel:'PHOTO CHALLENGE',
+    title:'期間限定チェキ挑戦券',
+    freePrize:'期間限定チェキ無料券',
+    lotteryRate:'1/20万',
+    className:'challenge-cheki',
+    burst:'CHANCE!'
+  }
+];
+
+function getBossChallengeTicket(type){
+  if(type === 'moe_select') type = 'moe_select_30_challenge';
+  if(type === 'cheki') type = 'limited_cheki_challenge';
+
+  return BOSS_CHALLENGE_TICKETS.find(ticket => ticket.type === type)
+    || BOSS_CHALLENGE_TICKETS[BOSS_CHALLENGE_TICKETS.length - 1];
+}
+
 function drawBossRoulettePrize(){
   if(window.__potoroForceNextRoulettePrize){
-    const forced = window.__potoroForceNextRoulettePrize;
+    const forced = getBossChallengeTicket(window.__potoroForceNextRoulettePrize);
     window.__potoroForceNextRoulettePrize = null;
-
-    if(forced === 'cheki'){
-      return {type:'cheki',label:'チェキ券',message:'大当たり！チェキ券が当たった！'};
-    }
-
-    if(forced === 'moe_select'){
-      return {type:'moe_select',label:'萌えセレクト券(30分)',message:'超大当たり！萌えセレクト券(30分)が当たった！！'};
-    }
-
-    return {type:'miss',label:'ハズレ',message:'残念…今回はハズレでした。'};
+    return {
+      ...forced,
+      message:`${forced.label}を獲得しました！`
+    };
   }
 
-  const roll = Math.floor(Math.random() * 10000) + 1;
-
-  if(roll === 1){
-    return {type:'moe_select',label:'萌えセレクト券(30分)',message:'超大当たり！萌えセレクト券(30分)が当たった！！'};
-  }
-
-  if(roll >= 2 && roll <= 11){
-    return {type:'cheki',label:'チェキ券',message:'大当たり！チェキ券が当たった！'};
-  }
-
-  return {type:'miss',label:'ハズレ',message:'残念…今回はハズレでした。'};
+  const segments = getBossRouletteSegments();
+  const ticket = segments[Math.floor(Math.random() * segments.length)];
+  return {
+    ...ticket,
+    message:`${ticket.label}を獲得しました！`
+  };
 }
 
 function getBossRouletteSegments(){
   return [
-    {type:'miss',label:'ハズレ'},
-    {type:'cheki',label:'チェキ券'},
-    {type:'miss',label:'ハズレ'},
-    {type:'miss',label:'ハズレ'},
-    {type:'moe_select',label:'萌えセレクト券(30分)'},
-    {type:'miss',label:'ハズレ'},
-    {type:'cheki',label:'チェキ券'},
-    {type:'miss',label:'ハズレ'}
+    getBossChallengeTicket('limited_cheki_challenge'),
+    getBossChallengeTicket('moe_select_30_challenge'),
+    getBossChallengeTicket('limited_cheki_challenge'),
+    getBossChallengeTicket('moe_select_60_challenge'),
+    getBossChallengeTicket('limited_cheki_challenge'),
+    getBossChallengeTicket('moe_select_30_challenge')
   ];
 }
 
@@ -86,7 +117,7 @@ function ensureBossRouletteModal(){
   modal.innerHTML = `
     <div class="boss-roulette-card">
       <div class="boss-roulette-title">BOSS CLEAR BONUS</div>
-      <div class="boss-roulette-sub">ご褒美ルーレット</div>
+      <div class="boss-roulette-sub">挑戦券ルーレット</div>
 
       <div class="boss-roulette-wrap">
         <div class="boss-roulette-pointer">▼</div>
@@ -200,15 +231,13 @@ function injectBossRouletteStyle(){
       border-radius: 50%;
       border: 8px solid #fff;
       background: conic-gradient(
-        from -22.5deg,
-        #f8fafc 0deg 45deg,
-        #fde68a 45deg 90deg,
-        #f8fafc 90deg 135deg,
-        #f8fafc 135deg 180deg,
-        #f9a8d4 180deg 225deg,
-        #f8fafc 225deg 270deg,
-        #fde68a 270deg 315deg,
-        #f8fafc 315deg 360deg
+        from -30deg,
+        #fde68a 0deg 60deg,
+        #f9a8d4 60deg 120deg,
+        #fde68a 120deg 180deg,
+        #c4b5fd 180deg 240deg,
+        #fde68a 240deg 300deg,
+        #f9a8d4 300deg 360deg
       );
       box-shadow: inset 0 0 18px rgba(0,0,0,.18), 0 0 24px rgba(255,255,255,.8);
       transition: transform 3.6s cubic-bezier(.12,.72,.08,1);
@@ -243,9 +272,9 @@ function injectBossRouletteStyle(){
       z-index: 2;
     }
 
-    .boss-roulette-seg-label.miss { color: #475569; }
-    .boss-roulette-seg-label.cheki { color: #b45309; }
-    .boss-roulette-seg-label.moe_select { color: #be185d; font-size: 10px; }
+    .boss-roulette-seg-label.limited_cheki_challenge { color: #b45309; }
+    .boss-roulette-seg-label.moe_select_30_challenge { color: #be185d; font-size: 10px; }
+    .boss-roulette-seg-label.moe_select_60_challenge { color: #6d28d9; font-size: 10px; }
 
     .boss-roulette-burst.hidden { display:none !important; }
 
@@ -318,6 +347,21 @@ function injectBossRouletteStyle(){
       border-color: #facc15 !important;
       box-shadow: 0 0 22px rgba(250,204,21,.75), 0 0 36px rgba(236,72,153,.45) !important;
     }
+
+    .challenge-60 {
+      border-color: #c4b5fd !important;
+      box-shadow: 0 0 24px rgba(168,85,247,.75), 0 0 42px rgba(250,204,21,.35) !important;
+    }
+
+    .challenge-30 {
+      border-color: #f9a8d4 !important;
+      box-shadow: 0 0 22px rgba(236,72,153,.55), 0 0 34px rgba(250,204,21,.28) !important;
+    }
+
+    .challenge-cheki {
+      border-color: #fde68a !important;
+      box-shadow: 0 0 22px rgba(250,204,21,.55), 0 0 32px rgba(245,158,11,.25) !important;
+    }
   `;
 
   document.head.appendChild(style);
@@ -336,7 +380,7 @@ function renderBossRouletteSegments(){
     label.className = `boss-roulette-seg-label ${seg.type}`;
     label.textContent = seg.label;
 
-    const angle = index * 45;
+    const angle = index * 60;
     const radius = 76;
 
     label.style.transform =
@@ -358,7 +402,8 @@ function playBigWinEffect(prizeType){
   }
 
   if(burst){
-    burst.textContent = prizeType === 'moe_select' ? 'ULTRA HIT!' : 'BIG HIT!';
+    const prize = getBossChallengeTicket(prizeType);
+    burst.textContent = prize.burst || 'CHANCE!';
     burst.classList.remove('hidden');
     setTimeout(() => burst.classList.add('hidden'), 2600);
   }
@@ -405,7 +450,7 @@ function runBossRoulette(){
       wheel.style.transform = 'rotate(0deg)';
       void wheel.offsetWidth;
 
-      const finalRotation = 360 * 7 - (stopIndex * 45);
+      const finalRotation = 360 * 7 - (stopIndex * 60);
 
       wheel.style.transition = 'transform 3.6s cubic-bezier(.12,.72,.08,1)';
       wheel.style.transform = `rotate(${finalRotation}deg)`;
@@ -416,21 +461,16 @@ function runBossRoulette(){
     }
 
     setTimeout(() => {
-      if(prize.type === 'cheki' || prize.type === 'moe_select'){
-        if(result) result.textContent = '！！大当たり！！';
-        playBigWinEffect(prize.type);
+      if(result) result.textContent = '挑戦券を獲得！';
+      playBigWinEffect(prize.type);
 
-        setTimeout(() => {
-          if(result){
-            result.textContent =
-              prize.message + '\n結果を見るを押して、日時付き券を表示してください。';
-          }
-          if(closeBtn) closeBtn.classList.remove('hidden');
-        }, 1400);
-      }else{
-        if(result) result.textContent = prize.message;
+      setTimeout(() => {
+        if(result){
+          result.textContent =
+            prize.message + '\n結果を見るを押して、日時付き挑戦券を表示してください。';
+        }
         if(closeBtn) closeBtn.classList.remove('hidden');
-      }
+      }, 1400);
 
       resolve(prize);
     }, 3800);
@@ -443,29 +483,36 @@ function hideAllEndingTickets(){
 
   const moe = document.getElementById('moeSelectTicket');
   if(moe) moe.classList.add('hidden');
+
+  const challenge = document.getElementById('challengeTicket');
+  if(challenge) challenge.classList.add('hidden');
 }
 
-function ensureMoeSelectTicket(){
-  let ticket = document.getElementById('moeSelectTicket');
+function ensureChallengeTicket(){
+  let ticket = document.getElementById('challengeTicket');
   if(ticket) return ticket;
 
   const endingCard = document.querySelector('#endingScreen .ending-card');
   if(!endingCard) return null;
 
   ticket = document.createElement('div');
-  ticket.id = 'moeSelectTicket';
-  ticket.className = 'cheki-ticket moe-select-ticket-special hidden';
+  ticket.id = 'challengeTicket';
+  ticket.className = 'cheki-ticket hidden';
   ticket.innerHTML = `
-    <div class="ticket-label">ULTRA SPECIAL DROP</div>
-    <h2>萌えセレクト券(30分)</h2>
-    <p>この画面のスクリーンショットをお屋敷でご提示ください。</p>
+    <div id="challengeTicketLabel" class="ticket-label">CHALLENGE TICKET</div>
+    <h2 id="challengeTicketTitle">挑戦券</h2>
+    <p id="challengeTicketDescription">
+      この画面のスクリーンショットをお屋敷でご提示ください。特別なくじ引きに挑戦できます。
+    </p>
     <div class="cheki-time">
       <span>発行日時</span>
-      <strong id="moeSelectIssuedAt" class="ticket-issued-at-strong">--:--</strong>
+      <strong id="challengeIssuedAt" class="ticket-issued-at-strong">--:--</strong>
     </div>
     <div class="ticket-required-note">
+      <span id="challengeLotteryRate">くじ当選確率：--</span><br>
+      <span id="challengeFreePrize">当たり景品：--</span><br>
       ※この券は日時表記が写っているスクリーンショットのみ有効です。<br>
-      ※日時が写っていない場合は無効となります。
+      ※当たりを引いた場合、挑戦券の内容に対応した無料券を獲得できます。
     </div>
   `;
 
@@ -479,64 +526,36 @@ function ensureMoeSelectTicket(){
   return ticket;
 }
 
-function ensureChekiTicketNote(){
-  const cheki = document.getElementById('chekiTicket');
-  if(!cheki) return;
-
-  const issuedAt = document.getElementById('chekiIssuedAt');
-  if(issuedAt){
-    issuedAt.classList.add('ticket-issued-at-strong');
-  }
-
-  if(!cheki.querySelector('.ticket-required-note')){
-    const note = document.createElement('div');
-    note.className = 'ticket-required-note';
-    note.innerHTML =
-      '※この券は日時表記が写っているスクリーンショットのみ有効です。<br>' +
-      '※日時が写っていない場合は無効となります。';
-    cheki.appendChild(note);
-  }
-
-  const timeLabel = cheki.querySelector('.cheki-time span');
-  if(timeLabel){
-    timeLabel.textContent = '発行日時';
-  }
-}
-
-function showChekiTicket(){
-  const cheki = document.getElementById('chekiTicket');
-  const issuedAt = document.getElementById('chekiIssuedAt');
+function showChallengeTicket(prize){
+  const finalPrize = getBossChallengeTicket(prize && prize.type);
+  const ticket = ensureChallengeTicket();
+  const issuedAt = document.getElementById('challengeIssuedAt');
   const message = document.getElementById('endingMessage');
   const now = formatChekiIssuedAt(new Date());
 
-  ensureChekiTicketNote();
+  const label = document.getElementById('challengeTicketLabel');
+  const title = document.getElementById('challengeTicketTitle');
+  const description = document.getElementById('challengeTicketDescription');
+  const lotteryRate = document.getElementById('challengeLotteryRate');
+  const freePrize = document.getElementById('challengeFreePrize');
+
+  if(ticket){
+    ticket.className = `cheki-ticket ${finalPrize.className || ''}`;
+  }
+
+  if(label) label.textContent = finalPrize.ticketLabel || 'CHALLENGE TICKET';
+  if(title) title.textContent = finalPrize.title;
+  if(description){
+    description.textContent =
+      'この画面のスクリーンショットをお屋敷でご提示ください。特別なくじ引きに挑戦できます。';
+  }
+  if(lotteryRate) lotteryRate.textContent = `くじ当選確率：${finalPrize.lotteryRate}`;
+  if(freePrize) freePrize.textContent = `当たり景品：${finalPrize.freePrize}`;
 
   if(message){
     message.textContent =
-      'ルーレット大当たり！チェキ券を獲得しました！\n' +
-      'この画面をスクリーンショットで保存してください。';
-  }
-
-  if(issuedAt){
-    issuedAt.textContent = now;
-    issuedAt.classList.add('ticket-issued-at-strong');
-  }
-
-  if(cheki) cheki.classList.remove('hidden');
-
-  playBigWinEffect('cheki');
-}
-
-function showMoeSelectTicket(){
-  const ticket = ensureMoeSelectTicket();
-  const issuedAt = document.getElementById('moeSelectIssuedAt');
-  const message = document.getElementById('endingMessage');
-  const now = formatChekiIssuedAt(new Date());
-
-  if(message){
-    message.textContent =
-      '超大当たり！萌えセレクト券(30分)を獲得しました！！\n' +
-      'この画面をスクリーンショットで保存してください。';
+      `${finalPrize.label}を獲得しました！\n` +
+      'スクリーンショットをお屋敷へ持参すると、特別なくじ引きに挑戦できます。';
   }
 
   if(issuedAt){
@@ -546,33 +565,22 @@ function showMoeSelectTicket(){
 
   if(ticket) ticket.classList.remove('hidden');
 
-  playBigWinEffect('moe_select');
+  playBigWinEffect(finalPrize.type);
 }
 
-function showRouletteMissMessage(){
-  const message = document.getElementById('endingMessage');
+function showChekiTicket(){
+  showChallengeTicket(getBossChallengeTicket('limited_cheki_challenge'));
+}
 
-  if(message){
-    message.textContent = 'ルーレットはハズレでした。でも、鬼怒夜魔さんをいやした！';
-  }
+function showMoeSelectTicket(){
+  showChallengeTicket(getBossChallengeTicket('moe_select_30_challenge'));
 }
 
 function finalizeBossRouletteResult(prize){
-  const finalPrize = prize || window.__potoroLastBossRoulettePrize || {type:'miss'};
+  const finalPrize = prize || window.__potoroLastBossRoulettePrize || getBossChallengeTicket('limited_cheki_challenge');
 
   hideAllEndingTickets();
-
-  if(finalPrize.type === 'cheki'){
-    showChekiTicket();
-    return;
-  }
-
-  if(finalPrize.type === 'moe_select'){
-    showMoeSelectTicket();
-    return;
-  }
-
-  showRouletteMissMessage();
+  showChallengeTicket(finalPrize);
 }
 
 async function showEnding(){
@@ -599,7 +607,7 @@ async function showEnding(){
   hideAllEndingTickets();
 
   const message = document.getElementById('endingMessage');
-  if(message) message.textContent = '鬼怒夜魔さんをいやした！ ご褒美ルーレット開始！';
+  if(message) message.textContent = '鬼怒夜魔さんをいやした！ 挑戦券ルーレット開始！';
 
   await sleep(500);
   await runBossRoulette();
@@ -628,6 +636,9 @@ function restartFromEnding(){
   const moeIssuedAt = document.getElementById('moeSelectIssuedAt');
   if(moeIssuedAt) moeIssuedAt.textContent = '--:--';
 
+  const challengeIssuedAt = document.getElementById('challengeIssuedAt');
+  if(challengeIssuedAt) challengeIssuedAt.textContent = '--:--';
+
   state.busy = false;
   state.started = false;
   state.inBattle = false;
@@ -647,13 +658,14 @@ function bindEndingEvents(){
 window.potoroBossRouletteReport = function(){
   return {
     installed:true,
-    version:'boss-roulette-complete-v4-visual-sync-integrated',
+    version:'boss-challenge-ticket-roulette-v1',
     visualSegments:getBossRouletteSegments(),
     rates:{
-      cheki:'1/1000',
-      moeSelect:'1/10000',
-      miss:'9989/10000'
+      moeSelect60Challenge:'special lottery 1/2000万',
+      moeSelect30Challenge:'special lottery 1/200万',
+      limitedChekiChallenge:'special lottery 1/20万'
     },
+    alwaysAwardsChallengeTicket:true,
     lastPrize:window.__potoroLastBossRoulettePrize || null,
     lastStopIndex:window.__potoroLastBossRouletteStopIndex ?? null
   };
@@ -674,19 +686,26 @@ window.potoroTestBossRoulette = function(){
 };
 
 window.potoroForceNextBossRoulette = function(type){
-  window.__potoroForceNextRoulettePrize = type || 'miss';
+  window.__potoroForceNextRoulettePrize = type || 'limited_cheki_challenge';
   return '次回のルーレット結果を ' + window.__potoroForceNextRoulettePrize + ' に固定しました。potoroTestBossRoulette() を実行してください。';
 };
 
 window.potoroForceChekiTicket = function(){
-  const prize = {type:'cheki',label:'チェキ券',message:'大当たり！チェキ券が当たった！'};
+  const prize = getBossChallengeTicket('limited_cheki_challenge');
   window.__potoroLastBossRoulettePrize = prize;
   window.__potoroLastBossRouletteStopIndex = getStopIndexForPrize(prize.type);
   finalizeBossRouletteResult(prize);
 };
 
 window.potoroForceMoeSelectTicket = function(){
-  const prize = {type:'moe_select',label:'萌えセレクト券(30分)',message:'超大当たり！萌えセレクト券(30分)が当たった！！'};
+  const prize = getBossChallengeTicket('moe_select_30_challenge');
+  window.__potoroLastBossRoulettePrize = prize;
+  window.__potoroLastBossRouletteStopIndex = getStopIndexForPrize(prize.type);
+  finalizeBossRouletteResult(prize);
+};
+
+window.potoroForceMoeSelect60ChallengeTicket = function(){
+  const prize = getBossChallengeTicket('moe_select_60_challenge');
   window.__potoroLastBossRoulettePrize = prize;
   window.__potoroLastBossRouletteStopIndex = getStopIndexForPrize(prize.type);
   finalizeBossRouletteResult(prize);
