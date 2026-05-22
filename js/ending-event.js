@@ -365,6 +365,13 @@ function injectBossRouletteStyle(){
       font-weight: 800;
     }
 
+    .tanabata-ticket-main-prize {
+      font-size: 18px !important;
+      line-height: 1.45 !important;
+      color: #4c1d95;
+      font-weight: 1000 !important;
+    }
+
     .tanabata-costume-name {
       display: block;
       margin: 10px auto;
@@ -545,18 +552,18 @@ function ensureTanabataEventTicket(){
   ticket.id = 'tanabataEventTicket';
   ticket.className = 'tanabata-ticket hidden';
   ticket.innerHTML = `
-    <div class="ticket-label">TANABATA WISH EVENT</div>
-    <h2>イベント開催権 獲得</h2>
-    <p>当選した衣装イベント</p>
+    <div class="ticket-label">七夕イベント🎋</div>
+    <h2>おめでとうございます！</h2>
+    <p class="tanabata-ticket-main-prize">衣装選択イベント開催権利 獲得</p>
+    <p>当選した衣装</p>
     <strong id="tanabataCostumeName" class="tanabata-costume-name">---</strong>
-    <p>この画面のスクリーンショットをお屋敷でご提示ください。</p>
+    <p>この画面のスクリーンショットをお屋敷へ持参すると、特別なくじ引きに挑戦できます。</p>
     <div class="cheki-time">
       <span>発行日時</span>
       <strong id="tanabataIssuedAt" class="ticket-issued-at-strong">--:--</strong>
     </div>
     <div class="ticket-required-note">
-      ※この権利は日時表記が写っているスクリーンショットのみ有効です。<br>
-      ※日時が写っていない場合は無効となります。
+      ※この権利は発行日時が写っているスクリーンショットのみ有効です。
     </div>
   `;
 
@@ -581,8 +588,8 @@ function showTanabataEventTicket(prize){
   if(message){
     message.textContent =
       '七夕の願い事が叶いました！\n' +
-      `「${costume}」イベント開催権を獲得しました！\n` +
-      'この画面をスクリーンショットで保存してください。';
+      `「${costume}」衣装選択イベント開催権利を獲得しました！\n` +
+      'この画面をスクリーンショットで保存し、お屋敷へ持参すると特別なくじ引きに挑戦できます。';
   }
 
   if(costumeName){
