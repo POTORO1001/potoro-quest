@@ -24,31 +24,31 @@ function formatChekiIssuedAt(date){
 const BOSS_CHALLENGE_TICKETS = [
   {
     type:'moe_select_60_challenge',
-    label:'萌えセレ60分挑戦券',
+    label:'萌えセレクト60分無料券GETへの挑戦券',
     shortLabel:'60分挑戦',
     ticketLabel:'LEGEND CHALLENGE',
-    title:'萌えセレ60分挑戦券',
-    freePrize:'萌えセレ60分無料券',
+    title:'萌えセレクト60分無料券GETへの挑戦券',
+    freePrize:'萌えセレクト60分無料券GETへの挑戦券',
     className:'challenge-60',
     burst:'LEGEND!'
   },
   {
     type:'moe_select_30_challenge',
-    label:'萌えセレ30分挑戦券',
+    label:'萌えセレクト30分無料券GETへの挑戦券',
     shortLabel:'30分挑戦',
     ticketLabel:'SPECIAL CHALLENGE',
-    title:'萌えセレ30分挑戦券',
-    freePrize:'萌えセレ30分無料券',
+    title:'萌えセレクト30分無料券GETへの挑戦券',
+    freePrize:'萌えセレクト30分無料券GETへの挑戦券',
     className:'challenge-30',
     burst:'SPECIAL!'
   },
   {
     type:'limited_cheki_challenge',
-    label:'期間限定チェキ挑戦券',
+    label:'チェキ無料券GETへの挑戦券',
     shortLabel:'チェキ挑戦',
     ticketLabel:'PHOTO CHALLENGE',
-    title:'期間限定チェキ挑戦券',
-    freePrize:'期間限定チェキ無料券',
+    title:'チェキ無料券GETへの挑戦券',
+    freePrize:'チェキ無料券GETへの挑戦券',
     className:'challenge-cheki',
     burst:'CHANCE!'
   }
@@ -62,6 +62,14 @@ function getBossChallengeTicket(type){
     || BOSS_CHALLENGE_TICKETS[BOSS_CHALLENGE_TICKETS.length - 1];
 }
 
+function drawBossChallengeTicketType(){
+  const roll = Math.floor(Math.random() * 1000000) + 1;
+
+  if(roll === 1) return 'moe_select_60_challenge';
+  if(roll <= 11) return 'moe_select_30_challenge';
+  return 'limited_cheki_challenge';
+}
+
 function drawBossRoulettePrize(){
   if(window.__potoroForceNextRoulettePrize){
     const forced = getBossChallengeTicket(window.__potoroForceNextRoulettePrize);
@@ -72,8 +80,7 @@ function drawBossRoulettePrize(){
     };
   }
 
-  const segments = getBossRouletteSegments();
-  const ticket = segments[Math.floor(Math.random() * segments.length)];
+  const ticket = getBossChallengeTicket(drawBossChallengeTicketType());
   return {
     ...ticket,
     message:`${ticket.label}を獲得しました！`
@@ -340,6 +347,33 @@ function injectBossRouletteStyle(){
       letter-spacing: .04em;
     }
 
+    .challenge-prize-box {
+      margin: 10px auto 12px;
+      padding: 12px 10px;
+      border-radius: 18px;
+      background: linear-gradient(135deg,#fef3c7,#fce7f3,#ede9fe);
+      border: 2px solid rgba(168,85,247,.28);
+      color: #4c1d95;
+      font-weight: 900;
+    }
+
+    .challenge-prize-label {
+      display: block;
+      margin-bottom: 5px;
+      color: #6d28d9;
+      font-size: 13px;
+      font-weight: 1000;
+      letter-spacing: .04em;
+    }
+
+    .challenge-prize-name {
+      display: block;
+      color: #be185d;
+      font-size: 20px;
+      font-weight: 1000;
+      line-height: 1.35;
+    }
+
     .moe-select-ticket-special {
       border-color: #facc15 !important;
       box-shadow: 0 0 22px rgba(250,204,21,.75), 0 0 36px rgba(236,72,153,.45) !important;
@@ -498,6 +532,10 @@ function ensureChallengeTicket(){
   ticket.innerHTML = `
     <div id="challengeTicketLabel" class="ticket-label">CHALLENGE TICKET</div>
     <h2 id="challengeTicketTitle">挑戦券</h2>
+    <div class="challenge-prize-box">
+      <span class="challenge-prize-label">当選景品</span>
+      <strong id="challengePrizeName" class="challenge-prize-name">---</strong>
+    </div>
     <p id="challengeTicketDescription">
       この画面のスクリーンショットをお屋敷でご提示ください。特別なくじ引きに挑戦できます。
     </p>
@@ -506,9 +544,8 @@ function ensureChallengeTicket(){
       <strong id="challengeIssuedAt" class="ticket-issued-at-strong">--:--</strong>
     </div>
     <div class="ticket-required-note">
-      <span id="challengeFreePrize">当たり景品：--</span><br>
-      ※この券は日時表記が写っているスクリーンショットのみ有効です。<br>
-      ※当たりを引いた場合、挑戦券の内容に対応した無料券を獲得できます。
+      ※この券は発行日時が写っているスクリーンショットのみ有効です。<br>
+      ※お屋敷のくじで当たりを引いた場合、対応した無料券を獲得できます。
     </div>
   `;
 
@@ -532,7 +569,7 @@ function showChallengeTicket(prize){
   const label = document.getElementById('challengeTicketLabel');
   const title = document.getElementById('challengeTicketTitle');
   const description = document.getElementById('challengeTicketDescription');
-  const freePrize = document.getElementById('challengeFreePrize');
+  const prizeName = document.getElementById('challengePrizeName');
 
   if(ticket){
     ticket.className = `cheki-ticket ${finalPrize.className || ''}`;
@@ -542,9 +579,9 @@ function showChallengeTicket(prize){
   if(title) title.textContent = finalPrize.title;
   if(description){
     description.textContent =
-      'この画面のスクリーンショットをお屋敷でご提示ください。特別なくじ引きに挑戦できます。';
+      'この画面のスクリーンショットをお屋敷へ持参すると、特別なくじ引きに挑戦できます。';
   }
-  if(freePrize) freePrize.textContent = `当たり景品：${finalPrize.freePrize}`;
+  if(prizeName) prizeName.textContent = finalPrize.freePrize;
 
   if(message){
     message.textContent =
