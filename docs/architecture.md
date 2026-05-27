@@ -21,7 +21,7 @@
 7. `js/audio.js`
 8. `js/ui.js`
 9. `js/opening.js`
-10. `js/ending-event.js`
+10. `js/ending.js`
 11. `js/scene.js`
 12. `js/magic-learn-compat.js`
 13. `js/battle.js`
@@ -88,8 +88,8 @@
 
 ### エンディング
 
-- `ending.js`: 通常版のボス撃破後挑戦券ルーレット。七夕イベント期間中は `index.html` では読み込まれていません。
-- `ending-event.js`: 七夕イベント版エンディング。現在 `index.html` で読み込まれています。
+- `ending.js`: ボス撃破後の挑戦券ルーレット、見た目の停止マスと内部結果の同期、挑戦券表示、エンディング表示。
+- `ending-event.js`: 七夕イベント版エンディング。現在 `index.html` では読み込まれていません。
 
 ### 素材・音
 
@@ -112,7 +112,7 @@
 - `enemyTurn`: `battle.js` を土台に `magic.js`、`magic-complete.js` が補強。
 - `updateUI`: `ui.js` を土台に `map.js`、`effects.js` が補強。
 - `showDamage`、`criticalFlash`、`bossEntrance`、`showLevelToast`、`enemyFlash`、`playerFlash`: `ui.js` を土台に `effects.js` が補強。
-- `runBossRoulette` / `renderBossRouletteSegments`: 七夕イベント期間中は `ending-event.js` が担当。
+- `runBossRoulette` / `renderBossRouletteSegments`: `ending.js` が担当。
 
 ## 統合のおすすめ順
 
