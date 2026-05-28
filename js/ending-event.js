@@ -107,6 +107,15 @@ function getStopIndexForPrize(prize){
   return 0;
 }
 
+function getBossRouletteFinalRotation(stopIndex){
+  const segmentAngle = 45;
+  const labelCenterAngle = stopIndex * segmentAngle + segmentAngle / 2;
+  const pointerAngle = 270;
+  const spins = 360 * 7;
+
+  return spins + pointerAngle - labelCenterAngle;
+}
+
 function ensureBossRouletteModal(){
   let modal = document.getElementById('bossRouletteModal');
   if(modal) return modal;
@@ -496,9 +505,7 @@ function runBossRoulette(){
       wheel.style.transform = 'rotate(0deg)';
       void wheel.offsetWidth;
 
-      const centerAngle = stopIndex * 45 + 22.5;
-      const spins = 360 * 7;
-      const finalRotation = spins - centerAngle;
+      const finalRotation = getBossRouletteFinalRotation(stopIndex);
 
       wheel.style.transition = 'transform 3.6s cubic-bezier(.12,.72,.08,1)';
       wheel.style.transform = `rotate(${finalRotation}deg)`;
