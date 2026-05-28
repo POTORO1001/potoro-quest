@@ -107,6 +107,8 @@ var POTORO_DROP_CONFIG = {
     ]
   },
 
+  treasureWeaponRate:0.30,
+
   treasureTables:{
     floor1:{
       C:[
@@ -375,6 +377,18 @@ function getTreasureTableByFloorAndRarity(floor,rarity){
   return POTORO_DROP_CONFIG.treasureTables[floorKey][rarity] || [];
 }
 
+function pickTreasureCandidateByType(candidates){
+  const weapons = candidates.filter(drop => drop.type === 'weapon');
+  const uniforms = candidates.filter(drop => drop.type === 'uniform');
+  const wantsWeapon = Math.random() < POTORO_DROP_CONFIG.treasureWeaponRate;
+  const preferred = wantsWeapon ? weapons : uniforms;
+  const fallback = wantsWeapon ? uniforms : weapons;
+  const pool = preferred.length ? preferred : fallback;
+
+  if(!pool.length) return null;
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+
 function isTreasureEquipmentOwned(drop){
   const p = state.player;
 
@@ -476,7 +490,8 @@ function rollTreasureEquipment(floor){
 
   if(!candidates.length) return null;
 
-  const drop = candidates[Math.floor(Math.random()*candidates.length)];
+  const drop = pickTreasureCandidateByType(candidates);
+  if(!drop) return null;
 
   return {
     ...drop,
