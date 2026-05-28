@@ -519,6 +519,13 @@ function hideAllEndingTickets(){
   if(challenge) challenge.classList.add('hidden');
 }
 
+function hideEndingBlockingMenus(){
+  ['subMenu','equipMenu','treasureMenu','targetPanel'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.classList.add('hidden');
+  });
+}
+
 function ensureChallengeTicket(){
   let ticket = document.getElementById('challengeTicket');
   if(ticket) return ticket;
@@ -560,6 +567,8 @@ function ensureChallengeTicket(){
 }
 
 function showChallengeTicket(prize){
+  hideEndingBlockingMenus();
+
   const finalPrize = getBossChallengeTicket(prize && prize.type);
   const ticket = ensureChallengeTicket();
   const issuedAt = document.getElementById('challengeIssuedAt');
@@ -611,6 +620,7 @@ function finalizeBossRouletteResult(prize){
   const finalPrize = prize || window.__potoroLastBossRoulettePrize || getBossChallengeTicket('limited_cheki_challenge');
 
   hideAllEndingTickets();
+  hideEndingBlockingMenus();
   showChallengeTicket(finalPrize);
 }
 
@@ -618,6 +628,7 @@ async function showEnding(){
   stopBgm();
   if(typeof stopAllBgm === 'function') stopAllBgm();
 
+  hideEndingBlockingMenus();
   setButtonsDisabled(true);
   state.busy = true;
 
@@ -635,6 +646,7 @@ async function showEnding(){
     document.getElementById('endingScreen')?.classList.remove('hidden');
   }
 
+  hideEndingBlockingMenus();
   hideAllEndingTickets();
 
   const message = document.getElementById('endingMessage');

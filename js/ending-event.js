@@ -548,6 +548,13 @@ function hideAllEndingTickets(){
   if(tanabata) tanabata.classList.add('hidden');
 }
 
+function hideEndingBlockingMenus(){
+  ['subMenu','equipMenu','treasureMenu','targetPanel'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.classList.add('hidden');
+  });
+}
+
 function ensureTanabataEventTicket(){
   let ticket = document.getElementById('tanabataEventTicket');
   if(ticket) return ticket;
@@ -585,6 +592,8 @@ function ensureTanabataEventTicket(){
 }
 
 function showTanabataEventTicket(prize){
+  hideEndingBlockingMenus();
+
   const ticket = ensureTanabataEventTicket();
   const costumeName = document.getElementById('tanabataCostumeName');
   const issuedAt = document.getElementById('tanabataIssuedAt');
@@ -620,6 +629,7 @@ function finalizeBossRouletteResult(prize){
   };
 
   hideAllEndingTickets();
+  hideEndingBlockingMenus();
   showTanabataEventTicket(finalPrize);
 }
 
@@ -627,6 +637,7 @@ async function showEnding(){
   stopBgm();
   if(typeof stopAllBgm === 'function') stopAllBgm();
 
+  hideEndingBlockingMenus();
   setButtonsDisabled(true);
   state.busy = true;
 
@@ -644,6 +655,7 @@ async function showEnding(){
     document.getElementById('endingScreen')?.classList.remove('hidden');
   }
 
+  hideEndingBlockingMenus();
   hideAllEndingTickets();
 
   const message = document.getElementById('endingMessage');
