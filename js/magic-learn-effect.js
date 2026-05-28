@@ -223,20 +223,11 @@
     }
   }
 
+  window.potoroFlushMagicLearnNotices = flushMagicLearnNotices;
+
   window.checkMagicLearnOnLevelUp = function(level){
     return queueMagicLearnNoticeByLevel(level);
   };
-
-  if(typeof endBattleToMap === 'function' && !window.__potoroMagicLearnEffectEndBattlePatched){
-    window.__potoroMagicLearnEffectEndBattlePatched = true;
-
-    const originalEndBattleToMap = endBattleToMap;
-
-    endBattleToMap = async function(){
-      await flushMagicLearnNotices();
-      return originalEndBattleToMap.apply(this,arguments);
-    };
-  }
 
   window.potoroTestMagicLearnEffect = function(level){
     return showMagicLearnModalByName(getMagicNameByLevel(Number(level)));
@@ -247,11 +238,11 @@
 
     return {
       installed:true,
-      version:'modal-before-map-v1',
+      version:'modal-after-levelup-v2',
       playerLevel:lv,
       expectedMagic:getMagicNameByLevel(lv),
       pending:pendingMagicLearnNotices.slice(),
-      endBattlePatched:!!window.__potoroMagicLearnEffectEndBattlePatched,
+      flushAvailable:typeof window.potoroFlushMagicLearnNotices === 'function',
       list:POTORO_MAGIC_LEARN_LIST
     };
   };

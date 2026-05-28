@@ -371,6 +371,10 @@ async function winBattle(){
     await sleep(1200);
   }
 
+  if(typeof potoroFlushMagicLearnNotices === 'function'){
+    await potoroFlushMagicLearnNotices();
+  }
+
   if(hasBoss){
     await showEnding();
     return;
