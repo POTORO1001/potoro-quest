@@ -1,14 +1,8 @@
 /* =========================
    ポトロクエスト magic-learn-effect.js
-   おまじない習得演出・現行リスト対応版
+   おまじない習得ポップアップ
 
-   差し替え対象：
-   js/magic-learn-effect.js
-
-   目的：
-   レベルアップ時の
-   LEVEL UP! / NEW MAGIC! / おまじない名
-   の表示を、現行のおまじない習得順に合わせます。
+   レベルアップで覚えたおまじないを戦闘終了後、マップへ戻る前に表示します。
 ========================= */
 
 (function(){
@@ -30,6 +24,8 @@
     12:'にしきぬやまー'
   };
 
+  const pendingMagicLearnNotices = [];
+
   function getPlayerLevelSafe(){
     if(typeof state === 'undefined' || !state.player) return null;
     return state.player.lv || state.player.level || null;
@@ -45,154 +41,220 @@
     return state.player.learnedMagicNotice;
   }
 
-  function createMagicLearnToast(){
-    let toast = document.getElementById('potoroMagicLearnToast');
+  function injectMagicLearnStyle(){
+    if(document.getElementById('potoroMagicLearnStyle')) return;
 
-    if(toast) return toast;
+    const style = document.createElement('style');
+    style.id = 'potoroMagicLearnStyle';
+    style.textContent = `
+      .magic-learn-modal.hidden { display: none !important; }
 
-    toast = document.createElement('div');
-    toast.id = 'potoroMagicLearnToast';
-    toast.style.position = 'fixed';
-    toast.style.left = '50%';
-    toast.style.top = '22%';
-    toast.style.transform = 'translate(-50%, -50%) scale(.96)';
-    toast.style.zIndex = '99999';
-    toast.style.minWidth = '220px';
-    toast.style.maxWidth = '86vw';
-    toast.style.padding = '18px 22px';
-    toast.style.borderRadius = '22px';
-    toast.style.border = '4px solid #f5a3d6';
-    toast.style.background = 'rgba(255,255,255,.96)';
-    toast.style.boxShadow = '0 0 22px rgba(255,122,214,.75), 0 8px 24px rgba(0,0,0,.25)';
-    toast.style.textAlign = 'center';
-    toast.style.fontFamily = 'system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
-    toast.style.opacity = '0';
-    toast.style.pointerEvents = 'none';
-    toast.style.transition = 'opacity .25s ease, transform .25s ease';
-    toast.innerHTML = ''
-      + '<div style="font-size:16px;letter-spacing:4px;color:#f472b6;font-weight:900;margin-bottom:6px;">LEVEL UP!</div>'
-      + '<div style="font-size:14px;letter-spacing:3px;color:#ec4899;font-weight:900;margin-bottom:10px;">NEW MAGIC!</div>'
-      + '<div id="potoroMagicLearnToastName" style="font-size:24px;color:#a855f7;font-weight:900;text-shadow:0 0 10px rgba(168,85,247,.35);"></div>';
+      .magic-learn-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 999999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 18px;
+        background: rgba(24,16,74,.72);
+        backdrop-filter: blur(4px);
+      }
 
-    document.body.appendChild(toast);
+      .magic-learn-card {
+        position: relative;
+        width: min(88vw, 390px);
+        padding: 26px 18px 22px;
+        border-radius: 26px;
+        border: 4px solid #f5a3d6;
+        background:
+          radial-gradient(circle at 50% 0%, rgba(255,255,255,.98), rgba(255,241,248,.98) 58%, rgba(239,246,255,.98));
+        box-shadow: 0 0 24px rgba(255,122,214,.78), 0 18px 36px rgba(0,0,0,.35);
+        text-align: center;
+        color: #7c2d92;
+      }
 
-    return toast;
+      .magic-learn-close {
+        position: absolute;
+        right: 12px;
+        top: 10px;
+        width: 34px;
+        height: 34px;
+        border: 0;
+        border-radius: 999px;
+        background: #fce7f3;
+        color: #be185d;
+        font-size: 24px;
+        font-weight: 900;
+        line-height: 1;
+        cursor: pointer;
+      }
+
+      .magic-learn-kicker {
+        font-size: 14px;
+        letter-spacing: .22em;
+        color: #f472b6;
+        font-weight: 1000;
+        margin-bottom: 8px;
+      }
+
+      .magic-learn-title {
+        font-size: 22px;
+        color: #ec4899;
+        font-weight: 1000;
+        margin-bottom: 12px;
+      }
+
+      .magic-learn-name {
+        display: block;
+        margin: 12px auto;
+        padding: 14px 10px;
+        border-radius: 20px;
+        background: linear-gradient(135deg,#fef3c7,#fce7f3,#ede9fe);
+        border: 2px solid rgba(168,85,247,.25);
+        color: #7c3aed;
+        font-size: 28px;
+        font-weight: 1000;
+        line-height: 1.25;
+      }
+
+      .magic-learn-help {
+        margin: 10px 0 0;
+        color: #4c1d95;
+        font-size: 14px;
+        line-height: 1.55;
+        font-weight: 800;
+      }
+
+      .magic-learn-ok {
+        width: 100%;
+        margin-top: 18px;
+        border: 0;
+        border-radius: 18px;
+        padding: 13px 12px;
+        background: linear-gradient(135deg,#60a5fa,#a855f7,#f472b6);
+        color: #fff;
+        font-size: 16px;
+        font-weight: 900;
+        cursor: pointer;
+        box-shadow: 0 8px 18px rgba(99,102,241,.28);
+      }
+    `;
+
+    document.head.appendChild(style);
   }
 
-  function showMagicLearnEffectByName(name){
-    if(!name) return false;
+  function ensureMagicLearnModal(){
+    let modal = document.getElementById('potoroMagicLearnModal');
+    if(modal) return modal;
 
-    const toast = createMagicLearnToast();
-    const nameEl = document.getElementById('potoroMagicLearnToastName');
+    injectMagicLearnStyle();
+
+    modal = document.createElement('section');
+    modal.id = 'potoroMagicLearnModal';
+    modal.className = 'magic-learn-modal hidden';
+    modal.innerHTML = `
+      <div class="magic-learn-card">
+        <button id="potoroMagicLearnClose" class="magic-learn-close" type="button" aria-label="閉じる">×</button>
+        <div class="magic-learn-kicker">LEVEL UP!</div>
+        <div class="magic-learn-title">新しいおまじないを覚えました</div>
+        <strong id="potoroMagicLearnName" class="magic-learn-name">---</strong>
+        <p class="magic-learn-help">次の戦闘から「おまじない」で使えます。</p>
+        <button id="potoroMagicLearnOk" class="magic-learn-ok" type="button">OK</button>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+    return modal;
+  }
+
+  function showMagicLearnModalByName(name){
+    if(!name) return Promise.resolve(false);
+
+    const modal = ensureMagicLearnModal();
+    const nameEl = document.getElementById('potoroMagicLearnName');
+    const closeBtn = document.getElementById('potoroMagicLearnClose');
+    const okBtn = document.getElementById('potoroMagicLearnOk');
 
     if(nameEl) nameEl.textContent = name;
 
-    toast.style.opacity = '1';
-    toast.style.transform = 'translate(-50%, -50%) scale(1)';
+    modal.classList.remove('hidden');
 
     if(typeof seLevelUp === 'function'){
       try{ seLevelUp(); }catch(e){}
     }
 
-    setTimeout(function(){
-      toast.style.opacity = '0';
-      toast.style.transform = 'translate(-50%, -50%) scale(.96)';
-    }, 1800);
+    return new Promise(resolve => {
+      const close = () => {
+        modal.classList.add('hidden');
+        closeBtn?.removeEventListener('click',close);
+        okBtn?.removeEventListener('click',close);
+        resolve(true);
+      };
 
-    return true;
+      closeBtn?.addEventListener('click',close);
+      okBtn?.addEventListener('click',close);
+    });
   }
 
-  function showMagicLearnEffectByLevel(level){
-    const name = getMagicNameByLevel(level);
-    if(!name) return false;
+  function queueMagicLearnNoticeByLevel(level){
+    const lv = Number(level || getPlayerLevelSafe());
+    const name = getMagicNameByLevel(lv);
+    if(!name) return null;
 
     const memory = ensureLearnedMagicMemory();
+    if(memory[lv]) return null;
 
-    if(memory[level]) return false;
-
-    memory[level] = true;
-
-    showMagicLearnEffectByName(name);
+    memory[lv] = true;
+    pendingMagicLearnNotices.push({level:lv,name:name});
 
     if(typeof setMessage === 'function'){
-      setMessage(name + 'をおぼえた！');
+      setMessage(`${name}を覚えた！`);
     }
 
-    console.log('[PO・TORO QUEST] magic learned effect', {
-      level:Number(level),
-      name:name
-    });
-
-    return true;
+    console.log('[PO・TORO QUEST] magic learned queued', {level:lv,name:name});
+    return name;
   }
 
-  if(typeof winBattle === 'function' && !window.__potoroMagicLearnEffectWinBattlePatched){
-    window.__potoroMagicLearnEffectWinBattlePatched = true;
-
-    const originalWinBattle = winBattle;
-
-    winBattle = async function(){
-      const beforeLv = getPlayerLevelSafe();
-
-      const result = await originalWinBattle.apply(this, arguments);
-
-      const afterLv = getPlayerLevelSafe();
-
-      if(beforeLv !== null && afterLv !== null && afterLv > beforeLv){
-        let delay = 250;
-
-        for(let lv = beforeLv + 1; lv <= afterLv; lv++){
-          if(getMagicNameByLevel(lv)){
-            setTimeout(function(){
-              showMagicLearnEffectByLevel(lv);
-            }, delay);
-
-            delay += 1900;
-          }
-        }
-      }
-
-      return result;
-    };
+  async function flushMagicLearnNotices(){
+    while(pendingMagicLearnNotices.length){
+      const notice = pendingMagicLearnNotices.shift();
+      await showMagicLearnModalByName(notice.name);
+    }
   }
 
-  if(typeof levelUp === 'function' && !window.__potoroMagicLearnEffectLevelUpPatched){
-    window.__potoroMagicLearnEffectLevelUpPatched = true;
+  window.checkMagicLearnOnLevelUp = function(level){
+    return queueMagicLearnNoticeByLevel(level);
+  };
 
-    const originalLevelUp = levelUp;
+  if(typeof endBattleToMap === 'function' && !window.__potoroMagicLearnEffectEndBattlePatched){
+    window.__potoroMagicLearnEffectEndBattlePatched = true;
 
-    levelUp = function(){
-      const beforeLv = getPlayerLevelSafe();
+    const originalEndBattleToMap = endBattleToMap;
 
-      const result = originalLevelUp.apply(this, arguments);
-
-      const afterLv = getPlayerLevelSafe();
-
-      if(beforeLv !== null && afterLv !== null && afterLv > beforeLv){
-        for(let lv = beforeLv + 1; lv <= afterLv; lv++){
-          showMagicLearnEffectByLevel(lv);
-        }
-      }
-
-      return result;
+    endBattleToMap = async function(){
+      await flushMagicLearnNotices();
+      return originalEndBattleToMap.apply(this,arguments);
     };
   }
 
   window.potoroTestMagicLearnEffect = function(level){
-    return showMagicLearnEffectByName(getMagicNameByLevel(Number(level)));
+    return showMagicLearnModalByName(getMagicNameByLevel(Number(level)));
   };
 
   window.potoroMagicLearnEffectReport = function(){
+    const lv = getPlayerLevelSafe();
+
     return {
       installed:true,
-      version:'fixed-current-magic-list',
-      playerLevel:getPlayerLevelSafe(),
-      expectedMagic:getMagicNameByLevel(getPlayerLevelSafe()),
-      list:POTORO_MAGIC_LEARN_LIST,
-      winBattlePatched:!!window.__potoroMagicLearnEffectWinBattlePatched,
-      levelUpPatched:!!window.__potoroMagicLearnEffectLevelUpPatched
+      version:'modal-before-map-v1',
+      playerLevel:lv,
+      expectedMagic:getMagicNameByLevel(lv),
+      pending:pendingMagicLearnNotices.slice(),
+      endBattlePatched:!!window.__potoroMagicLearnEffectEndBattlePatched,
+      list:POTORO_MAGIC_LEARN_LIST
     };
   };
 
-  console.log('[PO・TORO QUEST] magic-learn-effect.js fixed loaded', window.potoroMagicLearnEffectReport());
+  console.log('[PO・TORO QUEST] magic-learn-effect.js loaded', window.potoroMagicLearnEffectReport());
 })();
