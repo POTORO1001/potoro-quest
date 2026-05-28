@@ -416,6 +416,19 @@ function getTreasureEquipmentName(drop){
   return getTreasureEquipmentObject(drop)?.name || drop.id;
 }
 
+function getTreasureEquipmentSlotLabel(drop){
+  if(drop.type === 'weapon') return '武器';
+
+  const item = getTreasureEquipmentObject(drop);
+  const slot = item && item.slot ? item.slot : '';
+
+  if(slot === 'head') return '頭';
+  if(slot === 'body') return '服';
+  if(slot === 'accessory') return 'アクセ';
+
+  return '装備';
+}
+
 function getTreasureEquipmentRarity(drop){
   return getTreasureEquipmentObject(drop)?.rarity || drop.rarity || 'B';
 }
@@ -511,10 +524,11 @@ function giveMapTreasureEquipment(){
   addTreasureEquipment(drop);
 
   const name = getTreasureEquipmentName(drop);
+  const slotLabel = getTreasureEquipmentSlotLabel(drop);
   const rarity = getTreasureEquipmentRarity(drop);
   const statText = getTreasureEquipmentStatText(drop);
 
-  setMapMessage(`宝箱を開けた！ 【${rarity}】${name} を手に入れた！ ${statText}`);
+  setMapMessage(`宝箱を開けた！ 【${rarity}】${slotLabel}：${name} を手に入れた！ ${statText}`);
 
   if(typeof showTreasureRarityEffect === 'function') showTreasureRarityEffect(rarity,name);
   if(typeof seTreasure === 'function') seTreasure();
@@ -522,7 +536,7 @@ function giveMapTreasureEquipment(){
 
   refreshEquipMenuAfterTreasure();
 
-  return {drop,name,rarity,statText};
+  return {drop,name,slotLabel,rarity,statText};
 }
 
 function potoroDropReport(){
