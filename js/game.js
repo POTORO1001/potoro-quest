@@ -997,7 +997,7 @@ async function useMagic(kind){
     const turns=1+Math.floor(Math.random()*3);
     target.sleepTurns=turns;
     await showCutin('おまじない','おやすみなさい…');
-    setMessage(`${target.name} は ${turns}ターン 眠った！`);
+    setMessage(`${target.name} は 眠った！`);
     seMagic();updateUI();
     await sleep(800);
     if(!state.enemyActedFirst) await enemyTurn();
@@ -1139,6 +1139,7 @@ async function enemyTurn(){
 
     if(await enemySpecialAction(e)){
       updateUI(); await sleep(850);
+      if(allEnemiesDefeated()){await winBattle();return;}
       if(p.hp<=0){setMessage(`${p.name} は たおれてしまった…`);await sleep(900);showGameOver();return;}
       continue;
     }

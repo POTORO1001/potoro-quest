@@ -212,6 +212,11 @@ async function enemyTurn(){
       updateUI();
       await sleep(850);
 
+      if(allEnemiesDefeated()){
+        await winBattle();
+        return;
+      }
+
       if(p.hp <= 0){
         setMessage(`${p.name} は たおれてしまった…`);
         await sleep(900);

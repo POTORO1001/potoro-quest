@@ -452,7 +452,7 @@ async function useMagicSleepConfigured(){
 
   await showCutin('おまじない','おやすみなさい…');
 
-  setMessage(`${target.name} は ${turns}ターン 眠った！`);
+  setMessage(`${target.name} は 眠った！`);
 
   playOmajinaiSe();
   updateUI();
