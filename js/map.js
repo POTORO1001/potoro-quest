@@ -752,6 +752,25 @@ function potoroMapItemFail(message){
   updateMapStatusPanel();
 }
 
+function refreshOpenMapItemMenu(){
+  const sub = document.getElementById('subMenu');
+  const body = document.getElementById('subMenuBody');
+
+  if(!sub || !body) return;
+  if(sub.classList.contains('hidden')) return;
+  if(sub.dataset.potoroMenuKind !== 'item') return;
+
+  body.innerHTML = '';
+
+  const itemKinds = typeof ownedItemKinds === 'function' ? ownedItemKinds() : ['omurice','tea','horse'];
+  itemKinds.forEach(itemKind => {
+    const btn = document.createElement('button');
+    btn.textContent = getMapItemLabel(itemKind);
+    btn.onclick = () => useItem(itemKind);
+    body.appendChild(btn);
+  });
+}
+
 async function useMapItem(kind){
   const p = state.player;
   if(!p.items) p.items = {};
@@ -767,6 +786,7 @@ async function useMapItem(kind){
     if(typeof seHeal === 'function') seHeal();
     updateMapStatusPanel();
     if(typeof updateUI === 'function') updateUI();
+    refreshOpenMapItemMenu();
     return;
   }
 
@@ -780,6 +800,7 @@ async function useMapItem(kind){
     if(typeof seHeal === 'function') seHeal();
     updateMapStatusPanel();
     if(typeof updateUI === 'function') updateUI();
+    refreshOpenMapItemMenu();
     return;
   }
 
@@ -817,6 +838,8 @@ if(typeof openSubMenu === 'function' && !window.__potoroMapOpenSubMenuPatched){
   const _potoroMapOriginalOpenSubMenu = openSubMenu;
   openSubMenu = function(kind){
     _potoroMapOriginalOpenSubMenu(kind);
+    const sub = document.getElementById('subMenu');
+    if(sub) sub.dataset.potoroMenuKind = kind;
     if(kind !== 'item') return;
     const title = document.getElementById('subMenuTitle');
     const body = document.getElementById('subMenuBody');
