@@ -47,9 +47,9 @@
     const style = document.createElement('style');
     style.id = 'potoroMagicLearnStyle';
     style.textContent = `
-      .magic-learn-modal.hidden { display: none !important; }
+      .potoro-magic-learn-modal.hidden { display: none !important; }
 
-      .magic-learn-modal {
+      .potoro-magic-learn-modal {
         position: fixed;
         inset: 0;
         z-index: 999999;
@@ -61,7 +61,7 @@
         backdrop-filter: blur(4px);
       }
 
-      .magic-learn-card {
+      .potoro-magic-learn-card {
         position: relative;
         width: min(88vw, 390px);
         padding: 26px 18px 22px;
@@ -72,9 +72,10 @@
         box-shadow: 0 0 24px rgba(255,122,214,.78), 0 18px 36px rgba(0,0,0,.35);
         text-align: center;
         color: #7c2d92;
+        animation: none !important;
       }
 
-      .magic-learn-close {
+      .potoro-magic-learn-close {
         position: absolute;
         right: 12px;
         top: 10px;
@@ -90,7 +91,7 @@
         cursor: pointer;
       }
 
-      .magic-learn-kicker {
+      .potoro-magic-learn-kicker {
         font-size: 14px;
         letter-spacing: .22em;
         color: #f472b6;
@@ -98,14 +99,15 @@
         margin-bottom: 8px;
       }
 
-      .magic-learn-title {
+      .potoro-magic-learn-title {
         font-size: 22px;
         color: #ec4899;
         font-weight: 1000;
         margin-bottom: 12px;
+        animation: none !important;
       }
 
-      .magic-learn-name {
+      .potoro-magic-learn-name {
         display: block;
         margin: 12px auto;
         padding: 14px 10px;
@@ -116,9 +118,10 @@
         font-size: 28px;
         font-weight: 1000;
         line-height: 1.25;
+        animation: none !important;
       }
 
-      .magic-learn-help {
+      .potoro-magic-learn-help {
         margin: 10px 0 0;
         color: #4c1d95;
         font-size: 14px;
@@ -126,7 +129,7 @@
         font-weight: 800;
       }
 
-      .magic-learn-ok {
+      .potoro-magic-learn-ok {
         width: 100%;
         margin-top: 18px;
         border: 0;
@@ -152,17 +155,17 @@
 
     const modal = document.createElement('section');
     modal.id = 'potoroMagicLearnModal';
-    modal.className = 'magic-learn-modal';
+    modal.className = 'potoro-magic-learn-modal';
     modal.setAttribute('role','dialog');
     modal.setAttribute('aria-modal','true');
     modal.innerHTML = `
-      <div class="magic-learn-card">
-        <button id="potoroMagicLearnClose" class="magic-learn-close" type="button" aria-label="閉じる">×</button>
-        <div class="magic-learn-kicker">LEVEL UP!</div>
-        <div class="magic-learn-title">新しいおまじないを覚えました</div>
-        <strong id="potoroMagicLearnName" class="magic-learn-name">---</strong>
-        <p class="magic-learn-help">次の戦闘から「おまじない」で使えます。</p>
-        <button id="potoroMagicLearnOk" class="magic-learn-ok" type="button">OK</button>
+      <div class="potoro-magic-learn-card">
+        <button id="potoroMagicLearnClose" class="potoro-magic-learn-close" type="button" aria-label="閉じる">×</button>
+        <div class="potoro-magic-learn-kicker">LEVEL UP!</div>
+        <div class="potoro-magic-learn-title">新しいおまじないを覚えました</div>
+        <strong id="potoroMagicLearnName" class="potoro-magic-learn-name">---</strong>
+        <p class="potoro-magic-learn-help">次の戦闘から「おまじない」で使えます。</p>
+        <button id="potoroMagicLearnOk" class="potoro-magic-learn-ok" type="button">OK</button>
       </div>
     `;
 
@@ -266,7 +269,7 @@
 
     return {
       installed:true,
-      version:'modal-manual-close-v3',
+      version:'modal-manual-close-v4-css-isolated',
       playerLevel:lv,
       expectedMagic:getMagicNameByLevel(lv),
       pending:pendingMagicLearnNotices.slice(),
