@@ -744,6 +744,19 @@ function getMapItemAmount(kind,fallback){
   return fallback;
 }
 
+function getMapItemName(kind,fallback){
+  if(typeof getItemData === 'function'){
+    const item = getItemData(kind);
+    if(item && item.name) return item.name;
+  }
+
+  if(typeof POTORO_ITEMS !== 'undefined' && POTORO_ITEMS[kind] && POTORO_ITEMS[kind].name){
+    return POTORO_ITEMS[kind].name;
+  }
+
+  return fallback || kind;
+}
+
 function potoroMapItemFail(message){
   if(typeof setMapMessage === 'function') setMapMessage(message);
   else if(typeof setMessage === 'function') setMessage(message);
@@ -777,12 +790,13 @@ async function useMapItem(kind){
   state.busy = false;
 
   if(kind === 'omurice'){
-    if((p.items.omurice || 0) <= 0){ potoroMapItemFail('オムライスは持っていない！'); return; }
+    const itemName = getMapItemName('omurice','オムライス');
+    if((p.items.omurice || 0) <= 0){ potoroMapItemFail(`${itemName}は持っていない！`); return; }
     if(p.hp >= p.maxHp){ potoroMapItemFail('HPはすでに満タンです！'); return; }
     p.items.omurice--;
     const heal = Math.min(getMapItemAmount('omurice',30),p.maxHp - p.hp);
     p.hp += heal;
-    setMapMessage(`オムライスを食べた！ HPが ${heal} 回復！`);
+    setMapMessage(`${itemName}を食べた！ HPが ${heal} 回復！`);
     if(typeof seHeal === 'function') seHeal();
     updateMapStatusPanel();
     if(typeof updateUI === 'function') updateUI();
@@ -791,12 +805,13 @@ async function useMapItem(kind){
   }
 
   if(kind === 'tea'){
-    if((p.items.tea || 0) <= 0){ potoroMapItemFail('紅茶は持っていない！'); return; }
+    const itemName = getMapItemName('tea','紅茶');
+    if((p.items.tea || 0) <= 0){ potoroMapItemFail(`${itemName}は持っていない！`); return; }
     if(p.mp >= p.maxMp){ potoroMapItemFail('MPはすでに満タンです！'); return; }
     p.items.tea--;
     const healMp = Math.min(getMapItemAmount('tea',10),p.maxMp - p.mp);
     p.mp += healMp;
-    setMapMessage(`紅茶を飲んだ！ MPが ${healMp} 回復！`);
+    setMapMessage(`${itemName}を飲んだ！ MPが ${healMp} 回復！`);
     if(typeof seHeal === 'function') seHeal();
     updateMapStatusPanel();
     if(typeof updateUI === 'function') updateUI();
@@ -827,8 +842,8 @@ function getMapItemLabel(kind){
   if(typeof itemMenuLabel === 'function') return itemMenuLabel(kind);
   const p = state.player;
   const items = p.items || {};
-  if(kind === 'omurice') return `オムライス　HP回復　残り${items.omurice || 0}`;
-  if(kind === 'tea') return `紅茶　MP回復　残り${items.tea || 0}`;
+  if(kind === 'omurice') return `${getMapItemName('omurice','オムライス')}　HP回復　残り${items.omurice || 0}`;
+  if(kind === 'tea') return `${getMapItemName('tea','紅茶')}　MP回復　残り${items.tea || 0}`;
   if(kind === 'horse') return `くろれきし　戦闘中のみ　残り${items.horse || 0}`;
   return kind;
 }
