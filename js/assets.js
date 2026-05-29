@@ -29,14 +29,19 @@
 /* ===== Asset List ===== */
 const POTORO_ASSETS = {
   enemies: [
-    'img/enemies/teiji.png?v=29special',
-    'img/enemies/kuufuku.png?v=29special',
-    'img/enemies/zangyo.png?v=29special',
-    'img/enemies/meisou.png?v=29special',
-    'img/enemies/gekimu.png?v=29special',
-    'img/enemies/neochi.png?v=29special',
-    'img/enemies/deisui.png?v=29special',
-    'img/enemies/shisseki.png?v=29special',
+    'img/enemies/teiji.png?v=enemy-canvas-v1',
+    'img/enemies/kuufuku.png?v=enemy-canvas-v1',
+    'img/enemies/zangyo.png?v=enemy-canvas-v1',
+    'img/enemies/meisou.png?v=enemy-canvas-v1',
+    'img/enemies/gekimu.png?v=enemy-canvas-v1',
+    'img/enemies/neochi.png?v=enemy-canvas-v1',
+    'img/enemies/deisui.png?v=enemy-canvas-v1',
+    'img/enemies/shisseki.png?v=enemy-canvas-v1',
+    'img/enemies/maigo.png?v=enemy-canvas-v1',
+    'img/enemies/shousou.png?v=enemy-canvas-v1',
+    'img/enemies/sanzai.png?v=enemy-canvas-v1',
+    'img/enemies/bousou.png?v=enemy-canvas-v1',
+    'img/enemies/juuatsu.png?v=enemy-canvas-v1',
     'img/enemies/boss.png?v=29special',
     'img/enemies/tamachan.png?v=29special'
   ],

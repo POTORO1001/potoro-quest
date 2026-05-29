@@ -29,14 +29,14 @@ const MAZE_W=17;
 const MAZE_H=17;
 
 const enemies=[
-  {id:'teiji',name:'定時のご主人様',hp:45,maxHp:45,mp:0,maxMp:0,atk:7,def:3,spd:6,talk:3,exp:10,image:'img/enemies/teiji.png?v=29special',intro:'定時のご主人様が あらわれた！'},
-  {id:'kuufuku',name:'空腹のご主人様',hp:65,maxHp:65,mp:5,maxMp:5,atk:10,def:4,spd:7,talk:5,exp:15,image:'img/enemies/kuufuku.png?v=29special',skill:'drain',intro:'空腹のご主人様が おなかを鳴らして あらわれた！'},
-  {id:'zangyo',name:'残業のご主人様',hp:85,maxHp:85,mp:0,maxMp:0,atk:13,def:6,spd:8,talk:6,exp:22,image:'img/enemies/zangyo.png?v=29special',skill:'double',intro:'残業のご主人様が つかれた顔で あらわれた！'},
-  {id:'meisou',name:'迷走のご主人様',hp:110,maxHp:110,mp:10,maxMp:10,atk:15,def:8,spd:12,talk:10,exp:30,image:'img/enemies/meisou.png?v=29special',skill:'confuse',intro:'迷走のご主人様が ぐるぐるしながら あらわれた！'},
-  {id:'gekimu',name:'激務のご主人様',hp:150,maxHp:150,mp:12,maxMp:12,atk:19,def:10,spd:12,talk:11,exp:42,image:'img/enemies/gekimu.png?v=29special',skill:'powerup',intro:'激務のご主人様が せわしなく あらわれた！'},
-  {id:'neochi',name:'寝落のご主人様',hp:130,maxHp:130,mp:15,maxMp:15,atk:16,def:9,spd:9,talk:12,exp:38,image:'img/enemies/neochi.png?v=29special',skill:'sleep',intro:'寝落のご主人様が うとうとしながら あらわれた！'},
-  {id:'deisui',name:'泥酔のご主人様',hp:180,maxHp:180,mp:18,maxMp:18,atk:21,def:12,spd:8,talk:14,exp:55,image:'img/enemies/deisui.png?v=29special',skill:'drunk',intro:'泥酔のご主人様が ふらつきながら あらわれた！'},
-  {id:'shisseki',name:'叱責のご主人様',hp:240,maxHp:240,mp:25,maxMp:25,atk:26,def:16,spd:15,talk:16,exp:75,image:'img/enemies/shisseki.png?v=29special',skill:'defdown',intro:'叱責のご主人様が ふるえながら あらわれた！'},
+  {id:'teiji',name:'定時のご主人様',hp:45,maxHp:45,mp:0,maxMp:0,atk:7,def:3,spd:6,talk:3,exp:10,image:'img/enemies/teiji.png?v=enemy-canvas-v1',intro:'定時のご主人様が あらわれた！'},
+  {id:'kuufuku',name:'空腹のご主人様',hp:65,maxHp:65,mp:5,maxMp:5,atk:10,def:4,spd:7,talk:5,exp:15,image:'img/enemies/kuufuku.png?v=enemy-canvas-v1',skill:'drain',intro:'空腹のご主人様が おなかを鳴らして あらわれた！'},
+  {id:'zangyo',name:'残業のご主人様',hp:85,maxHp:85,mp:0,maxMp:0,atk:13,def:6,spd:8,talk:6,exp:22,image:'img/enemies/zangyo.png?v=enemy-canvas-v1',skill:'double',intro:'残業のご主人様が つかれた顔で あらわれた！'},
+  {id:'meisou',name:'迷走のご主人様',hp:110,maxHp:110,mp:10,maxMp:10,atk:15,def:8,spd:12,talk:10,exp:30,image:'img/enemies/meisou.png?v=enemy-canvas-v1',skill:'confuse',intro:'迷走のご主人様が ぐるぐるしながら あらわれた！'},
+  {id:'gekimu',name:'激務のご主人様',hp:150,maxHp:150,mp:12,maxMp:12,atk:19,def:10,spd:12,talk:11,exp:42,image:'img/enemies/gekimu.png?v=enemy-canvas-v1',skill:'powerup',intro:'激務のご主人様が せわしなく あらわれた！'},
+  {id:'neochi',name:'寝落のご主人様',hp:130,maxHp:130,mp:15,maxMp:15,atk:16,def:9,spd:9,talk:12,exp:38,image:'img/enemies/neochi.png?v=enemy-canvas-v1',skill:'sleep',intro:'寝落のご主人様が うとうとしながら あらわれた！'},
+  {id:'deisui',name:'泥酔のご主人様',hp:180,maxHp:180,mp:18,maxMp:18,atk:21,def:12,spd:8,talk:14,exp:55,image:'img/enemies/deisui.png?v=enemy-canvas-v1',skill:'drunk',intro:'泥酔のご主人様が ふらつきながら あらわれた！'},
+  {id:'shisseki',name:'叱責のご主人様',hp:240,maxHp:240,mp:25,maxMp:25,atk:26,def:16,spd:15,talk:16,exp:75,image:'img/enemies/shisseki.png?v=enemy-canvas-v1',skill:'defdown',intro:'叱責のご主人様が ふるえながら あらわれた！'},
   {id:'boss',name:'鬼怒夜魔さん',hp:380,maxHp:380,mp:40,maxMp:40,atk:32,def:20,spd:18,talk:22,exp:120,image:'img/enemies/boss.png?v=29special',boss:true,skill:'boss',intro:'鬼怒夜魔さんが あらわれた！！'},
   {id:'tamachan',name:'たまちゃん',hp:1,maxHp:1,mp:0,maxMp:0,atk:0,def:0,spd:99,talk:99,exp:0,image:'img/enemies/tamachan.png?v=29special',helper:true,intro:'たまちゃんが あらわれた！'}
 ];
@@ -280,11 +280,11 @@ function startBgm(kind){
 
 /* ===== Assets ===== */
 const ASSETS_TO_PRELOAD=[
-  'img/enemies/teiji.png?v=29special','img/enemies/kuufuku.png?v=29special','img/enemies/zangyo.png?v=29special',
-  'img/enemies/meisou.png?v=29special','img/enemies/gekimu.png?v=29special','img/enemies/neochi.png?v=29special',
-  'img/enemies/deisui.png?v=29special','img/enemies/shisseki.png?v=29special','img/enemies/boss.png?v=29special',
-  'img/enemies/maigo.png?v=expanded-enemies-v1','img/enemies/shousou.png?v=expanded-enemies-v1','img/enemies/sanzai.png?v=expanded-enemies-v1',
-  'img/enemies/bousou.png?v=expanded-enemies-v1','img/enemies/juuatsu.png?v=expanded-enemies-v1',
+  'img/enemies/teiji.png?v=enemy-canvas-v1','img/enemies/kuufuku.png?v=enemy-canvas-v1','img/enemies/zangyo.png?v=enemy-canvas-v1',
+  'img/enemies/meisou.png?v=enemy-canvas-v1','img/enemies/gekimu.png?v=enemy-canvas-v1','img/enemies/neochi.png?v=enemy-canvas-v1',
+  'img/enemies/deisui.png?v=enemy-canvas-v1','img/enemies/shisseki.png?v=enemy-canvas-v1','img/enemies/boss.png?v=29special',
+  'img/enemies/maigo.png?v=enemy-canvas-v1','img/enemies/shousou.png?v=enemy-canvas-v1','img/enemies/sanzai.png?v=enemy-canvas-v1',
+  'img/enemies/bousou.png?v=enemy-canvas-v1','img/enemies/juuatsu.png?v=enemy-canvas-v1',
   'img/enemies/tamachan.png?v=29special','img/backgrounds/battle_room.png?v=29special','img/backgrounds/battle_boss_room.png?v=29special'
 ];
 function preloadImage(src){return new Promise(resolve=>{const img=new Image();img.onload=()=>resolve({src,ok:true});img.onerror=()=>resolve({src,ok:false});img.src=src;});}

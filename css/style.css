@@ -1994,8 +1994,6 @@ body.potoro-boss-criticalhp .enemy-slot.selected{
   max-width:112px;
   max-height:128px;
   object-fit:contain;
-  transform:translateY(var(--enemy-visual-y,22px)) scale(var(--enemy-visual-scale,1));
-  transform-origin:center bottom;
 }
 
 .enemy-slots.single-enemy .enemy-slot.regular-enemy img{
@@ -2003,32 +2001,6 @@ body.potoro-boss-criticalhp .enemy-slot.selected{
   height:170px;
   max-width:150px;
   max-height:170px;
-  --enemy-visual-y:52px;
-}
-
-.enemy-slot.enemy-teiji,
-.enemy-slot.enemy-kuufuku,
-.enemy-slot.enemy-zangyo,
-.enemy-slot.enemy-meisou,
-.enemy-slot.enemy-gekimu,
-.enemy-slot.enemy-neochi,
-.enemy-slot.enemy-deisui,
-.enemy-slot.enemy-shisseki{
-  --enemy-visual-scale:1.52;
-}
-
-.enemy-slot.enemy-maigo,
-.enemy-slot.enemy-shousou,
-.enemy-slot.enemy-sanzai{
-  --enemy-visual-scale:1.12;
-}
-
-.enemy-slot.enemy-bousou{
-  --enemy-visual-scale:1.06;
-}
-
-.enemy-slot.enemy-juuatsu{
-  --enemy-visual-scale:.82;
 }
 
 @media (max-width:360px){
@@ -2037,7 +2009,6 @@ body.potoro-boss-criticalhp .enemy-slot.selected{
     height:110px;
     max-width:96px;
     max-height:110px;
-    --enemy-visual-y:18px;
   }
 }
 

@@ -33,11 +33,11 @@ function installExpandedEnemyBalance(){
   ].forEach(([id,stats]) => patchEnemy(id,stats));
 
   [
-    {id:'maigo',name:'迷子のご主人様',hp:90,maxHp:90,mp:10,maxMp:10,atk:15,def:7,spd:14,talk:9,exp:26,image:'img/enemies/maigo.png?v=expanded-enemies-v1',skill:'lost',intro:'迷子のご主人様が 地図を広げながら あらわれた！'},
-    {id:'shousou',name:'焦燥のご主人様',hp:115,maxHp:115,mp:12,maxMp:12,atk:18,def:8,spd:17,talk:12,exp:34,image:'img/enemies/shousou.png?v=expanded-enemies-v1',skill:'rush_pressure',intro:'焦燥のご主人様が 時計を気にしながら あらわれた！'},
-    {id:'sanzai',name:'散財のご主人様',hp:135,maxHp:135,mp:14,maxMp:14,atk:20,def:10,spd:11,talk:13,exp:42,image:'img/enemies/sanzai.png?v=expanded-enemies-v1',skill:'spend',intro:'散財のご主人様が ブラックカードをかざして あらわれた！'},
-    {id:'bousou',name:'暴走のご主人様',hp:170,maxHp:170,mp:10,maxMp:10,atk:24,def:11,spd:13,talk:10,exp:55,image:'img/enemies/bousou.png?v=expanded-enemies-v1',skill:'runaway',intro:'暴走のご主人様が 煙を上げて あらわれた！'},
-    {id:'juuatsu',name:'重圧のご主人様',hp:220,maxHp:220,mp:20,maxMp:20,atk:25,def:18,spd:6,talk:14,exp:72,image:'img/enemies/juuatsu.png?v=expanded-enemies-v1',skill:'weight',intro:'重圧のご主人様が ずっしりと あらわれた！'}
+    {id:'maigo',name:'迷子のご主人様',hp:90,maxHp:90,mp:10,maxMp:10,atk:15,def:7,spd:14,talk:9,exp:26,image:'img/enemies/maigo.png?v=enemy-canvas-v1',skill:'lost',intro:'迷子のご主人様が 地図を広げながら あらわれた！'},
+    {id:'shousou',name:'焦燥のご主人様',hp:115,maxHp:115,mp:12,maxMp:12,atk:18,def:8,spd:17,talk:12,exp:34,image:'img/enemies/shousou.png?v=enemy-canvas-v1',skill:'rush_pressure',intro:'焦燥のご主人様が 時計を気にしながら あらわれた！'},
+    {id:'sanzai',name:'散財のご主人様',hp:135,maxHp:135,mp:14,maxMp:14,atk:20,def:10,spd:11,talk:13,exp:42,image:'img/enemies/sanzai.png?v=enemy-canvas-v1',skill:'spend',intro:'散財のご主人様が ブラックカードをかざして あらわれた！'},
+    {id:'bousou',name:'暴走のご主人様',hp:170,maxHp:170,mp:10,maxMp:10,atk:24,def:11,spd:13,talk:10,exp:55,image:'img/enemies/bousou.png?v=enemy-canvas-v1',skill:'runaway',intro:'暴走のご主人様が 煙を上げて あらわれた！'},
+    {id:'juuatsu',name:'重圧のご主人様',hp:220,maxHp:220,mp:20,maxMp:20,atk:25,def:18,spd:6,talk:14,exp:72,image:'img/enemies/juuatsu.png?v=enemy-canvas-v1',skill:'weight',intro:'重圧のご主人様が ずっしりと あらわれた！'}
   ].forEach(addEnemyIfMissing);
 }
 
