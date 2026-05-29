@@ -1994,7 +1994,7 @@ body.potoro-boss-criticalhp .enemy-slot.selected{
   max-width:112px;
   max-height:128px;
   object-fit:contain;
-  transform:scale(var(--enemy-visual-scale,1));
+  transform:translateY(var(--enemy-visual-y,22px)) scale(var(--enemy-visual-scale,1));
   transform-origin:center bottom;
 }
 
@@ -2003,6 +2003,7 @@ body.potoro-boss-criticalhp .enemy-slot.selected{
   height:170px;
   max-width:150px;
   max-height:170px;
+  --enemy-visual-y:52px;
 }
 
 .enemy-slot.enemy-teiji,
@@ -2036,5 +2037,16 @@ body.potoro-boss-criticalhp .enemy-slot.selected{
     height:110px;
     max-width:96px;
     max-height:110px;
+    --enemy-visual-y:18px;
   }
+}
+
+.enemy-target-marker{
+  position:relative;
+  z-index:2;
+}
+
+.enemy-slot.regular-enemy img{
+  position:relative;
+  z-index:1;
 }
