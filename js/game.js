@@ -51,9 +51,10 @@ const equipmentData={
     {id:'maid_headband',slot:'head',name:'メイドカチューシャ',def:3},
     {id:'heart_tiara',slot:'head',name:'ハートティアラ',def:6},
     {id:'rose_ribbon',slot:'head',name:'ローズリボン',def:10},
-    {id:'white_apron',slot:'body',name:'純白エプロン',def:4},
+    {id:'white_apron',slot:'body',name:'純白のエプロン',def:4},
     {id:'long_maid',slot:'body',name:'ロングメイド服',def:9},
-    {id:'service_proof',slot:'accessory',name:'お給仕の証',def:3},
+    {id:'black_stocking',slot:'accessory',name:'黒のストッキング',def:2},
+    {id:'service_proof',slot:'accessory',name:'お給仕の証',def:3,talk:2},
     {id:'oshi_pendant',slot:'accessory',name:'推し活ペンダント',def:7},
     {id:'legend_nameplate',slot:'accessory',name:'伝説の名札',def:12},
     {id:'first_maid',slot:'body',name:'初代メイド服',def:28}
@@ -77,8 +78,8 @@ const initialPlayer={
   items:{omurice:2,tea:1,horse:1},
   metTamachan:false,
   status:{sleep:0,confuse:0,defDown:0},
-  inventory:{weapons:['rod'],uniforms:[]},
-  equip:{weapon:'rod',head:null,body:null,accessory:null}
+  inventory:{weapons:['rod'],uniforms:['maid_headband','white_apron','black_stocking']},
+  equip:{weapon:'rod',head:'maid_headband',body:'white_apron',accessory:'black_stocking'}
 };
 
 const state={
