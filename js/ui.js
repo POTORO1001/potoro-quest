@@ -117,6 +117,10 @@ function createEnemySlot(enemy,index){
   if(index === state.targetIndex && enemy.hp > 0) slot.classList.add('selected');
   if(enemy.hp <= 0) slot.classList.add('defeated');
   if(enemy.helper) slot.classList.add('helper');
+  if(enemy.boss) slot.classList.add('boss');
+  if(!enemy.helper && !enemy.boss){
+    slot.classList.add('regular-enemy', `enemy-${enemy.id}`);
+  }
   if(enemy.sleepTurns && enemy.sleepTurns > 0) slot.classList.add('sleeping');
 
   const indexLabel = document.createElement('div');
