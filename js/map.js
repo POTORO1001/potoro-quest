@@ -406,19 +406,19 @@ function giveMapChestEquipment(){
 const POTORO_ENEMY_ZONE_TABLE = {
   1:{
     early:['teiji','kuufuku'],
-    middle:['kuufuku','zangyo'],
-    late:['zangyo','meisou']
+    middle:['kuufuku','zangyo','maigo'],
+    late:['zangyo','meisou','shousou','sanzai']
   },
   2:{
-    early:['neochi','gekimu'],
-    middle:['gekimu','deisui'],
-    late:['deisui','shisseki']
+    early:['neochi','gekimu','sanzai'],
+    middle:['gekimu','deisui','bousou'],
+    late:['deisui','shisseki','juuatsu']
   }
 };
 
 const POTORO_FLOOR_ENEMY_IDS = {
-  1:['teiji','kuufuku','zangyo','meisou'],
-  2:['neochi','gekimu','deisui','shisseki']
+  1:['teiji','kuufuku','zangyo','meisou','maigo','shousou','sanzai'],
+  2:['neochi','gekimu','deisui','shisseki','sanzai','bousou','juuatsu']
 };
 
 function getCurrentFloorSafe(){

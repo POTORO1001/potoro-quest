@@ -282,6 +282,8 @@ const ASSETS_TO_PRELOAD=[
   'img/enemies/teiji.png?v=29special','img/enemies/kuufuku.png?v=29special','img/enemies/zangyo.png?v=29special',
   'img/enemies/meisou.png?v=29special','img/enemies/gekimu.png?v=29special','img/enemies/neochi.png?v=29special',
   'img/enemies/deisui.png?v=29special','img/enemies/shisseki.png?v=29special','img/enemies/boss.png?v=29special',
+  'img/enemies/maigo.png?v=expanded-enemies-v1','img/enemies/shousou.png?v=expanded-enemies-v1','img/enemies/sanzai.png?v=expanded-enemies-v1',
+  'img/enemies/bousou.png?v=expanded-enemies-v1','img/enemies/juuatsu.png?v=expanded-enemies-v1',
   'img/enemies/tamachan.png?v=29special','img/backgrounds/battle_room.png?v=29special','img/backgrounds/battle_boss_room.png?v=29special'
 ];
 function preloadImage(src){return new Promise(resolve=>{const img=new Image();img.onload=()=>resolve({src,ok:true});img.onerror=()=>resolve({src,ok:false});img.src=src;});}

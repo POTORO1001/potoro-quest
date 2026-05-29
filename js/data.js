@@ -85,12 +85,12 @@ function getNormalEnemies(){
 function getFloorEnemyPool(floor){
   if(floor === 1){
     return enemies.filter(enemy =>
-      ['teiji','kuufuku','zangyo','meisou'].includes(enemy.id)
+      ['teiji','kuufuku','zangyo','meisou','maigo','shousou','sanzai'].includes(enemy.id)
     );
   }
 
   return enemies.filter(enemy =>
-    ['gekimu','neochi','deisui','shisseki'].includes(enemy.id)
+    ['gekimu','neochi','deisui','shisseki','sanzai','bousou','juuatsu'].includes(enemy.id)
   );
 }
 
