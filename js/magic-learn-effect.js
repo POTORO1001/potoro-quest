@@ -144,15 +144,17 @@
     document.head.appendChild(style);
   }
 
-  function ensureMagicLearnModal(){
-    let modal = document.getElementById('potoroMagicLearnModal');
-    if(modal) return modal;
-
+  function createMagicLearnModal(){
     injectMagicLearnStyle();
 
-    modal = document.createElement('section');
+    const oldModal = document.getElementById('potoroMagicLearnModal');
+    if(oldModal) oldModal.remove();
+
+    const modal = document.createElement('section');
     modal.id = 'potoroMagicLearnModal';
-    modal.className = 'magic-learn-modal hidden';
+    modal.className = 'magic-learn-modal';
+    modal.setAttribute('role','dialog');
+    modal.setAttribute('aria-modal','true');
     modal.innerHTML = `
       <div class="magic-learn-card">
         <button id="potoroMagicLearnClose" class="magic-learn-close" type="button" aria-label="閉じる">×</button>
@@ -171,24 +173,50 @@
   function showMagicLearnModalByName(name){
     if(!name) return Promise.resolve(false);
 
-    const modal = ensureMagicLearnModal();
+    const modal = createMagicLearnModal();
     const nameEl = document.getElementById('potoroMagicLearnName');
     const closeBtn = document.getElementById('potoroMagicLearnClose');
     const okBtn = document.getElementById('potoroMagicLearnOk');
 
     if(nameEl) nameEl.textContent = name;
 
-    modal.classList.remove('hidden');
-
     if(typeof seLevelUp === 'function'){
       try{ seLevelUp(); }catch(e){}
     }
 
     return new Promise(resolve => {
-      const close = () => {
-        modal.classList.add('hidden');
+      let acknowledged = false;
+
+      const keepVisible = new MutationObserver(() => {
+        if(acknowledged) return;
+
+        if(modal.classList.contains('hidden')){
+          modal.classList.remove('hidden');
+        }
+
+        if(modal.style.display === 'none'){
+          modal.style.display = '';
+        }
+
+        if(!document.body.contains(modal)){
+          document.body.appendChild(modal);
+        }
+      });
+
+      keepVisible.observe(document.body,{childList:true,subtree:true});
+      keepVisible.observe(modal,{attributes:true,attributeFilter:['class','style']});
+
+      const close = (event) => {
+        if(event){
+          event.preventDefault();
+          event.stopPropagation();
+        }
+
+        acknowledged = true;
+        keepVisible.disconnect();
         closeBtn?.removeEventListener('click',close);
         okBtn?.removeEventListener('click',close);
+        modal.remove();
         resolve(true);
       };
 
@@ -238,7 +266,7 @@
 
     return {
       installed:true,
-      version:'modal-after-levelup-v2',
+      version:'modal-manual-close-v3',
       playerLevel:lv,
       expectedMagic:getMagicNameByLevel(lv),
       pending:pendingMagicLearnNotices.slice(),

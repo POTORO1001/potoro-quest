@@ -360,15 +360,22 @@ async function winBattle(){
     p.hp = p.maxHp;
     p.mp = p.maxMp;
 
-    seLevelUp();
-    showLevelToast(`LEVEL UP！ Lv.${p.lv}`);
-    setMessage(`${p.name} は レベル ${p.lv} に あがった！`);
+    const learnedMagicName = typeof checkMagicLearnOnLevelUp === 'function'
+      ? checkMagicLearnOnLevelUp()
+      : null;
 
+    seLevelUp();
+    if(!learnedMagicName){
+      showLevelToast(`LEVEL UP！ Lv.${p.lv}`);
+    }
+    setMessage(`${p.name} は レベル ${p.lv} に あがった！`);
     updateUI();
 
-   checkMagicLearnOnLevelUp();
-     
-    await sleep(1200);
+    if(learnedMagicName && typeof potoroFlushMagicLearnNotices === 'function'){
+      await potoroFlushMagicLearnNotices();
+    }else{
+      await sleep(1200);
+    }
   }
 
   if(typeof potoroFlushMagicLearnNotices === 'function'){
