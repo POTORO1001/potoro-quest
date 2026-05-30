@@ -15,16 +15,16 @@ const POTORO_MAGIC_CONFIG = {
     heal: {
       id:'heal',
       name:'おいしくなーれ',
-      label:'おいしくなーれ　MP8 / HP回復',
-      mp:8,
+      label:'おいしくなーれ　MP6 / HP回復',
+      mp:6,
       heal:35,
       requiredLv:2
     },
     sleep: {
       id:'sleep',
       name:'おやすみなさい',
-      label:'おやすみなさい　MP4 / 眠り',
-      mp:4,
+      label:'おやすみなさい　MP3 / 眠り',
+      mp:3,
       minTurns:1,
       maxTurns:3,
       requiredLv:3
@@ -61,8 +61,8 @@ const POTORO_MAGIC_CONFIG = {
     aura: {
       id:'aura',
       name:'キラキラオーラ',
-      label:'キラキラオーラ　MP6 / トーク力↑・速度↑',
-      mp:6,
+      label:'キラキラオーラ　MP4 / トーク力↑・速度↑',
+      mp:4,
       turns:2,
       spdBonus:5,
       talkBonus:5,
@@ -71,16 +71,16 @@ const POTORO_MAGIC_CONFIG = {
     charge2: {
       id:'charge2',
       name:'完璧なお給仕',
-      label:'完璧なお給仕　MP8 / 次ダメージ2.5倍',
-      mp:8,
+      label:'完璧なお給仕　MP7 / 次ダメージ2.5倍',
+      mp:7,
       multiplier:2.5,
       requiredLv:7
     },
     multi: {
       id:'multi',
       name:'ご奉仕連撃',
-      label:'ご奉仕連撃　MP7 / 2〜3回攻撃',
-      mp:7,
+      label:'ご奉仕連撃　MP8 / 2〜3回攻撃',
+      mp:8,
       minHits:2,
       maxHits:3,
       atkRate:0.6,
@@ -99,8 +99,8 @@ const POTORO_MAGIC_CONFIG = {
     fullheal: {
       id:'fullheal',
       name:'ひなたぼっこ',
-      label:'ひなたぼっこ　MP10 / 全回復＋状態異常解除',
-      mp:10,
+      label:'ひなたぼっこ　MP12 / 全回復＋状態異常解除',
+      mp:12,
       requiredLv:11
     }
   }

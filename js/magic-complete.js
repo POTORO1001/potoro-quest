@@ -38,11 +38,11 @@
 
   const MAGIC_COMPLETE_CONFIG = {
     first_strike:{name:'ご主人様ファースト', mp:6, level:4},
-    aura:{name:'キラキラオーラ', mp:7, level:5},
-    perfect_service:{name:'完璧なお給仕', mp:10, level:7},
-    combo:{name:'ご奉仕連撃', mp:9, level:8},
-    rush:{name:'ご帰宅ラッシュ', mp:14, level:10},
-    sunny:{name:'ひなたぼっこ', mp:18, level:11}
+    aura:{name:'キラキラオーラ', mp:4, level:5},
+    perfect_service:{name:'完璧なお給仕', mp:7, level:7},
+    combo:{name:'ご奉仕連撃', mp:8, level:8},
+    rush:{name:'ご帰宅ラッシュ', mp:12, level:10},
+    sunny:{name:'ひなたぼっこ', mp:12, level:11}
   };
 
   function getPlayerLevelSafe(){
