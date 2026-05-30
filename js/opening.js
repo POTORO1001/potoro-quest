@@ -18,6 +18,19 @@ function getOshiName(){
 function startGame(){
   initAudio();
 
+  if(openingTimer){
+    clearInterval(openingTimer);
+    openingTimer = null;
+  }
+  if(openingDelayTimer){
+    clearTimeout(openingDelayTimer);
+    openingDelayTimer = null;
+  }
+  if(openingLineTimer){
+    clearTimeout(openingLineTimer);
+    openingLineTimer = null;
+  }
+
   hideElement('titleScreen');
   hideElement('openingScreen');
   hideElement('endingScreen');
@@ -68,16 +81,27 @@ function showOpeningLine(lines,index){
 
   if(!active || index < 0 || index >= lines.length) return;
 
+  if(openingLineTimer){
+    clearTimeout(openingLineTimer);
+    openingLineTimer = null;
+  }
+
   active.style.opacity = 0;
 
-  setTimeout(() => {
+  openingLineTimer = setTimeout(() => {
     active.innerHTML = lines[index];
     active.style.opacity = 1;
+    openingLineTimer = null;
   },OPENING_FADE_MS);
 }
 
 /* ===== Opening Story Start ===== */
 function startOpeningStory(){
+  if(openingTimer){
+    clearInterval(openingTimer);
+    openingTimer = null;
+  }
+
   const lines = getOpeningLines();
 
   if(!lines.length) return;
@@ -110,6 +134,14 @@ function openOpening(){
     clearInterval(openingTimer);
     openingTimer = null;
   }
+  if(openingDelayTimer){
+    clearTimeout(openingDelayTimer);
+    openingDelayTimer = null;
+  }
+  if(openingLineTimer){
+    clearTimeout(openingLineTimer);
+    openingLineTimer = null;
+  }
 
   if(active){
     active.innerHTML = '';
@@ -119,7 +151,10 @@ function openOpening(){
   hideElement('titleScreen');
   showElement('openingScreen');
 
-  setTimeout(startOpeningStory,4000);
+  openingDelayTimer = setTimeout(() => {
+    openingDelayTimer = null;
+    startOpeningStory();
+  },4000);
 }
 
 /* ===== Opening Screen Close ===== */
@@ -129,6 +164,14 @@ function closeOpening(){
   if(openingTimer){
     clearInterval(openingTimer);
     openingTimer = null;
+  }
+  if(openingDelayTimer){
+    clearTimeout(openingDelayTimer);
+    openingDelayTimer = null;
+  }
+  if(openingLineTimer){
+    clearTimeout(openingLineTimer);
+    openingLineTimer = null;
   }
 
   if(active){

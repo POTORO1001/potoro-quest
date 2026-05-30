@@ -1329,6 +1329,18 @@ function getOshiName(){
 function startGame(){
   playMapBgm();
   initAudio();
+  if(openingTimer){
+    clearInterval(openingTimer);
+    openingTimer=null;
+  }
+  if(openingDelayTimer){
+    clearTimeout(openingDelayTimer);
+    openingDelayTimer=null;
+  }
+  if(openingLineTimer){
+    clearTimeout(openingLineTimer);
+    openingLineTimer=null;
+  }
   document.getElementById('titleScreen').classList.add('hidden');
   document.getElementById('openingScreen').classList.add('hidden');
   document.getElementById('endingScreen').classList.add('hidden');
@@ -1348,6 +1360,8 @@ function resetGame(){
 
 /* ===== Opening ===== */
 let openingTimer=null;
+let openingDelayTimer=null;
+let openingLineTimer=null;
 let openingCurrentIndex=0;
 const OPENING_FADE_MS=600;
 const OPENING_SHOW_MS=4000;
@@ -1365,14 +1379,23 @@ function getOpeningLines(){
 function showOpeningLine(lines,index){
   const active=document.getElementById('openingStoryActive');
   if(!active || index<0 || index>=lines.length) return;
+  if(openingLineTimer){
+    clearTimeout(openingLineTimer);
+    openingLineTimer=null;
+  }
   active.style.opacity=0;
-  setTimeout(()=>{
+  openingLineTimer=setTimeout(()=>{
     active.innerHTML=lines[index];
     active.style.opacity=1;
+    openingLineTimer=null;
   },OPENING_FADE_MS);
 }
 
 function startOpeningStory(){
+  if(openingTimer){
+    clearInterval(openingTimer);
+    openingTimer=null;
+  }
   const lines=getOpeningLines();
   if(!lines.length) return;
   openingCurrentIndex=0;
@@ -1398,13 +1421,24 @@ function openOpening(){
     clearInterval(openingTimer);
     openingTimer=null;
   }
+  if(openingDelayTimer){
+    clearTimeout(openingDelayTimer);
+    openingDelayTimer=null;
+  }
+  if(openingLineTimer){
+    clearTimeout(openingLineTimer);
+    openingLineTimer=null;
+  }
   if(active){
     active.innerHTML='';
     active.style.opacity=0;
   }
   if(title) title.classList.add('hidden');
   if(opening) opening.classList.remove('hidden');
-  setTimeout(startOpeningStory,4000);
+  openingDelayTimer=setTimeout(()=>{
+    openingDelayTimer=null;
+    startOpeningStory();
+  },4000);
 }
 
 function closeOpening(){
@@ -1414,6 +1448,14 @@ function closeOpening(){
   if(openingTimer){
     clearInterval(openingTimer);
     openingTimer=null;
+  }
+  if(openingDelayTimer){
+    clearTimeout(openingDelayTimer);
+    openingDelayTimer=null;
+  }
+  if(openingLineTimer){
+    clearTimeout(openingLineTimer);
+    openingLineTimer=null;
   }
   if(active){
     active.innerHTML='';
