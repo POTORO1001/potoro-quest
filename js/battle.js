@@ -277,6 +277,11 @@ async function enemyTurn(){
       setMessage(`${e.name} は眠っている…`);
       updateUI();
       await sleep(700);
+      if(e.sleepTurns <= 0){
+        setMessage(`${e.name} は目を覚ました！`);
+        updateUI();
+        await sleep(650);
+      }
       continue;
     }
 
