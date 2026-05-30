@@ -213,7 +213,10 @@ function currentEnemyMaxSpd(){
 }
 
 function enemyActsFirstThisTurn(){
-  return currentEnemyMaxSpd() > totalSpd();
+  const diff = currentEnemyMaxSpd() - totalSpd();
+  if(diff <= 0) return false;
+  const chance = Math.min(0.9,0.28 + diff * 0.08);
+  return Math.random() < chance;
 }
 
 async function enemyFirstCheck(){
