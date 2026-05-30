@@ -44,15 +44,15 @@ const enemies=[
 const equipmentData={
   weapons:[
     {id:'rod',name:'ご奉仕ロッド',atk:2},
-    {id:'frill_blade',name:'フリルブレード',atk:6},
+    {id:'frill_blade',name:'お絵かきケチャップ',atk:6},
     {id:'gokitaku_mace',name:'ご帰宅メイス',atk:11}
   ],
   uniforms:[
     {id:'maid_headband',slot:'head',name:'メイドカチューシャ',def:3},
-    {id:'heart_tiara',slot:'head',name:'ハートティアラ',def:6},
-    {id:'rose_ribbon',slot:'head',name:'ローズリボン',def:10},
+    {id:'heart_tiara',slot:'head',name:'コットンシュシュ',def:2},
+    {id:'rose_ribbon',slot:'head',name:'猫耳ヘアバンド',def:5},
     {id:'white_apron',slot:'body',name:'純白のエプロン',def:4},
-    {id:'long_maid',slot:'body',name:'ロングメイド服',def:9},
+    {id:'long_maid',slot:'body',name:'見習いメイド服',def:5},
     {id:'black_stocking',slot:'accessory',name:'黒のストッキング',def:2},
     {id:'service_proof',slot:'accessory',name:'お給仕の証',def:3,talk:2},
     {id:'oshi_pendant',slot:'accessory',name:'推し活ペンダント',def:7},

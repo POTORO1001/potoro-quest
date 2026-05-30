@@ -156,7 +156,9 @@ function itemEffectText(item){
   if(e.turnHpCost) parts.push(`毎ターンHP-${e.turnHpCost}`);
   if(e.extraActionChance) parts.push(`追加行動${Math.round(e.extraActionChance*100)}%`);
   if(e.itemDropRateBonus) parts.push(`ドロップ+${Math.round(e.itemDropRateBonus*100)}%`);
+  if(e.criticalRateBonus) parts.push(`会心+${Math.round(e.criticalRateBonus*100)}%`);
   if(e.expRate) parts.push(`EXP+${Math.round(e.expRate*100)}%`);
+  if(e.bonusRewardChance) parts.push(`追加報酬${Math.round(e.bonusRewardChance*100)}%`);
   if(e.turnAtkStack) parts.push(`毎ターン攻撃UP`);
 
   if(!parts.length && item.desc) return item.desc;
@@ -407,20 +409,49 @@ function potoroPatchEquipmentRarity(){
 
   const weaponRarity = {
     rod:'C',
-    frill_blade:'B',
-    gokitaku_mace:'B'
+    frill_blade:'C',
+    silver_tea_spoon:'C',
+    gokitaku_mace:'B',
+    punish_frying_pan:'B',
+    kirameki_tray:'B',
+    magic_staff:'B',
+    calling_bell:'A',
+    speed_tray:'A',
+    service_hammer:'A',
+    legend_menu:'S'
   };
 
   const uniformRarity = {
     maid_headband:'C',
+    heart_tiara:'C',
     white_apron:'C',
+    long_maid:'C',
+    tea_time_dress:'C',
     service_proof:'C',
     black_stocking:'C',
-    heart_tiara:'B',
-    long_maid:'B',
-    legend_nameplate:'B',
-    rose_ribbon:'A',
-    oshi_pendant:'A',
+    oshi_pendant:'C',
+    heart_brooch:'C',
+    rose_ribbon:'B',
+    blue_rose_ribbon:'B',
+    fuwamoko_headband:'B',
+    heart_apron:'B',
+    cool_maid_dress:'B',
+    hannari_yukata:'B',
+    business_card:'B',
+    star_badge:'B',
+    magic_ribbon:'B',
+    maid_note:'B',
+    kirarin_headdress:'A',
+    lucky_headband:'A',
+    healing_apron:'A',
+    heavy_maid_armor:'A',
+    perfect_maid_dress:'A',
+    point_card:'A',
+    broMaid_photo:'A',
+    legend_nameplate:'A',
+    royal_tiara:'S',
+    royal_maid_dress:'S',
+    royal_ring:'S',
     first_maid:'EVENT'
   };
 
@@ -446,60 +477,62 @@ function potoroInstallEquipmentRarityAddon(){
   [
     {
       id:'silver_tea_spoon',
-      name:'シルバーティースプーン',
-      rarity:'A',
-      atk:6,
-      desc:'トーク力+20%。おまじない消費MP-1。',
-      effect:{magicMpMinus:1,talkRate:0.20}
+      name:'フリルコースター',
+      rarity:'C',
+      atk:4,
+      desc:'低確率で追加ダメージ。',
+      effect:{multiHitChance:0.08}
     },
     {
       id:'punish_frying_pan',
       name:'お仕置きフライパン',
-      rarity:'A',
-      atk:12,
-      spd:-2,
-      desc:'20%でスタン付与。すばやさ-2。',
-      effect:{stunChance:0.20}
+      rarity:'B',
+      atk:10,
+      spd:-1,
+      desc:'低確率でスタン付与。すばやさ-1。',
+      effect:{stunChance:0.16}
     },
     {
       id:'kirameki_tray',
-      name:'きらめきトレイ',
-      rarity:'A',
-      atk:5,
-      desc:'低確率で追撃。ご奉仕連撃のヒット数+1。',
-      effect:{multiHitChance:0.16,multiMagicBonus:1}
+      name:'きらめきネイル',
+      rarity:'B',
+      atk:7,
+      spd:2,
+      desc:'クリティカル率UP。',
+      effect:{criticalRateBonus:0.10}
     },
     {
       id:'legend_menu',
       name:'伝説のメニュー表',
       rarity:'S',
-      atk:8,
-      desc:'ボスへのダメージ+30%。通常敵へのダメージ-10%。',
-      effect:{bossDamageRate:0.30,normalDamageRate:-0.10}
+      atk:15,
+      talk:5,
+      desc:'ボスへのダメージUP。',
+      effect:{bossDamageRate:0.30}
     },
     {
       id:'magic_staff',
       name:'おまじないステッキ',
       rarity:'B',
-      atk:4,
-      desc:'おまじない消費MP-2。回復系おまじない+20%。',
-      effect:{magicMpMinus:2,healMagicRate:0.20}
+      atk:5,
+      desc:'おまじない消費MP-1。回復おまじない少しUP。',
+      effect:{magicMpMinus:1,healMagicRate:0.20}
     },
     {
       id:'calling_bell',
-      name:'ご主人様呼び鈴',
-      rarity:'B',
-      atk:3,
-      def:2,
-      desc:'防御時の被ダメージをさらに軽減する。',
-      effect:{guardDamageCut:0.30}
+      name:'レインボーサイリウム',
+      rarity:'A',
+      atk:11,
+      talk:3,
+      desc:'おまじない威力少しUP。',
+      effect:{magicDamageRate:0.15}
     },
     {
       id:'speed_tray',
       name:'スピードトレイ',
       rarity:'A',
-      atk:5,
-      spd:4,
+      atk:9,
+      spd:5,
       desc:'開幕先手を取りやすい速度型武器。',
       effect:{firstTurnSpdBonus:20,afterTurnSpdPenalty:3}
     },
@@ -507,7 +540,7 @@ function potoroInstallEquipmentRarityAddon(){
       id:'service_hammer',
       name:'お給仕ハンマー',
       rarity:'A',
-      atk:9,
+      atk:13,
       desc:'攻撃時に防御ダウンを狙える。防御ダウン中の敵に火力上昇。',
       effect:{defDownChance:0.28,defDownDamageRate:0.25}
     }
@@ -516,30 +549,41 @@ function potoroInstallEquipmentRarityAddon(){
   [
     {
       id:'fuwamoko_headband',
-      name:'ふわもこカチューシャ',
+      name:'ブルーローズリボン',
       slot:'head',
       rarity:'B',
       def:6,
-      desc:'被ダメージ-10%。',
-      effect:{damageCutRate:0.10}
+      talk:1,
+      desc:'トーク+1。'
     },
     {
       id:'kirarin_headdress',
-      name:'きらりんヘッドドレス',
+      name:'星屑の髪飾り',
       slot:'head',
-      rarity:'B',
-      def:4,
-      spd:4,
-      desc:'すばやさ+4。'
+      rarity:'A',
+      def:7,
+      desc:'毎ターンMP+1。',
+      effect:{turnMpRegen:1}
     },
     {
       id:'lucky_headband',
-      name:'ラッキーカチューシャ',
+      name:'極彩色の花かんむり',
       slot:'head',
-      rarity:'B',
-      def:3,
-      desc:'クリティカル率+10%、ドロップ率+10%。',
-      effect:{criticalRateBonus:0.10,itemDropRateBonus:0.10}
+      rarity:'A',
+      def:8,
+      talk:3,
+      desc:'状態異常耐性少しUP。',
+      effect:{sleepResist:0.25,confuseResist:0.25}
+    },
+    {
+      id:'royal_tiara',
+      name:'ロイヤルティアラ',
+      slot:'head',
+      rarity:'S',
+      def:12,
+      talk:4,
+      desc:'被ダメージ少し軽減。',
+      effect:{damageCutRate:0.10}
     },
     {
       id:'heart_apron',
@@ -552,12 +596,13 @@ function potoroInstallEquipmentRarityAddon(){
     },
     {
       id:'perfect_maid_dress',
-      name:'完璧メイドドレス',
+      name:'ベルベッドドレス',
       slot:'body',
       rarity:'A',
-      def:9,
-      desc:'バフ効果ターン+1。',
-      effect:{buffTurnBonus:1}
+      def:11,
+      talk:3,
+      desc:'状態異常耐性UP。',
+      effect:{sleepResist:0.50,confuseResist:0.50}
     },
     {
       id:'healing_apron',
@@ -570,22 +615,51 @@ function potoroInstallEquipmentRarityAddon(){
     },
     {
       id:'cool_maid_dress',
-      name:'クールメイドドレス',
+      name:'着ぐるみパジャマ',
       slot:'body',
       rarity:'B',
       def:8,
-      desc:'混乱・睡眠耐性+50%。',
-      effect:{sleepResist:0.50,confuseResist:0.50}
+      spd:-1,
+      desc:'睡眠耐性UP。',
+      effect:{sleepResist:0.50}
     },
     {
       id:'heavy_maid_armor',
       name:'重装メイドアーマー',
       slot:'body',
-      rarity:'S',
+      rarity:'A',
       def:14,
       spd:-5,
       desc:'被ダメージ-20%。すばやさ-5。',
       effect:{damageCutRate:0.20}
+    },
+    {
+      id:'tea_time_dress',
+      name:'ティータイムドレス',
+      slot:'body',
+      rarity:'C',
+      def:4,
+      desc:'毎ターンMP+1。',
+      effect:{turnMpRegen:1}
+    },
+    {
+      id:'hannari_yukata',
+      name:'はんなり浴衣',
+      slot:'body',
+      rarity:'B',
+      def:7,
+      talk:2,
+      desc:'トーク+2。'
+    },
+    {
+      id:'royal_maid_dress',
+      name:'ロイヤルメイド服',
+      slot:'body',
+      rarity:'S',
+      def:17,
+      talk:5,
+      desc:'バフ効果ターン+1。',
+      effect:{buffTurnBonus:1}
     },
     {
       id:'broMaid_photo',
@@ -598,76 +672,67 @@ function potoroInstallEquipmentRarityAddon(){
     },
     {
       id:'magic_teacup',
-      name:'魔法のティーカップ',
+      name:'スター缶バッチ',
       slot:'accessory',
       rarity:'B',
-      def:2,
-      desc:'毎ターンMP+2。',
-      effect:{turnMpRegen:2}
+      def:3,
+      spd:2,
+      desc:'クリティカル率少しUP。',
+      effect:{criticalRateBonus:0.08}
     },
     {
       id:'business_card',
       name:'ご主人様の名刺',
       slot:'accessory',
-      rarity:'S',
+      rarity:'B',
       def:2,
-      desc:'アイテムドロップ率+20%。',
-      effect:{itemDropRateBonus:0.20}
-    },
-    {
-      id:'forbidden_contract',
-      name:'禁断の契約書',
-      slot:'accessory',
-      rarity:'A',
-      def:0,
-      desc:'攻撃+30%。毎ターンHP-5。',
-      effect:{atkRate:0.30,turnHpCost:5}
+      desc:'アイテムドロップ率UP。',
+      effect:{itemDropRateBonus:0.15}
     },
     {
       id:'magic_ribbon',
-      name:'魔力のリボン',
+      name:'魔力のアクスタ',
       slot:'accessory',
-      rarity:'A',
-      def:1,
-      desc:'おまじない威力+25%。MP消費+1。',
-      effect:{magicDamageRate:0.25,magicMpPlus:1}
-    },
-    {
-      id:'pocket_watch',
-      name:'時間停止の懐中時計',
-      slot:'accessory',
-      rarity:'S',
-      def:3,
-      spd:-2,
-      desc:'低確率で行動回数+1。',
-      effect:{extraActionChance:0.12}
+      rarity:'B',
+      def:2,
+      desc:'おまじない威力UP。MP消費+1。',
+      effect:{magicDamageRate:0.20,magicMpPlus:1}
     },
     {
       id:'maid_note',
       name:'メイドの心得ノート',
       slot:'accessory',
-      rarity:'A',
+      rarity:'B',
       def:3,
       desc:'状態異常ターン-1、バフターン+1。',
       effect:{statusTurnMinus:1,buffTurnBonus:1}
     },
     {
-      id:'regular_proof',
-      name:'常連の証',
+      id:'point_card',
+      name:'満タンポイントカード',
       slot:'accessory',
       rarity:'A',
       def:4,
-      desc:'ターン経過ごとに攻撃+1。',
-      effect:{turnAtkStack:1,turnAtkStackMax:5}
-    },
-    {
-      id:'point_card',
-      name:'お給仕ポイントカード',
-      slot:'accessory',
-      rarity:'B',
-      def:2,
       desc:'戦闘後のEXP+20%。低確率で追加報酬。',
       effect:{expRate:0.20,bonusRewardChance:0.08}
+    },
+    {
+      id:'heart_brooch',
+      name:'ハートのブローチ',
+      slot:'accessory',
+      rarity:'C',
+      def:3,
+      desc:'防御+3の安定アクセ。'
+    },
+    {
+      id:'royal_ring',
+      name:'ロイヤルリング',
+      slot:'accessory',
+      rarity:'S',
+      def:10,
+      talk:5,
+      desc:'低確率で追加行動。',
+      effect:{extraActionChance:0.12}
     }
   ].forEach(potoroAddUniformIfMissing);
 
@@ -707,6 +772,19 @@ function patchEquipmentStats(id, stats){
   return true;
 }
 
+function patchEquipmentDetails(id, details){
+  const item = findEquipmentById(id);
+  if(!item) return false;
+
+  if(details.name) item.name = details.name;
+  if(details.desc !== undefined) item.desc = details.desc;
+  if(details.effect !== undefined) item.effect = details.effect;
+  if(details.slot) item.slot = details.slot;
+  if(details.rarity) item.rarity = details.rarity;
+
+  return true;
+}
+
 function installPotoroEquipmentBalance(){
   if(!potoroHasEquipmentData()){
     console.warn('[PO・TORO QUEST] equipmentData が見つからないため、装備バランス調整をスキップしました。');
@@ -714,44 +792,91 @@ function installPotoroEquipmentBalance(){
   }
 
   [
-    ['rod',{rarity:'C',atk:3,def:0,spd:0,talk:0}],
-    ['frill_blade',{rarity:'B',atk:7,def:0,spd:1,talk:0}],
-    ['gokitaku_mace',{rarity:'B',atk:10,def:0,spd:-1,talk:0}],
-    ['silver_tea_spoon',{rarity:'A',atk:6,def:0,spd:1,talk:10}],
-    ['punish_frying_pan',{rarity:'A',atk:14,def:0,spd:-3,talk:0}],
-    ['kirameki_tray',{rarity:'A',atk:9,def:1,spd:3,talk:3}],
-    ['magic_staff',{rarity:'B',atk:4,def:0,spd:0,talk:8}],
-    ['calling_bell',{rarity:'B',atk:5,def:4,spd:0,talk:2}],
-    ['speed_tray',{rarity:'A',atk:7,def:0,spd:8,talk:0}],
-    ['service_hammer',{rarity:'A',atk:12,def:2,spd:-1,talk:0}],
-    ['legend_menu',{rarity:'S',atk:10,def:3,spd:3,talk:18}],
+    ['rod',{name:'ご奉仕ロッド',desc:'基本武器。'}],
+    ['frill_blade',{name:'お絵かきケチャップ',desc:'トーク+1。'}],
+    ['silver_tea_spoon',{name:'フリルコースター',desc:'低確率で追加ダメージ。',effect:{multiHitChance:0.08}}],
+    ['gokitaku_mace',{name:'ご帰宅メイス',desc:'安定火力。'}],
+    ['punish_frying_pan',{name:'お仕置きフライパン',desc:'低確率でスタン付与。すばやさ-1。',effect:{stunChance:0.16}}],
+    ['kirameki_tray',{name:'きらめきネイル',desc:'クリティカル率UP。',effect:{criticalRateBonus:0.10}}],
+    ['magic_staff',{name:'おまじないステッキ',desc:'おまじない消費MP-1。回復おまじない少しUP。',effect:{magicMpMinus:1,healMagicRate:0.20}}],
+    ['calling_bell',{name:'レインボーサイリウム',desc:'おまじない威力少しUP。',effect:{magicDamageRate:0.15}}],
+    ['speed_tray',{name:'スピードトレイ',desc:'開幕先手を取りやすい速度型武器。',effect:{firstTurnSpdBonus:20,afterTurnSpdPenalty:3}}],
+    ['service_hammer',{name:'お給仕ハンマー',desc:'攻撃時に防御ダウンを狙える。防御ダウン中の敵に火力上昇。',effect:{defDownChance:0.28,defDownDamageRate:0.25}}],
+    ['legend_menu',{name:'伝説のメニュー表',desc:'ボスへのダメージUP。',effect:{bossDamageRate:0.30}}],
+    ['maid_headband',{name:'メイドカチューシャ',desc:'基本頭装備。'}],
+    ['heart_tiara',{name:'コットンシュシュ',desc:'すばやさ+1。'}],
+    ['rose_ribbon',{name:'猫耳ヘアバンド',desc:'すばやさ+2。'}],
+    ['fuwamoko_headband',{name:'ブルーローズリボン',desc:'トーク+1。'}],
+    ['kirarin_headdress',{name:'星屑の髪飾り',desc:'毎ターンMP+1。',effect:{turnMpRegen:1}}],
+    ['lucky_headband',{name:'極彩色の花かんむり',desc:'状態異常耐性少しUP。',effect:{sleepResist:0.25,confuseResist:0.25}}],
+    ['royal_tiara',{name:'ロイヤルティアラ',desc:'被ダメージ少し軽減。',effect:{damageCutRate:0.10}}],
+    ['white_apron',{name:'純白のエプロン',desc:'基本服。'}],
+    ['long_maid',{name:'見習いメイド服',desc:'序盤安定。'}],
+    ['tea_time_dress',{name:'ティータイムドレス',desc:'毎ターンMP+1。',effect:{turnMpRegen:1}}],
+    ['heart_apron',{name:'ハートエプロン',desc:'毎ターンHP+3。',effect:{turnHpRegen:3}}],
+    ['cool_maid_dress',{name:'着ぐるみパジャマ',desc:'睡眠耐性UP。',effect:{sleepResist:0.50}}],
+    ['hannari_yukata',{name:'はんなり浴衣',desc:'トーク+2。'}],
+    ['healing_apron',{name:'癒しのエプロン',desc:'回復量UP。',effect:{healRate:0.30,statusHealChance:0.20}}],
+    ['heavy_maid_armor',{name:'重装メイドアーマー',desc:'被ダメージ-20%。すばやさ-5。',effect:{damageCutRate:0.20}}],
+    ['perfect_maid_dress',{name:'ベルベッドドレス',desc:'状態異常耐性UP。',effect:{sleepResist:0.50,confuseResist:0.50}}],
+    ['royal_maid_dress',{name:'ロイヤルメイド服',desc:'バフ効果ターン+1。',effect:{buffTurnBonus:1}}],
+    ['first_maid',{name:'初代メイド服',desc:'たまちゃん限定。'}],
+    ['black_stocking',{name:'黒のストッキング',desc:'基本アクセ。'}],
+    ['service_proof',{name:'お給仕の証',desc:'トーク+2。'}],
+    ['oshi_pendant',{name:'推し活ペンダント',desc:'トーク+1。ドロップ率少しUP。',effect:{itemDropRateBonus:0.05}}],
+    ['heart_brooch',{name:'ハートのブローチ',desc:'防御+3の安定アクセ。'}],
+    ['business_card',{name:'ご主人様の名刺',desc:'アイテムドロップ率UP。',effect:{itemDropRateBonus:0.15}}],
+    ['magic_teacup',{name:'スター缶バッチ',desc:'クリティカル率少しUP。',effect:{criticalRateBonus:0.08}}],
+    ['magic_ribbon',{name:'魔力のアクスタ',desc:'おまじない威力UP。MP消費+1。',effect:{magicDamageRate:0.20,magicMpPlus:1}}],
+    ['maid_note',{name:'メイドの心得ノート',desc:'状態異常ターン-1、バフターン+1。',effect:{statusTurnMinus:1,buffTurnBonus:1}}],
+    ['point_card',{name:'満タンポイントカード',desc:'戦闘後のEXP+20%。低確率で追加報酬。',effect:{expRate:0.20,bonusRewardChance:0.08}}],
+    ['broMaid_photo',{name:'推しのブロマイド',desc:'トーク+5。'}],
+    ['legend_nameplate',{name:'伝説の名札',desc:'安定型アクセ。'}],
+    ['royal_ring',{name:'ロイヤルリング',desc:'低確率で追加行動。',effect:{extraActionChance:0.12}}]
+  ].forEach(([id,details]) => patchEquipmentDetails(id,details));
+
+  [
+    ['rod',{rarity:'C',atk:2,def:0,spd:0,talk:0}],
+    ['frill_blade',{rarity:'C',atk:3,def:0,spd:0,talk:1}],
+    ['silver_tea_spoon',{rarity:'C',atk:4,def:0,spd:0,talk:0}],
+    ['gokitaku_mace',{rarity:'B',atk:8,def:0,spd:0,talk:0}],
+    ['punish_frying_pan',{rarity:'B',atk:10,def:0,spd:-1,talk:0}],
+    ['kirameki_tray',{rarity:'B',atk:7,def:0,spd:2,talk:0}],
+    ['magic_staff',{rarity:'B',atk:5,def:0,spd:0,talk:0}],
+    ['calling_bell',{rarity:'A',atk:11,def:0,spd:0,talk:3}],
+    ['speed_tray',{rarity:'A',atk:9,def:0,spd:5,talk:0}],
+    ['service_hammer',{rarity:'A',atk:13,def:0,spd:0,talk:0}],
+    ['legend_menu',{rarity:'S',atk:15,def:0,spd:0,talk:5}],
     ['maid_headband',{rarity:'C',atk:0,def:3,spd:0,talk:0}],
-    ['heart_tiara',{rarity:'B',atk:0,def:6,spd:0,talk:2}],
-    ['rose_ribbon',{rarity:'A',atk:0,def:10,spd:1,talk:4}],
+    ['heart_tiara',{rarity:'C',atk:0,def:2,spd:1,talk:0}],
+    ['rose_ribbon',{rarity:'B',atk:0,def:5,spd:2,talk:0}],
     ['fuwamoko_headband',{rarity:'B',atk:0,def:6,spd:0,talk:1}],
-    ['kirarin_headdress',{rarity:'B',atk:0,def:4,spd:5,talk:1}],
-    ['lucky_headband',{rarity:'B',atk:0,def:3,spd:2,talk:2}],
+    ['kirarin_headdress',{rarity:'A',atk:0,def:7,spd:0,talk:0}],
+    ['lucky_headband',{rarity:'A',atk:0,def:8,spd:0,talk:3}],
+    ['royal_tiara',{rarity:'S',atk:0,def:12,spd:0,talk:4}],
     ['white_apron',{rarity:'C',atk:0,def:4,spd:0,talk:0}],
-    ['long_maid',{rarity:'B',atk:0,def:9,spd:0,talk:1}],
-    ['heart_apron',{rarity:'B',atk:0,def:7,spd:0,talk:3}],
-    ['healing_apron',{rarity:'A',atk:0,def:9,spd:0,talk:6}],
-    ['perfect_maid_dress',{rarity:'A',atk:0,def:11,spd:1,talk:5}],
-    ['cool_maid_dress',{rarity:'B',atk:0,def:8,spd:2,talk:2}],
-    ['heavy_maid_armor',{rarity:'S',atk:0,def:20,spd:-5,talk:0}],
+    ['long_maid',{rarity:'C',atk:0,def:5,spd:0,talk:0}],
+    ['tea_time_dress',{rarity:'C',atk:0,def:4,spd:0,talk:0}],
+    ['heart_apron',{rarity:'B',atk:0,def:7,spd:0,talk:0}],
+    ['cool_maid_dress',{rarity:'B',atk:0,def:8,spd:-1,talk:0}],
+    ['hannari_yukata',{rarity:'B',atk:0,def:7,spd:0,talk:2}],
+    ['healing_apron',{rarity:'A',atk:0,def:9,spd:0,talk:0}],
+    ['heavy_maid_armor',{rarity:'A',atk:0,def:14,spd:-5,talk:0}],
+    ['perfect_maid_dress',{rarity:'A',atk:0,def:11,spd:0,talk:3}],
+    ['royal_maid_dress',{rarity:'S',atk:0,def:17,spd:0,talk:5}],
     ['first_maid',{rarity:'EVENT',atk:3,def:28,spd:3,talk:8}],
     ['black_stocking',{rarity:'C',atk:0,def:2,spd:0,talk:0}],
     ['service_proof',{rarity:'C',atk:0,def:3,spd:0,talk:2}],
-    ['oshi_pendant',{rarity:'A',atk:0,def:5,spd:2,talk:9}],
-    ['legend_nameplate',{rarity:'B',atk:0,def:10,spd:0,talk:3}],
-    ['broMaid_photo',{rarity:'A',atk:0,def:0,spd:0,talk:14}],
-    ['magic_teacup',{rarity:'B',atk:0,def:3,spd:0,talk:5}],
-    ['business_card',{rarity:'S',atk:4,def:4,spd:2,talk:12}],
-    ['forbidden_contract',{rarity:'A',atk:12,def:0,spd:0,talk:0}],
-    ['magic_ribbon',{rarity:'A',atk:0,def:2,spd:0,talk:13}],
-    ['pocket_watch',{rarity:'S',atk:0,def:4,spd:14,talk:4}],
-    ['maid_note',{rarity:'A',atk:0,def:5,spd:2,talk:7}],
-    ['regular_proof',{rarity:'A',atk:7,def:5,spd:0,talk:3}],
-    ['point_card',{rarity:'B',atk:0,def:3,spd:1,talk:3}]
+    ['oshi_pendant',{rarity:'C',atk:0,def:2,spd:0,talk:1}],
+    ['heart_brooch',{rarity:'C',atk:0,def:3,spd:0,talk:0}],
+    ['business_card',{rarity:'B',atk:0,def:2,spd:0,talk:0}],
+    ['magic_teacup',{rarity:'B',atk:0,def:3,spd:2,talk:0}],
+    ['magic_ribbon',{rarity:'B',atk:0,def:2,spd:0,talk:0}],
+    ['maid_note',{rarity:'B',atk:0,def:3,spd:0,talk:0}],
+    ['point_card',{rarity:'A',atk:0,def:4,spd:0,talk:0}],
+    ['broMaid_photo',{rarity:'A',atk:0,def:1,spd:0,talk:5}],
+    ['legend_nameplate',{rarity:'A',atk:0,def:8,spd:0,talk:3}],
+    ['royal_ring',{rarity:'S',atk:0,def:10,spd:0,talk:5}]
   ].forEach(([id,stats]) => patchEquipmentStats(id,stats));
 
   console.log('[PO・TORO QUEST] equipment balance installed', potoroEquipmentBalanceReport());

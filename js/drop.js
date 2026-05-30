@@ -113,27 +113,49 @@ var POTORO_DROP_CONFIG = {
     floor1:{
       C:[
         {type:'weapon',id:'rod'},
+        {type:'weapon',id:'frill_blade'},
+        {type:'weapon',id:'silver_tea_spoon'},
         {type:'uniform',id:'maid_headband'},
+        {type:'uniform',id:'heart_tiara'},
         {type:'uniform',id:'white_apron'},
-        {type:'uniform',id:'service_proof'}
+        {type:'uniform',id:'long_maid'},
+        {type:'uniform',id:'tea_time_dress'},
+        {type:'uniform',id:'black_stocking'},
+        {type:'uniform',id:'service_proof'},
+        {type:'uniform',id:'oshi_pendant'},
+        {type:'uniform',id:'heart_brooch'}
       ],
       B:[
-        {type:'weapon',id:'frill_blade'},
-        {type:'uniform',id:'heart_apron'},
+        {type:'weapon',id:'gokitaku_mace'},
+        {type:'weapon',id:'punish_frying_pan'},
+        {type:'weapon',id:'kirameki_tray'},
+        {type:'weapon',id:'magic_staff'},
+        {type:'uniform',id:'rose_ribbon'},
         {type:'uniform',id:'fuwamoko_headband'},
-        {type:'uniform',id:'lucky_headband'},
-        {type:'uniform',id:'point_card'}
+        {type:'uniform',id:'heart_apron'},
+        {type:'uniform',id:'cool_maid_dress'},
+        {type:'uniform',id:'hannari_yukata'},
+        {type:'uniform',id:'business_card'},
+        {type:'uniform',id:'magic_teacup'},
+        {type:'uniform',id:'magic_ribbon'},
+        {type:'uniform',id:'maid_note'}
       ],
       A:[
-        {type:'weapon',id:'silver_tea_spoon'},
-        {type:'weapon',id:'kirameki_tray'},
+        {type:'weapon',id:'calling_bell'},
+        {type:'weapon',id:'speed_tray'},
+        {type:'weapon',id:'service_hammer'},
+        {type:'uniform',id:'kirarin_headdress'},
+        {type:'uniform',id:'lucky_headband'},
         {type:'uniform',id:'healing_apron'},
-        {type:'uniform',id:'magic_ribbon'},
-        {type:'uniform',id:'maid_note'},
-        {type:'uniform',id:'broMaid_photo'}
+        {type:'uniform',id:'heavy_maid_armor'},
+        {type:'uniform',id:'perfect_maid_dress'},
+        {type:'uniform',id:'point_card'},
+        {type:'uniform',id:'broMaid_photo'},
+        {type:'uniform',id:'legend_nameplate'}
       ],
       S:[
-        {type:'weapon',id:'legend_menu'}
+        {type:'weapon',id:'legend_menu'},
+        {type:'uniform',id:'royal_tiara'}
       ]
     },
 
@@ -141,28 +163,36 @@ var POTORO_DROP_CONFIG = {
       B:[
         {type:'weapon',id:'gokitaku_mace'},
         {type:'weapon',id:'magic_staff'},
-        {type:'weapon',id:'calling_bell'},
-        {type:'uniform',id:'kirarin_headdress'},
+        {type:'weapon',id:'punish_frying_pan'},
+        {type:'weapon',id:'kirameki_tray'},
+        {type:'uniform',id:'rose_ribbon'},
+        {type:'uniform',id:'fuwamoko_headband'},
+        {type:'uniform',id:'heart_apron'},
         {type:'uniform',id:'cool_maid_dress'},
         {type:'uniform',id:'magic_teacup'},
-        {type:'uniform',id:'heart_tiara'},
-        {type:'uniform',id:'long_maid'},
-        {type:'uniform',id:'legend_nameplate'}
+        {type:'uniform',id:'hannari_yukata'},
+        {type:'uniform',id:'business_card'},
+        {type:'uniform',id:'magic_ribbon'},
+        {type:'uniform',id:'maid_note'}
       ],
       A:[
-        {type:'weapon',id:'punish_frying_pan'},
-        {type:'weapon',id:'service_hammer'},
+        {type:'weapon',id:'calling_bell'},
         {type:'weapon',id:'speed_tray'},
-        {type:'uniform',id:'regular_proof'},
-        {type:'uniform',id:'forbidden_contract'},
-        {type:'uniform',id:'rose_ribbon'},
-        {type:'uniform',id:'oshi_pendant'},
-        {type:'uniform',id:'perfect_maid_dress'}
+        {type:'weapon',id:'service_hammer'},
+        {type:'uniform',id:'kirarin_headdress'},
+        {type:'uniform',id:'lucky_headband'},
+        {type:'uniform',id:'healing_apron'},
+        {type:'uniform',id:'heavy_maid_armor'},
+        {type:'uniform',id:'perfect_maid_dress'},
+        {type:'uniform',id:'point_card'},
+        {type:'uniform',id:'broMaid_photo'},
+        {type:'uniform',id:'legend_nameplate'}
       ],
       S:[
-        {type:'uniform',id:'pocket_watch'},
-        {type:'uniform',id:'heavy_maid_armor'},
-        {type:'uniform',id:'business_card'}
+        {type:'weapon',id:'legend_menu'},
+        {type:'uniform',id:'royal_tiara'},
+        {type:'uniform',id:'royal_maid_dress'},
+        {type:'uniform',id:'royal_ring'}
       ]
     }
   }
