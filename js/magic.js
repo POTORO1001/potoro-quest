@@ -145,7 +145,9 @@ async function payMagicCost(kind){
     return false;
   }
 
-  const mp = config.mp || 0;
+  const mp = typeof equipmentAdjustedMagicCost === 'function'
+    ? equipmentAdjustedMagicCost(config.mp || 0)
+    : (config.mp || 0);
 
   if(state.player.mp < mp){
     await failAction('MPがたりない！');
@@ -188,6 +190,9 @@ useMagic = async function(kind){
 
   if(!(await playerStatusCheck())) return;
   if(await enemyFirstCheck()) return;
+  if(typeof applyEquipmentTurnRecovery === 'function'){
+    await applyEquipmentTurnRecovery();
+  }
 
   if(kind === 'aura'){
     await useMagicAura();
@@ -250,7 +255,9 @@ async function useMagicAura(){
   if(!config) return failAction('そのおまじないは使えません！');
   if(!(await payMagicCost('aura'))) return;
 
-  buffState.aura = config.turns || 2;
+  buffState.aura = typeof applyEquipmentBuffTurns === 'function'
+    ? applyEquipmentBuffTurns(config.turns || 2)
+    : (config.turns || 2);
 
   await showCutin('おまじない','キラキラオーラ☆');
   setMessage(`トーク力とすばやさが ${buffState.aura}ターン アップ！`);
@@ -265,7 +272,9 @@ async function useMagicAura(){
 async function useMagicCharge2(){
   if(!(await payMagicCost('charge2'))) return;
 
-  buffState.charge = 1;
+  buffState.charge = typeof applyEquipmentBuffTurns === 'function'
+    ? applyEquipmentBuffTurns(1)
+    : 1;
 
   await showCutin('おまじない','完璧なお給仕♡');
   setMessage('次の攻撃・おまじないダメージが強化された！');
@@ -425,7 +434,9 @@ async function useMagicHealConfigured(){
   await showCutin('おまじない','おいしくなーれ！');
 
   const p = state.player;
-  const heal = Math.min(config.heal || 35,p.maxHp - p.hp);
+  const healRate = typeof equipmentEffectValue === 'function' ? equipmentEffectValue('healRate') : 0;
+  const healBase = Math.floor((config.heal || 35) * (1 + healRate));
+  const heal = Math.min(healBase,p.maxHp - p.hp);
 
   p.hp += heal;
 

@@ -102,6 +102,121 @@ function totalTalk(){
   return talk;
 }
 
+/* ===== 装備特殊効果 ===== */
+function equippedItems(){
+  const p = state.player;
+  if(!p || !p.equip) return [];
+
+  return [
+    findWeapon(p.equip.weapon),
+    findUniform(p.equip.head),
+    findUniform(p.equip.body),
+    findUniform(p.equip.accessory)
+  ].filter(Boolean);
+}
+
+function equipmentEffectValue(key){
+  return equippedItems().reduce((sum,item) => {
+    const effect = item.effect || {};
+    return sum + (Number(effect[key]) || 0);
+  },0);
+}
+
+function equipmentAdjustedMagicCost(baseCost){
+  const plus = equipmentEffectValue('magicMpPlus');
+  const minus = equipmentEffectValue('magicMpMinus');
+  return Math.max(0,(baseCost || 0) + plus - minus);
+}
+
+function equipmentChance(key){
+  return Math.max(0,Math.min(0.95,equipmentEffectValue(key)));
+}
+
+function applyEquipmentDamageCut(damage){
+  const cut = Math.max(0,Math.min(0.75,equipmentEffectValue('damageCutRate')));
+  return Math.max(1,Math.floor(damage * (1 - cut)));
+}
+
+function applyEquipmentOutgoingDamage(damage,target,options={}){
+  let result = damage;
+
+  if(options.magic){
+    result = Math.floor(result * (1 + equipmentEffectValue('magicDamageRate')));
+  }
+
+  if(target && target.boss){
+    result = Math.floor(result * (1 + equipmentEffectValue('bossDamageRate')));
+  }
+
+  if(target && target.equipmentDefDownTurns > 0){
+    result = Math.floor(result * (1 + equipmentEffectValue('defDownDamageRate')));
+  }
+
+  return Math.max(1,result);
+}
+
+async function applyEquipmentTurnRecovery(){
+  const p = state.player;
+  if(!p) return false;
+
+  const hpRegen = equipmentEffectValue('turnHpRegen');
+  const mpRegen = equipmentEffectValue('turnMpRegen');
+  const hp = hpRegen ? Math.min(hpRegen,Math.max(0,p.maxHp - p.hp)) : 0;
+  const mp = mpRegen ? Math.min(mpRegen,Math.max(0,p.maxMp - p.mp)) : 0;
+
+  if(!hp && !mp) return false;
+
+  p.hp += hp;
+  p.mp += mp;
+
+  const parts = [];
+  if(hp) parts.push(`HPが ${hp} 回復`);
+  if(mp) parts.push(`MPが ${mp} 回復`);
+
+  setMessage(`装備効果！ ${parts.join('、')}！`);
+  if(typeof seHeal === 'function') seHeal();
+  if(typeof updateUI === 'function') updateUI();
+  await sleep(550);
+
+  return true;
+}
+
+function shouldTriggerEquipmentExtraAction(){
+  return Math.random() < equipmentChance('extraActionChance');
+}
+
+async function announceEquipmentExtraAction(){
+  setMessage('装備効果！ もう一度行動できる！');
+  if(typeof seMagic === 'function') seMagic();
+  if(typeof updateUI === 'function') updateUI();
+  await sleep(650);
+}
+
+function applyEquipmentStatusTurns(turns){
+  const minus = equipmentEffectValue('statusTurnMinus');
+  return Math.max(1,(turns || 1) - minus);
+}
+
+function applyEquipmentBuffTurns(turns){
+  return Math.max(1,(turns || 1) + equipmentEffectValue('buffTurnBonus'));
+}
+
+function resistsEquipmentStatus(key){
+  return Math.random() < equipmentChance(key);
+}
+
+function applyEquipmentExpBonus(exp){
+  return Math.max(0,Math.floor(exp * (1 + equipmentEffectValue('expRate'))));
+}
+
+function equipmentBonusRewardChance(){
+  return equipmentChance('bonusRewardChance');
+}
+
+function equipmentItemDropBonus(){
+  return equipmentEffectValue('itemDropRateBonus');
+}
+
 /* ===== 装備スロット表示名 ===== */
 function slotName(slot){
   if(slot === 'weapon') return '武器';

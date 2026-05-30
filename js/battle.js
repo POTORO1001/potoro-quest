@@ -91,14 +91,21 @@ async function playerAction(type){
 
   if(!(await playerStatusCheck())) return;
   if(await enemyFirstCheck()) return;
+  if(typeof applyEquipmentTurnRecovery === 'function'){
+    await applyEquipmentTurnRecovery();
+  }
 
   const p = state.player;
 
   if(type === 'attack'){
     const target = currentEnemy();
-    const isCritical = Math.random() < 0.10;
+    const criticalBonus = typeof equipmentChance === 'function' ? equipmentChance('criticalRateBonus') : 0;
+    const isCritical = Math.random() < (0.10 + criticalBonus);
     const baseDamage = Math.max(1,totalAtk() + Math.floor(Math.random()*4));
-    const damage = isCritical ? Math.floor(baseDamage*2.2) : baseDamage;
+    let damage = isCritical ? Math.floor(baseDamage*2.2) : baseDamage;
+    if(typeof applyEquipmentOutgoingDamage === 'function'){
+      damage = applyEquipmentOutgoingDamage(damage,target,{attack:true});
+    }
 
     setMessage(`${p.name} のこうげき！`);
     await sleep(500);
@@ -121,8 +128,47 @@ async function playerAction(type){
 
     await sleep(isCritical ? 950 : 700);
 
+    if(target.hp > 0 && typeof equipmentChance === 'function' && Math.random() < equipmentChance('multiHitChance')){
+      const followDamage = Math.max(1,Math.floor(totalAtk() * 0.55));
+      const finalFollowDamage = typeof applyEquipmentOutgoingDamage === 'function'
+        ? applyEquipmentOutgoingDamage(followDamage,target,{attack:true})
+        : followDamage;
+      target.hp = Math.max(0,target.hp - finalFollowDamage);
+      if(target.hp <= 0) state.lastDefeatedEnemy = target;
+      setMessage(`装備効果！ ${target.name} に ${finalFollowDamage} 追加ダメージ！`);
+      showDamage(finalFollowDamage,'enemy');
+      seAttack();
+      enemyFlash();
+      updateUI();
+      await sleep(700);
+    }
+
+    if(target.hp > 0 && typeof equipmentChance === 'function' && Math.random() < equipmentChance('stunChance')){
+      target.sleepTurns = Math.max(target.sleepTurns || 0,1);
+      setMessage(`装備効果！ ${target.name} はひるんだ！`);
+      seMagic();
+      screenFlash();
+      updateUI();
+      await sleep(650);
+    }
+
+    if(target.hp > 0 && typeof equipmentChance === 'function' && Math.random() < equipmentChance('defDownChance')){
+      target.equipmentDefDownTurns = Math.max(target.equipmentDefDownTurns || 0,2);
+      setMessage(`装備効果！ ${target.name} の守りがゆるんだ！`);
+      seMagic();
+      screenFlash();
+      updateUI();
+      await sleep(650);
+    }
+
     if(allEnemiesDefeated()){
       await winBattle();
+      return;
+    }
+
+    if(typeof shouldTriggerEquipmentExtraAction === 'function' && shouldTriggerEquipmentExtraAction()){
+      await announceEquipmentExtraAction();
+      unlockBattleControls();
       return;
     }
 
@@ -135,6 +181,12 @@ async function playerAction(type){
 
     await sleep(650);
 
+    if(typeof shouldTriggerEquipmentExtraAction === 'function' && shouldTriggerEquipmentExtraAction()){
+      await announceEquipmentExtraAction();
+      unlockBattleControls();
+      return;
+    }
+
     if(!state.enemyActedFirst) await enemyTurn();
   }
 
@@ -144,6 +196,10 @@ async function playerAction(type){
 /* ===== Damage Helpers ===== */
 async function damageEnemy(message,damage,playSe){
   const target = currentEnemy();
+
+  if(typeof applyEquipmentOutgoingDamage === 'function'){
+    damage = applyEquipmentOutgoingDamage(damage,target,{magic:true});
+  }
 
   target.hp = Math.max(0,target.hp - damage);
   if(target.hp <= 0) state.lastDefeatedEnemy = target;
@@ -162,6 +218,11 @@ async function damageEnemy(message,damage,playSe){
     return;
   }
 
+  if(typeof shouldTriggerEquipmentExtraAction === 'function' && shouldTriggerEquipmentExtraAction()){
+    await announceEquipmentExtraAction();
+    return;
+  }
+
   if(!state.enemyActedFirst) await enemyTurn();
 }
 
@@ -169,7 +230,10 @@ async function damageAllEnemies(message,baseDamage){
   let defeated = null;
 
   aliveEnemies().forEach(enemy => {
-    const damage = enemy.boss ? Math.floor(baseDamage*0.8) : baseDamage;
+    let damage = enemy.boss ? Math.floor(baseDamage*0.8) : baseDamage;
+    if(typeof applyEquipmentOutgoingDamage === 'function'){
+      damage = applyEquipmentOutgoingDamage(damage,enemy,{magic:true});
+    }
     enemy.hp = Math.max(0,enemy.hp - damage);
 
     if(enemy.hp <= 0) defeated = enemy;
@@ -191,6 +255,11 @@ async function damageAllEnemies(message,baseDamage){
     return;
   }
 
+  if(typeof shouldTriggerEquipmentExtraAction === 'function' && shouldTriggerEquipmentExtraAction()){
+    await announceEquipmentExtraAction();
+    return;
+  }
+
   if(!state.enemyActedFirst) await enemyTurn();
 }
 
@@ -209,6 +278,10 @@ async function enemyTurn(){
       updateUI();
       await sleep(700);
       continue;
+    }
+
+    if(e.equipmentDefDownTurns && e.equipmentDefDownTurns > 0){
+      e.equipmentDefDownTurns--;
     }
 
     if(await enemySpecialAction(e)){
@@ -252,6 +325,9 @@ async function enemyBasicAttack(e){
 
   if(isCritical) damage = Math.floor(damage*2);
   if(p.guarding) damage = Math.max(1,Math.floor(damage/2));
+  if(typeof applyEquipmentDamageCut === 'function'){
+    damage = applyEquipmentDamageCut(damage);
+  }
 
   p.hp = Math.max(0,p.hp - damage);
 
@@ -336,7 +412,10 @@ async function winBattle(){
     : [currentEnemy()];
 
   const dropTarget = state.lastDefeatedEnemy || defeatedEnemies[defeatedEnemies.length-1];
-  const totalExp = defeatedEnemies.reduce((sum,e) => sum + (e.exp || 0),0);
+  const baseExp = defeatedEnemies.reduce((sum,e) => sum + (e.exp || 0),0);
+  const totalExp = typeof applyEquipmentExpBonus === 'function'
+    ? applyEquipmentExpBonus(baseExp)
+    : baseExp;
   const hasBoss = defeatedEnemies.some(e => e.boss);
 
   victoryEffect();

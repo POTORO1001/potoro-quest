@@ -287,7 +287,8 @@ function getFloorKey(){
 
 function rollRareItemDrop(){
   const floorKey = getFloorKey();
-  const rate = POTORO_DROP_CONFIG.rareItemDropRateByFloor[floorKey] || 0;
+  const bonus = typeof equipmentItemDropBonus === 'function' ? equipmentItemDropBonus() : 0;
+  const rate = Math.min(0.95,(POTORO_DROP_CONFIG.rareItemDropRateByFloor[floorKey] || 0) + bonus * 0.35);
 
   if(Math.random() >= rate) return null;
 
@@ -298,7 +299,10 @@ function rollRareItemDrop(){
 }
 
 function rollNormalItemDrop(enemyId){
-  if(Math.random() >= POTORO_DROP_CONFIG.itemDropRate) return null;
+  const bonus = typeof equipmentItemDropBonus === 'function' ? equipmentItemDropBonus() : 0;
+  const rate = Math.min(0.95,POTORO_DROP_CONFIG.itemDropRate + bonus);
+
+  if(Math.random() >= rate) return null;
 
   const table = POTORO_DROP_CONFIG.items[enemyId];
   if(!table || !table.length) return null;
@@ -362,7 +366,13 @@ function giveReward(enemyId){
   if(enemyId === 'tamachan' || enemyId === 'boss') return false;
 
   const drop = rollItemDrop(enemyId);
-  if(!drop) return false;
+  if(!drop){
+    if(typeof equipmentBonusRewardChance === 'function' && Math.random() < equipmentBonusRewardChance()){
+      const table = POTORO_DROP_CONFIG.items[enemyId];
+      if(table && table.length) return applyItemDrop({...pickWeightedDrop(table),rare:true});
+    }
+    return false;
+  }
 
   return applyItemDrop(drop);
 }

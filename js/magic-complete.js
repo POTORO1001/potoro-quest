@@ -88,7 +88,11 @@
       return `${cfg.name}はまだ覚えていない！`;
     }
 
-    if(p.mp < cfg.mp){
+    const mp = typeof equipmentAdjustedMagicCost === 'function'
+      ? equipmentAdjustedMagicCost(cfg.mp)
+      : cfg.mp;
+
+    if(p.mp < mp){
       return 'MPがたりない！';
     }
 
@@ -97,7 +101,12 @@
 
   function consumeMp(kind){
     const cfg = getMagicConfig(kind);
-    if(cfg) state.player.mp -= cfg.mp;
+    if(cfg){
+      const mp = typeof equipmentAdjustedMagicCost === 'function'
+        ? equipmentAdjustedMagicCost(cfg.mp)
+        : cfg.mp;
+      state.player.mp -= mp;
+    }
   }
 
   function calcNormalAttackDamage(){
@@ -138,6 +147,12 @@
   }
 
   async function afterPlayerActionEnemyTurn(){
+    if(typeof shouldTriggerEquipmentExtraAction === 'function' && shouldTriggerEquipmentExtraAction()){
+      await announceEquipmentExtraAction();
+      endPlayerMagicAction();
+      return;
+    }
+
     if(!state.enemyActedFirst){
       await enemyTurn();
     }
@@ -156,6 +171,9 @@
     let damage = Math.max(1,Math.floor(calcNormalAttackDamage() * 0.75));
     damage = applyAuraBonusToDamage(damage);
     damage = applyChargeIfNeeded(damage);
+    if(typeof applyEquipmentOutgoingDamage === 'function'){
+      damage = applyEquipmentOutgoingDamage(damage,target,{magic:true});
+    }
 
     target.hp = Math.max(0,target.hp - damage);
     if(target.hp <= 0) state.lastDefeatedEnemy = target;
@@ -187,7 +205,7 @@
     await showCutin('補助おまじない','キラキラオーラ！');
 
     const buffs = ensureBuffs();
-    buffs.kiraAura = 2;
+    buffs.kiraAura = typeof applyEquipmentBuffTurns === 'function' ? applyEquipmentBuffTurns(2) : 2;
 
     setMessage('キラキラオーラ！ トーク力とすばやさが上がった！');
     playOmajinaiSe();
@@ -207,7 +225,7 @@
     await showCutin('集中おまじない','完璧なお給仕！');
 
     const buffs = ensureBuffs();
-    buffs.perfectService = 1;
+    buffs.perfectService = typeof applyEquipmentBuffTurns === 'function' ? applyEquipmentBuffTurns(1) : 1;
 
     setMessage('完璧なお給仕！ 次の攻撃・おまじない威力が2.5倍！');
     playOmajinaiSe();
@@ -238,6 +256,9 @@
 
       // 完璧なお給仕は最初の1撃だけに乗る
       if(i === 0) damage = applyChargeIfNeeded(damage);
+      if(typeof applyEquipmentOutgoingDamage === 'function'){
+        damage = applyEquipmentOutgoingDamage(damage,target,{magic:true});
+      }
 
       target.hp = Math.max(0,target.hp - damage);
       total += damage;
@@ -280,6 +301,9 @@
     let damage = calcTalkDamage(48);
     damage = applyAuraBonusToDamage(damage);
     damage = applyChargeIfNeeded(damage);
+    if(typeof applyEquipmentOutgoingDamage === 'function'){
+      damage = applyEquipmentOutgoingDamage(damage,target,{magic:true});
+    }
 
     target.hp = Math.max(0,target.hp - damage);
     if(target.hp <= 0) state.lastDefeatedEnemy = target;
@@ -400,6 +424,12 @@
     const originalUseMagic = useMagic;
 
     useMagic = async function(kind){
+      if(['first_strike','aura','perfect_service','combo','rush','sunny'].includes(kind)){
+        if(typeof applyEquipmentTurnRecovery === 'function'){
+          await applyEquipmentTurnRecovery();
+        }
+      }
+
       if(kind === 'first_strike') return useFirstStrike();
       if(kind === 'aura') return useAura();
       if(kind === 'perfect_service') return usePerfectService();

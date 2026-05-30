@@ -108,7 +108,8 @@ async function enemySpecialAction(e){
 
   /* 空腹のご主人様：ドレイン */
   if(e.skill === 'drain' && Math.random() < POTORO_ENEMY_AI.drain.rate){
-    const damage = Math.max(4, Math.floor(e.atk * .75) - Math.floor(effectiveDef() * .35));
+    let damage = Math.max(4, Math.floor(e.atk * .75) - Math.floor(effectiveDef() * .35));
+    if(typeof applyEquipmentDamageCut === 'function') damage = applyEquipmentDamageCut(damage);
     p.hp = Math.max(0, p.hp - damage);
 
     const heal = Math.max(1, Math.floor(damage * .3));
@@ -132,7 +133,16 @@ async function enemySpecialAction(e){
 
   /* 迷走のご主人様：混乱 */
   if(e.skill === 'confuse' && Math.random() < POTORO_ENEMY_AI.confuse.rate){
-    s.confuse = Math.max(s.confuse, POTORO_ENEMY_AI.confuse.turns);
+    if(typeof resistsEquipmentStatus === 'function' && resistsEquipmentStatus('confuseResist')){
+      setMessage(`装備効果！ ${e.name} の混乱を防いだ！`);
+      seMagic();
+      screenFlash();
+      return true;
+    }
+    const turns = typeof applyEquipmentStatusTurns === 'function'
+      ? applyEquipmentStatusTurns(POTORO_ENEMY_AI.confuse.turns)
+      : POTORO_ENEMY_AI.confuse.turns;
+    s.confuse = Math.max(s.confuse, turns);
     setMessage(`${e.name} の ${POTORO_ENEMY_AI.confuse.label} 💫 混乱した！`);
     seMagic();
     screenFlash();
@@ -149,7 +159,16 @@ async function enemySpecialAction(e){
 
   /* 寝落のご主人様：睡眠 */
   if(e.skill === 'sleep' && Math.random() < POTORO_ENEMY_AI.sleep.rate){
-    s.sleep = Math.max(s.sleep, 1 + Math.floor(Math.random() * 2));
+    if(typeof resistsEquipmentStatus === 'function' && resistsEquipmentStatus('sleepResist')){
+      setMessage(`装備効果！ ${e.name} の眠気を防いだ！`);
+      seMagic();
+      screenFlash();
+      return true;
+    }
+    const turns = typeof applyEquipmentStatusTurns === 'function'
+      ? applyEquipmentStatusTurns(1 + Math.floor(Math.random() * 2))
+      : 1 + Math.floor(Math.random() * 2);
+    s.sleep = Math.max(s.sleep, turns);
     setMessage(`${e.name} の ${POTORO_ENEMY_AI.sleep.label} 😴 眠ってしまった！`);
     seMagic();
     screenFlash();
@@ -169,10 +188,17 @@ async function enemySpecialAction(e){
       seHit();
       enemyFlash();
     }else{
-      s.confuse = Math.max(s.confuse, 2);
-      setMessage(`${e.name} の ${POTORO_ENEMY_AI.drunk.label} 💫 混乱した！`);
-      seMagic();
-      screenFlash();
+      if(typeof resistsEquipmentStatus === 'function' && resistsEquipmentStatus('confuseResist')){
+        setMessage(`装備効果！ ${e.name} の混乱を防いだ！`);
+        seMagic();
+        screenFlash();
+      }else{
+        const turns = typeof applyEquipmentStatusTurns === 'function' ? applyEquipmentStatusTurns(2) : 2;
+        s.confuse = Math.max(s.confuse, turns);
+        setMessage(`${e.name} の ${POTORO_ENEMY_AI.drunk.label} 💫 混乱した！`);
+        seMagic();
+        screenFlash();
+      }
     }
 
     return true;
@@ -188,7 +214,16 @@ async function enemySpecialAction(e){
   }
 
   if(e.skill === 'lost' && Math.random() < POTORO_ENEMY_AI.maigo.rate){
-    s.confuse = Math.max(s.confuse, POTORO_ENEMY_AI.maigo.turns);
+    if(typeof resistsEquipmentStatus === 'function' && resistsEquipmentStatus('confuseResist')){
+      setMessage(`装備効果！ ${e.name} の混乱を防いだ！`);
+      seMagic();
+      screenFlash();
+      return true;
+    }
+    const turns = typeof applyEquipmentStatusTurns === 'function'
+      ? applyEquipmentStatusTurns(POTORO_ENEMY_AI.maigo.turns)
+      : POTORO_ENEMY_AI.maigo.turns;
+    s.confuse = Math.max(s.confuse, turns);
     setMessage(`${e.name} の 道に迷わせる案内！ 混乱してしまった！`);
     seMagic();
     screenFlash();
@@ -198,6 +233,7 @@ async function enemySpecialAction(e){
   if(e.skill === 'rush_pressure' && Math.random() < POTORO_ENEMY_AI.shousou.rate){
     let damage = Math.max(5, Math.floor(e.atk * .85) - Math.floor(effectiveDef() * .45));
     if(p.guarding) damage = Math.max(1, Math.floor(damage / 2));
+    if(typeof applyEquipmentDamageCut === 'function') damage = applyEquipmentDamageCut(damage);
 
     p.hp = Math.max(0, p.hp - damage);
     setMessage(`${e.name} の 急かしトーク！ ${damage}ダメージ！`);
@@ -210,6 +246,7 @@ async function enemySpecialAction(e){
   if(e.skill === 'spend' && Math.random() < POTORO_ENEMY_AI.sanzai.rate){
     let damage = Math.max(6, Math.floor(e.atk * .8) - Math.floor(effectiveDef() * .4));
     if(p.guarding) damage = Math.max(1, Math.floor(damage / 2));
+    if(typeof applyEquipmentDamageCut === 'function') damage = applyEquipmentDamageCut(damage);
 
     const mpDamage = Math.min(p.mp, POTORO_ENEMY_AI.sanzai.mpDamage + Math.floor(Math.random() * 3));
     p.hp = Math.max(0, p.hp - damage);
@@ -246,6 +283,7 @@ async function enemySpecialAction(e){
 
     let damage = Math.max(7, Math.floor(e.atk * .75) - Math.floor(effectiveDef() * .25));
     if(p.guarding) damage = Math.max(1, Math.floor(damage / 2));
+    if(typeof applyEquipmentDamageCut === 'function') damage = applyEquipmentDamageCut(damage);
 
     p.hp = Math.max(0, p.hp - damage);
     setMessage(`${e.name} の 重圧！ 防御が下がり、${damage}ダメージ！`);
@@ -264,6 +302,7 @@ async function enemySpecialAction(e){
       let damage = Math.max(5, Math.floor(e.atk * .75) - Math.floor(effectiveDef() * .35));
 
       if(p.guarding) damage = Math.max(1, Math.floor(damage / 2));
+      if(typeof applyEquipmentDamageCut === 'function') damage = applyEquipmentDamageCut(damage);
 
       p.hp = Math.max(0, p.hp - damage);
 
@@ -282,8 +321,13 @@ async function enemySpecialAction(e){
     }
 
     else{
-      s.confuse = Math.max(s.confuse, 2);
-      setMessage(`${e.name} の 闇トーク！ 💫 混乱した！`);
+      if(typeof resistsEquipmentStatus === 'function' && resistsEquipmentStatus('confuseResist')){
+        setMessage(`装備効果！ ${e.name} の混乱を防いだ！`);
+      }else{
+        const turns = typeof applyEquipmentStatusTurns === 'function' ? applyEquipmentStatusTurns(2) : 2;
+        s.confuse = Math.max(s.confuse, turns);
+        setMessage(`${e.name} の 闇トーク！ 💫 混乱した！`);
+      }
       seMagic();
       screenFlash();
     }
