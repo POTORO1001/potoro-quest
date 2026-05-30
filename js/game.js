@@ -957,6 +957,8 @@ async function playerAction(type){
     const isCritical=Math.random()<0.10;
     const baseDamage=Math.max(1,totalAtk()+Math.floor(Math.random()*4));
     const damage=isCritical ? Math.floor(baseDamage*2.2) : baseDamage;
+    setMessage(`${p.name} のこうげき！`);
+    await sleep(500);
     target.hp=Math.max(0,target.hp-damage);
     if(target.hp<=0) state.lastDefeatedEnemy=target;
     if(isCritical){
