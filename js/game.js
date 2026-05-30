@@ -49,7 +49,7 @@ const equipmentData={
   ],
   uniforms:[
     {id:'maid_headband',slot:'head',name:'メイドカチューシャ',def:3},
-    {id:'heart_tiara',slot:'head',name:'コットンシュシュ',def:2},
+    {id:'heart_tiara',slot:'head',name:'コットンシュシュ',def:3},
     {id:'rose_ribbon',slot:'head',name:'猫耳ヘアバンド',def:5},
     {id:'white_apron',slot:'body',name:'純白のエプロン',def:4},
     {id:'long_maid',slot:'body',name:'見習いメイド服',def:5},
