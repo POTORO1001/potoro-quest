@@ -350,8 +350,15 @@ async function enemyTurn(){
 }
 
 /* ===== Enemy Basic Attack ===== */
-async function enemyBasicAttack(e){
+async function announceEnemyAttack(e){
+  setMessage(`${e.name} の攻撃！`);
+  updateUI();
+  await sleep(520);
+}
+
+async function enemyBasicAttack(e, options){
   const p = state.player;
+  const opts = options || {};
 
   let damage = Math.max(1,e.atk - effectiveDef() + Math.floor(Math.random()*3));
   const isCritical = Math.random() < 0.08;
@@ -362,12 +369,16 @@ async function enemyBasicAttack(e){
     damage = applyEquipmentDamageCut(damage);
   }
 
+  if(!opts.skipIntro){
+    await announceEnemyAttack(e);
+  }
+
   p.hp = Math.max(0,p.hp - damage);
 
   setMessage(
     isCritical
-      ? `${e.name} の会心の一撃！ ${damage} ダメージ！`
-      : `${e.name} のこうげき！ ${damage} ダメージ！`
+      ? `会心の一撃！ ${damage} ダメージ！`
+      : `${damage} ダメージ！`
   );
 
   showDamage(damage,'player',isCritical ? 'enemy-critical-text' : null);

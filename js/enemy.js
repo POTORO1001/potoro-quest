@@ -108,6 +108,7 @@ async function enemySpecialAction(e){
 
   /* 空腹のご主人様：ドレイン */
   if(e.skill === 'drain' && Math.random() < POTORO_ENEMY_AI.drain.rate){
+    await announceEnemyAttack(e);
     let damage = Math.max(4, Math.floor(e.atk * .75) - Math.floor(effectiveDef() * .35));
     if(typeof applyEquipmentDamageCut === 'function') damage = applyEquipmentDamageCut(damage);
     p.hp = Math.max(0, p.hp - damage);
@@ -124,15 +125,17 @@ async function enemySpecialAction(e){
 
   /* 残業のご主人様：2回攻撃 */
   if(e.skill === 'double' && Math.random() < POTORO_ENEMY_AI.double.rate){
+    await announceEnemyAttack(e);
     setMessage(`${e.name} は ${POTORO_ENEMY_AI.double.label}`);
     await sleep(450);
-    await enemyBasicAttack(e);
-    if(p.hp > 0) await enemyBasicAttack(e);
+    await enemyBasicAttack(e, {skipIntro:true});
+    if(p.hp > 0) await enemyBasicAttack(e, {skipIntro:true});
     return true;
   }
 
   /* 迷走のご主人様：混乱 */
   if(e.skill === 'confuse' && Math.random() < POTORO_ENEMY_AI.confuse.rate){
+    await announceEnemyAttack(e);
     if(typeof resistsEquipmentStatus === 'function' && resistsEquipmentStatus('confuseResist')){
       setMessage(`装備効果！ ${e.name} の混乱を防いだ！`);
       seMagic();
@@ -151,6 +154,7 @@ async function enemySpecialAction(e){
 
   /* 激務のご主人様：攻撃アップ */
   if(e.skill === 'powerup' && Math.random() < POTORO_ENEMY_AI.powerup.rate){
+    await announceEnemyAttack(e);
     e.atk += POTORO_ENEMY_AI.powerup.atkUp;
     setMessage(`${e.name} は ${POTORO_ENEMY_AI.powerup.label} 攻撃力が上がった！`);
     seMagic();
@@ -159,6 +163,7 @@ async function enemySpecialAction(e){
 
   /* 寝落のご主人様：睡眠 */
   if(e.skill === 'sleep' && Math.random() < POTORO_ENEMY_AI.sleep.rate){
+    await announceEnemyAttack(e);
     if(typeof resistsEquipmentStatus === 'function' && resistsEquipmentStatus('sleepResist')){
       setMessage(`装備効果！ ${e.name} の眠気を防いだ！`);
       seMagic();
@@ -177,6 +182,7 @@ async function enemySpecialAction(e){
 
   /* 泥酔のご主人様：自傷 or 混乱 */
   if(e.skill === 'drunk' && Math.random() < POTORO_ENEMY_AI.drunk.rate){
+    await announceEnemyAttack(e);
     if(Math.random() < POTORO_ENEMY_AI.drunk.selfHitRate){
       const selfDamage = Math.max(8, Math.floor(e.atk * .9));
       e.hp = Math.max(0, e.hp - selfDamage);
@@ -206,6 +212,7 @@ async function enemySpecialAction(e){
 
   /* 叱責のご主人様：防御ダウン */
   if(e.skill === 'defdown' && Math.random() < POTORO_ENEMY_AI.defdown.rate){
+    await announceEnemyAttack(e);
     s.defDown = Math.max(s.defDown, POTORO_ENEMY_AI.defdown.turns);
     setMessage(`${e.name} の ${POTORO_ENEMY_AI.defdown.label} 🔻 防御が下がった！`);
     seMagic();
@@ -214,6 +221,7 @@ async function enemySpecialAction(e){
   }
 
   if(e.skill === 'lost' && Math.random() < POTORO_ENEMY_AI.maigo.rate){
+    await announceEnemyAttack(e);
     if(typeof resistsEquipmentStatus === 'function' && resistsEquipmentStatus('confuseResist')){
       setMessage(`装備効果！ ${e.name} の混乱を防いだ！`);
       seMagic();
@@ -231,6 +239,7 @@ async function enemySpecialAction(e){
   }
 
   if(e.skill === 'rush_pressure' && Math.random() < POTORO_ENEMY_AI.shousou.rate){
+    await announceEnemyAttack(e);
     let damage = Math.max(5, Math.floor(e.atk * .85) - Math.floor(effectiveDef() * .45));
     if(p.guarding) damage = Math.max(1, Math.floor(damage / 2));
     if(typeof applyEquipmentDamageCut === 'function') damage = applyEquipmentDamageCut(damage);
@@ -244,6 +253,7 @@ async function enemySpecialAction(e){
   }
 
   if(e.skill === 'spend' && Math.random() < POTORO_ENEMY_AI.sanzai.rate){
+    await announceEnemyAttack(e);
     let damage = Math.max(6, Math.floor(e.atk * .8) - Math.floor(effectiveDef() * .4));
     if(p.guarding) damage = Math.max(1, Math.floor(damage / 2));
     if(typeof applyEquipmentDamageCut === 'function') damage = applyEquipmentDamageCut(damage);
@@ -261,10 +271,11 @@ async function enemySpecialAction(e){
   }
 
   if(e.skill === 'runaway' && Math.random() < POTORO_ENEMY_AI.bousou.rate){
+    await announceEnemyAttack(e);
     setMessage(`${e.name} の 暴走突撃！`);
     await sleep(350);
-    await enemyBasicAttack(e);
-    if(p.hp > 0) await enemyBasicAttack(e);
+    await enemyBasicAttack(e, {skipIntro:true});
+    if(p.hp > 0) await enemyBasicAttack(e, {skipIntro:true});
 
     if(Math.random() < POTORO_ENEMY_AI.bousou.recoilRate){
       const recoil = Math.max(6, Math.floor(e.atk * .35));
@@ -279,6 +290,7 @@ async function enemySpecialAction(e){
   }
 
   if(e.skill === 'weight' && Math.random() < POTORO_ENEMY_AI.juuatsu.rate){
+    await announceEnemyAttack(e);
     s.defDown = Math.max(s.defDown, POTORO_ENEMY_AI.juuatsu.turns);
 
     let damage = Math.max(7, Math.floor(e.atk * .75) - Math.floor(effectiveDef() * .25));
@@ -296,6 +308,7 @@ async function enemySpecialAction(e){
 
   /* 鬼怒夜魔さん：ボス行動 */
   if(e.skill === 'boss' && Math.random() < POTORO_ENEMY_AI.boss.rate){
+    await announceEnemyAttack(e);
     const roll = Math.random();
 
     if(roll < .45){
