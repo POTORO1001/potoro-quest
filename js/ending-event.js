@@ -372,13 +372,18 @@ function injectBossRouletteStyle(){
       font-size: 14px;
       line-height: 1.65;
       font-weight: 800;
+      color: #312e81 !important;
     }
 
     .tanabata-ticket-main-prize {
       font-size: 18px !important;
       line-height: 1.45 !important;
-      color: #4c1d95;
+      color: #4c1d95 !important;
       font-weight: 1000 !important;
+    }
+
+    .tanabata-ticket-note {
+      color: #3730a3 !important;
     }
 
     .tanabata-costume-name {
@@ -571,7 +576,7 @@ function ensureTanabataEventTicket(){
     <p class="tanabata-ticket-main-prize">衣装選択イベント開催権利 獲得</p>
     <p>当選した衣装</p>
     <strong id="tanabataCostumeName" class="tanabata-costume-name">---</strong>
-    <p>この画面のスクリーンショットをお屋敷へ持参すると、特別なくじ引きに挑戦できます。</p>
+    <p class="tanabata-ticket-note">この画面のスクリーンショットをお屋敷へ持参すると、特別なくじ引きに挑戦できます。</p>
     <div class="cheki-time">
       <span>発行日時</span>
       <strong id="tanabataIssuedAt" class="ticket-issued-at-strong">--:--</strong>
