@@ -377,8 +377,8 @@ async function enemyBasicAttack(e, options){
 
   setMessage(
     isCritical
-      ? `会心の一撃！ ${damage} ダメージ！`
-      : `${damage} ダメージ！`
+      ? `会心の一撃！ ${p.name} に ${damage} ダメージ！`
+      : `${p.name} に ${damage} ダメージ！`
   );
 
   showDamage(damage,'player',isCritical ? 'enemy-critical-text' : null);
