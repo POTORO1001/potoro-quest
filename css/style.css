@@ -1972,8 +1972,9 @@ body.potoro-boss-criticalhp .enemy-slot.selected{
 .equip-button-effect{
   margin-top:4px;
   font-size:11px;
-  color:#6b21a8;
-  opacity:.95;
+  color:#fef3c7;
+  opacity:1;
+  text-shadow:0 1px 2px rgba(15,23,42,.55);
 }
 
 .equip-equipped .equip-button-main::before{
