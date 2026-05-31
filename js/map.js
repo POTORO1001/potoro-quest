@@ -219,13 +219,13 @@ function setupFloor(floor){
   resetVisibilityMaps();
   updateVisibility();
 
-  const far = findFarthest();
+  const goalPoint = findRandomGoalPoint();
   if(floor === 1){
-    state.stairs = {x:far.x,y:far.y};
+    state.stairs = {x:goalPoint.x,y:goalPoint.y};
     state.boss = {x:-1,y:-1};
   }else{
     state.stairs = null;
-    state.boss = {x:far.x,y:far.y};
+    state.boss = {x:goalPoint.x,y:goalPoint.y};
   }
 
   placeChests();
@@ -252,6 +252,65 @@ function findFarthest(){
     }
   }
   return {x:best.x,y:best.y};
+}
+
+function findRandomGoalPoint(){
+  const zones = [
+    {
+      id:'rightTop',
+      minX:Math.floor(MAZE_W * 0.58),
+      maxX:MAZE_W - 2,
+      minY:1,
+      maxY:Math.floor(MAZE_H * 0.42)
+    },
+    {
+      id:'leftBottom',
+      minX:1,
+      maxX:Math.floor(MAZE_W * 0.42),
+      minY:Math.floor(MAZE_H * 0.58),
+      maxY:MAZE_H - 2
+    },
+    {
+      id:'rightBottom',
+      minX:Math.floor(MAZE_W * 0.58),
+      maxX:MAZE_W - 2,
+      minY:Math.floor(MAZE_H * 0.58),
+      maxY:MAZE_H - 2
+    }
+  ];
+
+  const firstIndex = Math.floor(Math.random() * zones.length);
+  const firstZone = zones[firstIndex];
+  const fallbackZones = zones
+    .filter((_,index) => index !== firstIndex)
+    .sort(() => Math.random() - .5);
+  const orderedZones = [firstZone,...fallbackZones];
+
+  for(const zone of orderedZones){
+    const candidates = [];
+
+    for(let y=zone.minY;y<=zone.maxY;y++){
+      for(let x=zone.minX;x<=zone.maxX;x++){
+        if(x===1 && y===1) continue;
+        if(state.maze[y]?.[x] !== 0) continue;
+
+        const distance = state.mapDistanceMap?.[y]?.[x];
+        if(distance === undefined || distance < 0) continue;
+
+        candidates.push({x,y,distance});
+      }
+    }
+
+    if(candidates.length){
+      candidates.sort((a,b) => b.distance - a.distance);
+      const farthestDistance = candidates[0].distance;
+      const farthest = candidates.filter(point => point.distance === farthestDistance);
+      const point = farthest[Math.floor(Math.random() * farthest.length)];
+      return {x:point.x,y:point.y};
+    }
+  }
+
+  return findFarthest();
 }
 
 function placeChests(){
@@ -394,6 +453,99 @@ function movePlayer(dx,dy){
 
 function goToSecondFloor(){ setupFloor(2); }
 
+function ensureMapChoiceModal(){
+  let modal = document.getElementById('potoroMapChoiceModal');
+  if(modal) return modal;
+
+  const style = document.createElement('style');
+  style.id = 'potoroMapChoiceStyle';
+  style.textContent = `
+    .potoro-map-choice.hidden{display:none!important;}
+    .potoro-map-choice{position:fixed;inset:0;z-index:650;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(3,7,18,.62);backdrop-filter:blur(5px);}
+    .potoro-map-choice-box{width:min(90vw,420px);border:3px solid #e5edff;border-radius:22px;background:#0b1020;color:#fff;padding:22px 18px;box-shadow:0 22px 70px rgba(0,0,0,.58),0 0 24px rgba(167,139,250,.28);}
+    .potoro-map-choice-title{font-size:22px;font-weight:1000;margin-bottom:12px;color:#fff3a6;text-align:center;}
+    .potoro-map-choice-message{font-size:17px;line-height:1.7;text-align:center;margin-bottom:18px;color:#f8fafc;}
+    .potoro-map-choice-actions{display:grid;gap:10px;}
+    .potoro-map-choice-actions button{border:0;border-radius:14px;padding:14px 12px;font-size:17px;font-weight:1000;color:#fff;cursor:pointer;}
+    .potoro-map-choice-primary{background:linear-gradient(135deg,#2563eb,#7c3aed);}
+    .potoro-map-choice-secondary{background:#334155;}
+  `;
+  document.head.appendChild(style);
+
+  modal = document.createElement('section');
+  modal.id = 'potoroMapChoiceModal';
+  modal.className = 'potoro-map-choice hidden';
+  modal.setAttribute('role','dialog');
+  modal.setAttribute('aria-modal','true');
+  modal.innerHTML = `
+    <div class="potoro-map-choice-box">
+      <div class="potoro-map-choice-title"></div>
+      <div class="potoro-map-choice-message"></div>
+      <div class="potoro-map-choice-actions">
+        <button type="button" class="potoro-map-choice-primary"></button>
+        <button type="button" class="potoro-map-choice-secondary">探索を続ける</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  return modal;
+}
+
+function openMapChoiceModal({title,message,primaryText,onPrimary,onCancel}){
+  const modal = ensureMapChoiceModal();
+  const titleEl = modal.querySelector('.potoro-map-choice-title');
+  const messageEl = modal.querySelector('.potoro-map-choice-message');
+  const primaryBtn = modal.querySelector('.potoro-map-choice-primary');
+  const secondaryBtn = modal.querySelector('.potoro-map-choice-secondary');
+
+  const close = () => {
+    modal.classList.add('hidden');
+    state.busy = false;
+    drawMaze();
+    updateMapStatusPanel();
+  };
+
+  if(titleEl) titleEl.textContent = title;
+  if(messageEl) messageEl.textContent = message;
+  if(primaryBtn) primaryBtn.textContent = primaryText;
+
+  primaryBtn.onclick = () => {
+    close();
+    if(typeof onPrimary === 'function') onPrimary();
+  };
+
+  secondaryBtn.onclick = () => {
+    close();
+    if(typeof onCancel === 'function') onCancel();
+  };
+
+  state.busy = true;
+  modal.classList.remove('hidden');
+}
+
+function confirmSecondFloor(){
+  openMapChoiceModal({
+    title:'階段を見つけました',
+    message:'2Fへ進みますか？ それとも、もう少し1Fの探索を続けますか？',
+    primaryText:'2Fへ進む',
+    onPrimary:goToSecondFloor,
+    onCancel:() => setMapMessage('1Fの探索を続けよう。')
+  });
+}
+
+function confirmBossBattle(){
+  openMapChoiceModal({
+    title:'BOSSの気配がします',
+    message:'鬼怒夜魔さんに挑みますか？ それとも、もう少し準備しますか？',
+    primaryText:'BOSSに挑む',
+    onPrimary:() => {
+      const boss = findEnemyByIdSafe('boss');
+      if(boss) startBattle(cloneEnemySafe(boss), true);
+    },
+    onCancel:() => setMapMessage('準備を整えてから挑もう。')
+  });
+}
+
 function giveMapChestEquipment(){
   if(typeof giveMapTreasureEquipment === 'function'){
     giveMapTreasureEquipment();
@@ -521,13 +673,12 @@ function checkTileEvent(){
   }
 
   if(state.floor === 1 && state.stairs && p.mapX === state.stairs.x && p.mapY === state.stairs.y){
-    goToSecondFloor();
+    confirmSecondFloor();
     return;
   }
 
   if(state.floor === 2 && p.mapX === state.boss.x && p.mapY === state.boss.y){
-    const boss = findEnemyByIdSafe('boss');
-    if(boss) startBattle(cloneEnemySafe(boss), true);
+    confirmBossBattle();
     return;
   }
 
