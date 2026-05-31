@@ -97,7 +97,8 @@ const POTORO_ENEMY_AI = {
     turns: 2
   },
   boss: {
-    rate: 0.35
+    rate: 0.45,
+    defDownTurns: 3
   }
 };
 
@@ -312,7 +313,7 @@ async function enemySpecialAction(e){
     const roll = Math.random();
 
     if(roll < .45){
-      let damage = Math.max(5, Math.floor(e.atk * .75) - Math.floor(effectiveDef() * .35));
+      let damage = Math.max(7, Math.floor(e.atk * .85) - Math.floor(effectiveDef() * .3));
 
       if(p.guarding) damage = Math.max(1, Math.floor(damage / 2));
       if(typeof applyEquipmentDamageCut === 'function') damage = applyEquipmentDamageCut(damage);
@@ -327,7 +328,7 @@ async function enemySpecialAction(e){
     }
 
     else if(roll < .7){
-      s.defDown = Math.max(s.defDown, 2);
+      s.defDown = Math.max(s.defDown, POTORO_ENEMY_AI.boss.defDownTurns);
       setMessage(`威圧！ ${p.name} の防御が下がった！`);
       seMagic();
       screenFlash();
@@ -337,7 +338,7 @@ async function enemySpecialAction(e){
       if(typeof resistsEquipmentStatus === 'function' && resistsEquipmentStatus('confuseResist')){
         setMessage(`装備効果！ ${p.name} は混乱を防いだ！`);
       }else{
-        const turns = typeof applyEquipmentStatusTurns === 'function' ? applyEquipmentStatusTurns(2) : 2;
+        const turns = typeof applyEquipmentStatusTurns === 'function' ? applyEquipmentStatusTurns(3) : 3;
         s.confuse = Math.max(s.confuse, turns);
         setMessage(`闇トーク！ ${p.name} は混乱した！`);
       }

@@ -92,7 +92,7 @@
     patchEnemy('juuatsu',{hp:122,mp:20,maxMp:20,atk:43,def:14,spd:4,talk:14,exp:70});
 
     patchEnemy('tamachan',{hp:1,mp:0,maxMp:0,atk:0,def:0,spd:99,talk:99,exp:0});
-    patchEnemy('boss',{hp:280,mp:40,maxMp:40,atk:46,def:16,spd:15,talk:22,exp:120,boss:true});
+    patchEnemy('boss',{hp:340,maxHp:340,mp:48,maxMp:48,atk:52,def:18,spd:18,talk:24,exp:140,boss:true});
 
     return true;
   }
