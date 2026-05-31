@@ -69,6 +69,16 @@ padding:13px;
 }
 .version-label{margin-top:12px;font-size:11px;color:#93c5fd;}
 .release-note{margin-top:6px;font-size:12px;color:#fef3c7;opacity:.95;}
+.title-notice{
+margin-top:10px;
+font-size:12px;
+line-height:1.6;
+color:#dbeafe;
+}
+.title-notice div:last-child{
+color:#fde68a;
+font-weight:800;
+}
 
 .map-screen{
 min-height:100vh;
