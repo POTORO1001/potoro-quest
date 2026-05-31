@@ -360,11 +360,16 @@
     await afterPlayerActionEnemyTurn();
   }
 
-  function tickPlayerBuffsAfterEnemyTurn(){
+  async function tickPlayerBuffsAfterEnemyTurn(){
     const buffs = ensureBuffs();
 
     if(buffs.kiraAura && buffs.kiraAura > 0){
       buffs.kiraAura--;
+      if(buffs.kiraAura <= 0){
+        setMessage('キラキラオーラのきらめきが落ち着いた。');
+        if(typeof updateUI === 'function') updateUI();
+        await sleep(650);
+      }
     }
   }
 
@@ -408,7 +413,7 @@
 
     enemyTurn = async function(){
       const result = await originalEnemyTurn.apply(this,arguments);
-      tickPlayerBuffsAfterEnemyTurn();
+      await tickPlayerBuffsAfterEnemyTurn();
       if(typeof updateUI === 'function') updateUI();
       return result;
     };

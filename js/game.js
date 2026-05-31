@@ -931,16 +931,24 @@ async function playerStatusCheck(){
   const s=ensurePlayerStatus();
   if(s.sleep>0){
     setMessage(`${state.player.name} は眠っている…`);
-    s.sleep--; updateUI(); await sleep(800); await enemyTurn(); return false;
+    s.sleep--; updateUI(); await sleep(800); await enemyTurn();
+    if(s.sleep<=0){setMessage(`${state.player.name} は目を覚ました！`);updateUI();await sleep(650);}
+    return false;
   }
   if(s.confuse>0){
     s.confuse--;
     if(Math.random()<0.35){
       setMessage(`${state.player.name} は混乱して行動できなかった！`);
-      updateUI(); await sleep(800); await enemyTurn(); return false;
+      updateUI(); await sleep(800); await enemyTurn();
+      if(s.confuse<=0){setMessage(`${state.player.name} は気持ちを整えた！`);updateUI();await sleep(650);}
+      return false;
     }
+    if(s.confuse<=0){setMessage(`${state.player.name} は気持ちを整えた！`);updateUI();await sleep(650);}
   }
-  if(s.defDown>0) s.defDown--;
+  if(s.defDown>0){
+    s.defDown--;
+    if(s.defDown<=0){setMessage(`${state.player.name} は身だしなみを整えた！ 防御が戻った！`);updateUI();await sleep(700);}
+  }
   return true;
 }
 
@@ -1152,6 +1160,14 @@ async function enemyTurn(){
         updateUI(); await sleep(650);
       }
       continue;
+    }
+
+    if(e.equipmentDefDownTurns&&e.equipmentDefDownTurns>0){
+      e.equipmentDefDownTurns--;
+      if(e.equipmentDefDownTurns<=0){
+        setMessage(`${e.name} は体勢を立て直した！`);
+        updateUI(); await sleep(650);
+      }
     }
 
     if(await enemySpecialAction(e)){
