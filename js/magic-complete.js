@@ -427,9 +427,16 @@
     window.__potoroMagicCompleteUseMagicPatched = true;
 
     const originalUseMagic = useMagic;
+    function closeBattleMenusForMagic(){
+      if(typeof closeSubMenu === 'function') closeSubMenu();
+      if(typeof closeEquipMenu === 'function') closeEquipMenu();
+      if(typeof closeTreasureMenu === 'function') closeTreasureMenu();
+    }
 
     useMagic = async function(kind){
-      if(['first_strike','aura','perfect_service','combo','rush','sunny'].includes(kind)){
+      const completedMagicKinds = ['first_strike','aura','perfect_service','combo','rush','sunny'];
+      if(completedMagicKinds.includes(kind)){
+        closeBattleMenusForMagic();
         if(typeof applyEquipmentTurnRecovery === 'function'){
           await applyEquipmentTurnRecovery();
         }
