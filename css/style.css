@@ -2021,3 +2021,38 @@ body.potoro-boss-criticalhp .enemy-slot.selected{
   position:relative;
   z-index:1;
 }
+
+/* ===== Boss visual presence ===== */
+.enemy-slot.boss{
+  max-width:230px;
+}
+
+.enemy-slot.boss img{
+  width:195px;
+  height:230px;
+  max-width:195px;
+  max-height:230px;
+  object-fit:contain;
+  filter:drop-shadow(0 22px 22px rgba(0,0,0,.55));
+}
+
+.enemy-slots.single-enemy .enemy-slot.boss{
+  max-width:240px;
+}
+
+.enemy-slots.single-enemy .enemy-slot.boss img{
+  width:205px;
+  height:240px;
+  max-width:205px;
+  max-height:240px;
+}
+
+@media (max-width:360px){
+  .enemy-slot.boss img,
+  .enemy-slots.single-enemy .enemy-slot.boss img{
+    width:175px;
+    height:210px;
+    max-width:175px;
+    max-height:210px;
+  }
+}
