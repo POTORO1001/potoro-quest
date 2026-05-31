@@ -1390,7 +1390,7 @@ let openingDelayTimer=null;
 let openingLineTimer=null;
 let openingCurrentIndex=0;
 const OPENING_FADE_MS=600;
-const OPENING_SHOW_MS=4000;
+const OPENING_SHOW_MS=5000;
 
 function getOpeningLines(){
   const source=document.getElementById('openingCrawlSource');
