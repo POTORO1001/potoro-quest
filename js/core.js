@@ -112,11 +112,12 @@ function ensurePlayerItems(){
     p.items = {
       omurice:0,
       tea:0,
+      cool_tea:0,
       horse:0
     };
   }
 
-  ['omurice','tea','horse'].forEach(key => {
+  ['omurice','tea','cool_tea','horse'].forEach(key => {
     if(typeof p.items[key] !== 'number') p.items[key] = 0;
   });
 

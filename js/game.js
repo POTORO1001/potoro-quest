@@ -75,7 +75,7 @@ const initialPlayer={
   exp:0,
   nextExp:45,
   guarding:false,
-  items:{omurice:2,tea:1,horse:1},
+  items:{omurice:2,tea:1,cool_tea:1,horse:1},
   metTamachan:false,
   status:{sleep:0,confuse:0,defDown:0},
   inventory:{weapons:['rod'],uniforms:['maid_headband','white_apron','black_stocking']},
@@ -817,7 +817,7 @@ function openSubMenu(kind){
   if(p.lv>=5) addSubButton('キラキラオーラ　TP4 / バフ',()=>useMagic('aura'));
   if(p.lv>=6) addSubButton('チェキフラッシュ　TP12 / 全体攻撃',()=>useMagic('shower'));
   if(p.lv>=7) addSubButton('完璧なお給仕　TP7 / 次2.5倍',()=>useMagic('perfect_service'));
-  if(p.lv>=8) addSubButton('ご奉仕連撃　TP8 / 2〜3回攻撃',()=>useMagic('combo'));
+  if(p.lv>=8) addSubButton('ご奉仕連撃　TP8 / 3〜4回攻撃',()=>useMagic('combo'));
   if(p.lv>=9) addSubButton('萌えちゃーじ　TP0 / TP回復',()=>useMagic('charge'));
   if(p.lv>=10) addSubButton('ご帰宅ラッシュ　TP12 / 高ダメージ',()=>useMagic('rush'));
   if(p.lv>=11) addSubButton('ひなたぼっこ　TP12 / 全回復',()=>useMagic('sunny'));
@@ -1014,7 +1014,7 @@ async function useMagic(kind){
     if(p.mp<4){await failAction('TPがたりない！');return;}
     p.mp-=4;
     const target=currentEnemy();
-    const turns=1+Math.floor(Math.random()*3);
+    const turns=2+Math.floor(Math.random()*3);
     target.sleepTurns=turns;
     await showCutin('おまじない','おやすみなさい…');
     setMessage(`${target.name} は 眠った！`);

@@ -25,8 +25,8 @@ const POTORO_MAGIC_CONFIG = {
       name:'おやすみなさい',
       label:'おやすみなさい　TP3 / 眠り',
       mp:3,
-      minTurns:1,
-      maxTurns:3,
+      minTurns:2,
+      maxTurns:4,
       requiredLv:2
     },
     shower: {
@@ -79,10 +79,10 @@ const POTORO_MAGIC_CONFIG = {
     multi: {
       id:'multi',
       name:'ご奉仕連撃',
-      label:'ご奉仕連撃　TP8 / 2〜3回攻撃',
+      label:'ご奉仕連撃　TP8 / 3〜4回攻撃',
       mp:8,
-      minHits:2,
-      maxHits:3,
+      minHits:3,
+      maxHits:4,
       atkRate:0.6,
       requiredLv:8
     },

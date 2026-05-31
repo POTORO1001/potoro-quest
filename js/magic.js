@@ -32,6 +32,18 @@ function playOmajinaiSe(){
   else if(typeof seMagic === 'function') seMagic();
 }
 
+function randomAliveEnemy(){
+  const targets = typeof aliveEnemies === 'function'
+    ? aliveEnemies()
+    : (state.enemiesInBattle || []).filter(enemy => enemy.hp > 0);
+
+  if(targets.length){
+    return targets[Math.floor(Math.random() * targets.length)];
+  }
+
+  return currentEnemy();
+}
+
 function tickBuffs(){
   if(buffState.aura > 0) buffState.aura--;
 }
@@ -301,7 +313,7 @@ async function useMagicMulti(){
   let totalDamage = 0;
 
   for(let i=0;i<hits;i++){
-    const target = currentEnemy();
+    const target = randomAliveEnemy();
     if(!target || target.hp <= 0) break;
 
     let damage = Math.max(1,Math.floor(totalAtk() * atkRate));
