@@ -9,8 +9,8 @@
    おまじないの習得レベルを下記に完全固定します。
 
    Lv1  もえもえぎゅー
-   Lv2  おいしくなーれ
-   Lv3  おやすみなさい
+   Lv2  おやすみなさい
+   Lv3  おいしくなーれ
    Lv4  ご主人様ファースト
    Lv5  キラキラオーラ
    Lv6  チェキフラッシュ
@@ -37,8 +37,8 @@
 
   const POTORO_MAGIC_LEVEL_ORDER = [
     {id:'moe', key:'moe', name:'もえもえぎゅー', level:1, mp:5, desc:'単体ダメージ'},
-    {id:'heal', key:'heal', name:'おいしくなーれ', level:2, mp:6, desc:'HP回復'},
-    {id:'sleep', key:'sleep', name:'おやすみなさい', level:3, mp:3, desc:'敵を眠らせる'},
+    {id:'sleep', key:'sleep', name:'おやすみなさい', level:2, mp:3, desc:'敵を眠らせる'},
+    {id:'heal', key:'heal', name:'おいしくなーれ', level:3, mp:6, desc:'HP回復'},
     {id:'first_strike', key:'first_strike', name:'ご主人様ファースト', level:4, mp:6, desc:'必ず先制攻撃・威力75%'},
     {id:'aura', key:'aura', name:'キラキラオーラ', level:5, mp:4, desc:'トーク力＋すばやさUP'},
     {id:'shower', key:'shower', name:'チェキフラッシュ', level:6, mp:12, desc:'敵全体ダメージ'},

@@ -18,7 +18,7 @@ const POTORO_MAGIC_CONFIG = {
       label:'おいしくなーれ　MP6 / HP回復',
       mp:6,
       heal:35,
-      requiredLv:2
+      requiredLv:3
     },
     sleep: {
       id:'sleep',
@@ -27,7 +27,7 @@ const POTORO_MAGIC_CONFIG = {
       mp:3,
       minTurns:1,
       maxTurns:3,
-      requiredLv:3
+      requiredLv:2
     },
     shower: {
       id:'shower',
