@@ -75,9 +75,20 @@ font-size:12px;
 line-height:1.6;
 color:#dbeafe;
 }
-.title-notice div:last-child{
+.browser-notice{
 color:#fde68a;
 font-weight:800;
+animation:titleNoticeBlink 1.15s ease-in-out infinite;
+}
+.copyright-notice{
+margin-top:8px;
+font-size:11px;
+color:#dbeafe;
+opacity:.9;
+}
+@keyframes titleNoticeBlink{
+0%,100%{opacity:1;text-shadow:0 0 10px rgba(250,204,21,.75);}
+50%{opacity:.35;text-shadow:none;}
 }
 
 .map-screen{
