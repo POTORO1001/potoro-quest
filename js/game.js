@@ -37,7 +37,7 @@ const enemies=[
   {id:'neochi',name:'寝落のご主人様',hp:130,maxHp:130,mp:15,maxMp:15,atk:16,def:9,spd:9,talk:12,exp:38,image:'img/enemies/neochi.png?v=enemy-canvas-v1',skill:'sleep',intro:'寝落のご主人様が うとうとしながら あらわれた！'},
   {id:'deisui',name:'泥酔のご主人様',hp:180,maxHp:180,mp:18,maxMp:18,atk:21,def:12,spd:8,talk:14,exp:55,image:'img/enemies/deisui.png?v=enemy-canvas-v1',skill:'drunk',intro:'泥酔のご主人様が ふらつきながら あらわれた！'},
   {id:'shisseki',name:'叱責のご主人様',hp:240,maxHp:240,mp:25,maxMp:25,atk:26,def:16,spd:15,talk:16,exp:75,image:'img/enemies/shisseki.png?v=enemy-canvas-v1',skill:'defdown',intro:'叱責のご主人様が ふるえながら あらわれた！'},
-  {id:'boss',name:'鬼怒夜魔さん',hp:380,maxHp:380,mp:40,maxMp:40,atk:32,def:20,spd:18,talk:22,exp:120,image:'img/enemies/boss.png?v=29special',boss:true,skill:'boss',intro:'鬼怒夜魔さんが あらわれた！！'},
+  {id:'boss',name:'鬼怒夜魔さん',hp:380,maxHp:380,mp:40,maxMp:40,atk:32,def:20,spd:18,talk:22,exp:120,image:'img/enemies/boss.png?v=boss-portrait-v1',boss:true,skill:'boss',intro:'鬼怒夜魔さんが あらわれた！！'},
   {id:'tamachan',name:'たまちゃん',hp:1,maxHp:1,mp:0,maxMp:0,atk:0,def:0,spd:99,talk:99,exp:0,image:'img/enemies/tamachan.png?v=29special',helper:true,intro:'たまちゃんが あらわれた！'}
 ];
 
@@ -285,7 +285,7 @@ function startBgm(kind){
 const ASSETS_TO_PRELOAD=[
   'img/enemies/teiji.png?v=enemy-canvas-v1','img/enemies/kuufuku.png?v=enemy-canvas-v1','img/enemies/zangyo.png?v=enemy-canvas-v1',
   'img/enemies/meisou.png?v=enemy-canvas-v1','img/enemies/gekimu.png?v=enemy-canvas-v1','img/enemies/neochi.png?v=enemy-canvas-v1',
-  'img/enemies/deisui.png?v=enemy-canvas-v1','img/enemies/shisseki.png?v=enemy-canvas-v1','img/enemies/boss.png?v=29special',
+  'img/enemies/deisui.png?v=enemy-canvas-v1','img/enemies/shisseki.png?v=enemy-canvas-v1','img/enemies/boss.png?v=boss-portrait-v1',
   'img/enemies/maigo.png?v=enemy-canvas-v1','img/enemies/shousou.png?v=enemy-canvas-v1','img/enemies/sanzai.png?v=enemy-canvas-v1',
   'img/enemies/bousou.png?v=enemy-canvas-v1','img/enemies/juuatsu.png?v=enemy-canvas-v1',
   'img/enemies/tamachan.png?v=29special','img/backgrounds/battle_room.png?v=29special','img/backgrounds/battle_boss_room.png?v=29special'

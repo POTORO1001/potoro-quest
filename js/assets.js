@@ -42,7 +42,7 @@ const POTORO_ASSETS = {
     'img/enemies/sanzai.png?v=enemy-canvas-v1',
     'img/enemies/bousou.png?v=enemy-canvas-v1',
     'img/enemies/juuatsu.png?v=enemy-canvas-v1',
-    'img/enemies/boss.png?v=29special',
+    'img/enemies/boss.png?v=boss-portrait-v1',
     'img/enemies/tamachan.png?v=29special'
   ],
   backgrounds: [
