@@ -76,8 +76,11 @@ line-height:1.6;
 color:#dbeafe;
 }
 .browser-notice{
+margin:10px 0 0;
 color:#fde68a;
 font-weight:800;
+font-size:12px;
+line-height:1.6;
 animation:titleNoticeBlink 1.15s ease-in-out infinite;
 }
 .copyright-notice{
