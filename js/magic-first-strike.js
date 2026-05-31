@@ -7,7 +7,7 @@
 
    効果：
    - Lv4で使用可能
-   - MP6
+   - TP6
    - 必ず先制攻撃
    - 威力は通常攻撃の75%
    - 単体攻撃
@@ -57,7 +57,7 @@
     }
 
     if(p.mp < FIRST_STRIKE_MAGIC.mp){
-      await failAction('MPがたりない！');
+      await failAction('TPがたりない！');
       return;
     }
 

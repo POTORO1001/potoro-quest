@@ -171,7 +171,7 @@ async function applyEquipmentTurnRecovery(){
 
   const parts = [];
   if(hp) parts.push(`HPが ${hp} 回復`);
-  if(mp) parts.push(`MPが ${mp} 回復`);
+  if(mp) parts.push(`TPが ${mp} 回復`);
 
   setMessage(`装備効果！ ${parts.join('、')}！`);
   if(typeof seHeal === 'function') seHeal();
@@ -250,8 +250,8 @@ function itemEffectText(item){
   const e = item.effect || {};
   const parts = [];
 
-  if(e.magicMpMinus) parts.push(`MP消費-${e.magicMpMinus}`);
-  if(e.magicMpPlus) parts.push(`MP消費+${e.magicMpPlus}`);
+  if(e.magicMpMinus) parts.push(`TP消費-${e.magicMpMinus}`);
+  if(e.magicMpPlus) parts.push(`TP消費+${e.magicMpPlus}`);
   if(e.talkRate) parts.push(`トーク+${Math.round(e.talkRate*100)}%`);
   if(e.magicDamageRate) parts.push(`おまじない+${Math.round(e.magicDamageRate*100)}%`);
   if(e.healMagicRate) parts.push(`回復魔法+${Math.round(e.healMagicRate*100)}%`);
@@ -263,7 +263,7 @@ function itemEffectText(item){
   if(e.damageCutRate) parts.push(`被ダメ-${Math.round(e.damageCutRate*100)}%`);
   if(e.guardDamageCut) parts.push(`防御時さらに軽減`);
   if(e.turnHpRegen) parts.push(`毎ターンHP+${e.turnHpRegen}`);
-  if(e.turnMpRegen) parts.push(`毎ターンMP+${e.turnMpRegen}`);
+  if(e.turnMpRegen) parts.push(`毎ターンTP+${e.turnMpRegen}`);
   if(e.sleepResist || e.confuseResist) parts.push(`状態異常耐性`);
   if(e.buffTurnBonus) parts.push(`バフ+${e.buffTurnBonus}T`);
   if(e.statusTurnMinus) parts.push(`状態短縮`);
@@ -630,7 +630,7 @@ function potoroInstallEquipmentRarityAddon(){
       name:'おまじないステッキ',
       rarity:'B',
       atk:5,
-      desc:'おまじない消費MP-1。回復おまじない少しUP。',
+      desc:'おまじない消費TP-1。回復おまじない少しUP。',
       effect:{magicMpMinus:1,healMagicRate:0.20}
     },
     {
@@ -677,7 +677,7 @@ function potoroInstallEquipmentRarityAddon(){
       slot:'head',
       rarity:'A',
       def:7,
-      desc:'毎ターンMP+1。',
+      desc:'毎ターンTP+1。',
       effect:{turnMpRegen:1}
     },
     {
@@ -754,7 +754,7 @@ function potoroInstallEquipmentRarityAddon(){
       slot:'body',
       rarity:'C',
       def:4,
-      desc:'毎ターンMP+1。',
+      desc:'毎ターンTP+1。',
       effect:{turnMpRegen:1}
     },
     {
@@ -810,7 +810,7 @@ function potoroInstallEquipmentRarityAddon(){
       slot:'accessory',
       rarity:'B',
       def:2,
-      desc:'おまじない威力UP。MP消費+1。',
+      desc:'おまじない威力UP。TP消費+1。',
       effect:{magicDamageRate:0.20,magicMpPlus:1}
     },
     {
@@ -828,7 +828,7 @@ function potoroInstallEquipmentRarityAddon(){
       slot:'accessory',
       rarity:'A',
       def:4,
-      desc:'戦闘後のEXP+20%。低確率で追加報酬。',
+      desc:'お給仕後のEXP+20%。低確率で追加報酬。',
       effect:{expRate:0.20,bonusRewardChance:0.08}
     },
     {
@@ -913,7 +913,7 @@ function installPotoroEquipmentBalance(){
     ['gokitaku_mace',{name:'ご帰宅メイス',desc:'安定火力。'}],
     ['punish_frying_pan',{name:'お仕置きフライパン',desc:'低確率でスタン付与。すばやさ-1。',effect:{stunChance:0.16}}],
     ['kirameki_tray',{name:'きらめきネイル',desc:'クリティカル率UP。',effect:{criticalRateBonus:0.10}}],
-    ['magic_staff',{name:'おまじないステッキ',desc:'おまじない消費MP-1。回復おまじない少しUP。',effect:{magicMpMinus:1,healMagicRate:0.20}}],
+    ['magic_staff',{name:'おまじないステッキ',desc:'おまじない消費TP-1。回復おまじない少しUP。',effect:{magicMpMinus:1,healMagicRate:0.20}}],
     ['calling_bell',{name:'レインボーサイリウム',desc:'おまじない威力少しUP。',effect:{magicDamageRate:0.15}}],
     ['speed_tray',{name:'スピードトレイ',desc:'開幕先手を取りやすい速度型武器。',effect:{firstTurnSpdBonus:20,afterTurnSpdPenalty:3}}],
     ['service_hammer',{name:'お給仕ハンマー',desc:'攻撃時に防御ダウンを狙える。防御ダウン中の敵に火力上昇。',effect:{defDownChance:0.28,defDownDamageRate:0.25}}],
@@ -922,12 +922,12 @@ function installPotoroEquipmentBalance(){
     ['heart_tiara',{name:'コットンシュシュ',desc:'防御+3。すばやさ+1。'}],
     ['rose_ribbon',{name:'猫耳ヘアバンド',desc:'すばやさ+2。'}],
     ['fuwamoko_headband',{name:'ブルーローズリボン',desc:'トーク+1。'}],
-    ['kirarin_headdress',{name:'星屑の髪飾り',desc:'毎ターンMP+1。',effect:{turnMpRegen:1}}],
+    ['kirarin_headdress',{name:'星屑の髪飾り',desc:'毎ターンTP+1。',effect:{turnMpRegen:1}}],
     ['lucky_headband',{name:'極彩色の花かんむり',desc:'状態異常耐性少しUP。',effect:{sleepResist:0.25,confuseResist:0.25}}],
     ['royal_tiara',{name:'ロイヤルティアラ',desc:'被ダメージ少し軽減。',effect:{damageCutRate:0.10}}],
     ['white_apron',{name:'純白のエプロン',desc:'基本服装備。'}],
     ['long_maid',{name:'見習いメイド服',desc:'序盤安定。'}],
-    ['tea_time_dress',{name:'ティータイムドレス',desc:'毎ターンMP+1。',effect:{turnMpRegen:1}}],
+    ['tea_time_dress',{name:'ティータイムドレス',desc:'毎ターンTP+1。',effect:{turnMpRegen:1}}],
     ['heart_apron',{name:'ハートエプロン',desc:'毎ターンHP+3。',effect:{turnHpRegen:3}}],
     ['cool_maid_dress',{name:'着ぐるみパジャマ',desc:'睡眠耐性UP。',effect:{sleepResist:0.50}}],
     ['hannari_yukata',{name:'はんなり浴衣',desc:'トーク+2。'}],
@@ -942,9 +942,9 @@ function installPotoroEquipmentBalance(){
     ['heart_brooch',{name:'ハートのブローチ',desc:'防御+3の安定アクセ。'}],
     ['business_card',{name:'ご主人様の名刺',desc:'アイテムドロップ率UP。',effect:{itemDropRateBonus:0.15}}],
     ['magic_teacup',{name:'スター缶バッチ',desc:'クリティカル率少しUP。',effect:{criticalRateBonus:0.08}}],
-    ['magic_ribbon',{name:'魔力のアクスタ',desc:'おまじない威力UP。MP消費+1。',effect:{magicDamageRate:0.20,magicMpPlus:1}}],
+    ['magic_ribbon',{name:'魔力のアクスタ',desc:'おまじない威力UP。TP消費+1。',effect:{magicDamageRate:0.20,magicMpPlus:1}}],
     ['maid_note',{name:'メイドの心得ノート',desc:'状態異常ターン-1、バフターン+1。',effect:{statusTurnMinus:1,buffTurnBonus:1}}],
-    ['point_card',{name:'満タンポイントカード',desc:'戦闘後のEXP+20%。低確率で追加報酬。',effect:{expRate:0.20,bonusRewardChance:0.08}}],
+    ['point_card',{name:'満タンポイントカード',desc:'お給仕後のEXP+20%。低確率で追加報酬。',effect:{expRate:0.20,bonusRewardChance:0.08}}],
     ['broMaid_photo',{name:'推しのブロマイド',desc:'トーク+5。'}],
     ['legend_nameplate',{name:'伝説の名札',desc:'安定型アクセ。'}],
     ['royal_ring',{name:'ロイヤルリング',desc:'低確率で追加行動。',effect:{extraActionChance:0.12}}]

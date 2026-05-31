@@ -150,7 +150,7 @@ async function payMagicCost(kind){
     : (config.mp || 0);
 
   if(state.player.mp < mp){
-    await failAction('MPがたりない！');
+    await failAction('TPがたりない！');
     return false;
   }
 
@@ -547,7 +547,7 @@ async function useMagicMpChargeConfigured(){
   const gain = Math.min(config.mpRecover || 20,p.maxMp - p.mp);
   p.mp += gain;
 
-  setMessage(`MPが ${gain} 回復した！`);
+  setMessage(`TPが ${gain} 回復した！`);
 
   seHeal();
   updateUI();

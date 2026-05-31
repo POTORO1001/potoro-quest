@@ -93,7 +93,7 @@
       : cfg.mp;
 
     if(p.mp < mp){
-      return 'MPがたりない！';
+      return 'TPがたりない！';
     }
 
     return null;

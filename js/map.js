@@ -2,7 +2,7 @@
    ポトロクエスト map.js（修正版・完全差し替え用）
 
    差し替え対象：js/map.js
-   内容：1マス移動 / フォグ・オブ・ウォー / 円形視界 / 宝箱処理 / マップHP・MP・状態表示
+   内容：1マス移動 / フォグ・オブ・ウォー / 円形視界 / 宝箱処理 / マップHP・TP・状態表示
 ========================= */
 
 /* ===== Move Guard ===== */
@@ -615,7 +615,7 @@ function updateMapStatusPanel(){
   panel.innerHTML = `
     <div class="map-status-grid">
       <div>HP <strong>${p.hp}/${p.maxHp}</strong></div>
-      <div>MP <strong>${p.mp}/${p.maxMp}</strong></div>
+      <div>TP <strong>${p.mp}/${p.maxMp}</strong></div>
     </div>
     <div class="map-status-line">状態：${status}</div>
   `;
@@ -807,11 +807,11 @@ async function useMapItem(kind){
   if(kind === 'tea'){
     const itemName = getMapItemName('tea','紅茶');
     if((p.items.tea || 0) <= 0){ potoroMapItemFail(`${itemName}は持っていない！`); return; }
-    if(p.mp >= p.maxMp){ potoroMapItemFail('MPはすでに満タンです！'); return; }
+    if(p.mp >= p.maxMp){ potoroMapItemFail('TPはすでに満タンです！'); return; }
     p.items.tea--;
     const healMp = Math.min(getMapItemAmount('tea',10),p.maxMp - p.mp);
     p.mp += healMp;
-    setMapMessage(`${itemName}を飲んだ！ MPが ${healMp} 回復！`);
+    setMapMessage(`${itemName}を飲んだ！ TPが ${healMp} 回復！`);
     if(typeof seHeal === 'function') seHeal();
     updateMapStatusPanel();
     if(typeof updateUI === 'function') updateUI();
@@ -820,7 +820,7 @@ async function useMapItem(kind){
   }
 
   if(kind === 'horse'){
-    potoroMapItemFail('くろれきしは戦闘中のみ使えます！');
+    potoroMapItemFail('くろれきしはお給仕中のみ使えます！');
     return;
   }
 
@@ -843,8 +843,8 @@ function getMapItemLabel(kind){
   const p = state.player;
   const items = p.items || {};
   if(kind === 'omurice') return `${getMapItemName('omurice','オムライス')}　HP回復　残り${items.omurice || 0}`;
-  if(kind === 'tea') return `${getMapItemName('tea','紅茶')}　MP回復　残り${items.tea || 0}`;
-  if(kind === 'horse') return `くろれきし　戦闘中のみ　残り${items.horse || 0}`;
+  if(kind === 'tea') return `${getMapItemName('tea','紅茶')}　TP回復　残り${items.tea || 0}`;
+  if(kind === 'horse') return `くろれきし　お給仕中のみ　残り${items.horse || 0}`;
   return kind;
 }
 

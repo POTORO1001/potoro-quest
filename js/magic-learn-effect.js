@@ -2,7 +2,7 @@
    ポトロクエスト magic-learn-effect.js
    おまじない習得ポップアップ
 
-   レベルアップで覚えたおまじないを戦闘終了後、マップへ戻る前に表示します。
+   レベルアップで覚えたおまじないをお給仕終了後、マップへ戻る前に表示します。
 ========================= */
 
 (function(){
@@ -164,7 +164,7 @@
         <div class="potoro-magic-learn-kicker">LEVEL UP!</div>
         <div class="potoro-magic-learn-title">新しいおまじないを覚えました</div>
         <strong id="potoroMagicLearnName" class="potoro-magic-learn-name">---</strong>
-        <p class="potoro-magic-learn-help">次の戦闘から「おまじない」で使えます。</p>
+        <p class="potoro-magic-learn-help">次のお給仕から「おまじない」で使えます。</p>
         <button id="potoroMagicLearnOk" class="potoro-magic-learn-ok" type="button">OK</button>
       </div>
     `;

@@ -277,7 +277,7 @@ function seLevelUp(){playSeq([{f:523,d:.09,type:'sine',g:.08},{f:659,d:.09,type:
 function seVictory(){playSeq([{f:392,d:.12,type:'triangle',g:.08},{f:523,d:.12,type:'triangle',g:.08},{f:659,d:.12,type:'triangle',g:.08},{f:784,d:.2,type:'triangle',g:.08}]);}
 function seCheki(){playSeq([{f:880,d:.08,type:'sine',g:.09},{f:1175,d:.08,type:'sine',g:.09},{f:1568,d:.18,type:'sine',g:.09}]);}
 function startBgm(kind){
-  // MP3 BGM版ではWebAudioの簡易BGMは使用しない
+  // TP3 BGM版ではWebAudioの簡易BGMは使用しない
   return;
 }
 
@@ -535,7 +535,7 @@ function updateUI(){
   document.getElementById('enemyHpFill').style.width=`${hpPercent}%`;
 
   document.getElementById('playerHp').textContent=`HP ${p.hp} / ${p.maxHp}`;
-  document.getElementById('playerMp').textContent=`MP ${p.mp} / ${p.maxMp}`;
+  document.getElementById('playerMp').textContent=`TP ${p.mp} / ${p.maxMp}`;
   const spdEl=document.getElementById('playerSpd');
   if(spdEl) spdEl.textContent=`すばやさ ${totalSpd()}`;
   const talkEl=document.getElementById('playerTalk');
@@ -795,7 +795,7 @@ function endBattleToMap(){
   document.getElementById('mapScreen').classList.remove('hidden');
   setButtonsDisabled(false);
   state.busy=false;
-  setMapMessage('戦闘に勝利した！ 探索を続けよう。');
+  setMapMessage('お給仕に勝利した！ 探索を続けよう。');
   drawMaze();
 }
 
@@ -810,22 +810,22 @@ function openSubMenu(kind){
 
   const p = state.player;
 
-  if(p.lv>=1) addSubButton('もえもえぎゅー　MP5 / 単体ダメージ',()=>useMagic('moe'));
-  if(p.lv>=2) addSubButton('おいしくなーれ　MP6 / HP回復',()=>useMagic('heal'));
-  if(p.lv>=3) addSubButton('おやすみなさい　MP3 / 眠り',()=>useMagic('sleep'));
-  if(p.lv>=4) addSubButton('ご主人様ファースト　MP6 / 先制攻撃',()=>useMagic('first_strike'));
-  if(p.lv>=5) addSubButton('キラキラオーラ　MP4 / バフ',()=>useMagic('aura'));
-  if(p.lv>=6) addSubButton('チェキフラッシュ　MP12 / 全体攻撃',()=>useMagic('shower'));
-  if(p.lv>=7) addSubButton('完璧なお給仕　MP7 / 次2.5倍',()=>useMagic('perfect_service'));
-  if(p.lv>=8) addSubButton('ご奉仕連撃　MP8 / 2〜3回攻撃',()=>useMagic('combo'));
-  if(p.lv>=9) addSubButton('萌えちゃーじ　MP0 / MP回復',()=>useMagic('charge'));
-  if(p.lv>=10) addSubButton('ご帰宅ラッシュ　MP12 / 高ダメージ',()=>useMagic('rush'));
-  if(p.lv>=11) addSubButton('ひなたぼっこ　MP12 / 全回復',()=>useMagic('sunny'));
-  if(p.lv>=12) addSubButton('にしきぬやまー　MP16 / 超ダメージ',()=>useMagic('nishiki'));
+  if(p.lv>=1) addSubButton('もえもえぎゅー　TP5 / 単体ダメージ',()=>useMagic('moe'));
+  if(p.lv>=2) addSubButton('おいしくなーれ　TP6 / HP回復',()=>useMagic('heal'));
+  if(p.lv>=3) addSubButton('おやすみなさい　TP3 / 眠り',()=>useMagic('sleep'));
+  if(p.lv>=4) addSubButton('ご主人様ファースト　TP6 / 先制攻撃',()=>useMagic('first_strike'));
+  if(p.lv>=5) addSubButton('キラキラオーラ　TP4 / バフ',()=>useMagic('aura'));
+  if(p.lv>=6) addSubButton('チェキフラッシュ　TP12 / 全体攻撃',()=>useMagic('shower'));
+  if(p.lv>=7) addSubButton('完璧なお給仕　TP7 / 次2.5倍',()=>useMagic('perfect_service'));
+  if(p.lv>=8) addSubButton('ご奉仕連撃　TP8 / 2〜3回攻撃',()=>useMagic('combo'));
+  if(p.lv>=9) addSubButton('萌えちゃーじ　TP0 / TP回復',()=>useMagic('charge'));
+  if(p.lv>=10) addSubButton('ご帰宅ラッシュ　TP12 / 高ダメージ',()=>useMagic('rush'));
+  if(p.lv>=11) addSubButton('ひなたぼっこ　TP12 / 全回復',()=>useMagic('sunny'));
+  if(p.lv>=12) addSubButton('にしきぬやまー　TP16 / 超ダメージ',()=>useMagic('nishiki'));
   }else if(kind==='item'){
     title.textContent='どうぐ';
     addSubButton(`オムライス　HP30回復　残り${state.player.items.omurice}`,()=>useItem('omurice'));
-    addSubButton(`紅茶　MP10回復　残り${state.player.items.tea}`,()=>useItem('tea'));
+    addSubButton(`紅茶　TP10回復　残り${state.player.items.tea}`,()=>useItem('tea'));
     addSubButton(`くろれきし　大ダメージ　残り${state.player.items.horse}`,()=>useItem('horse'));
   }
   sub.classList.remove('hidden');
@@ -999,19 +999,19 @@ async function useMagic(kind){
   const p=state.player;
 
   if(kind==='moe'){
-    if(p.mp<5){await failAction('MPがたりない！');return;}
+    if(p.mp<5){await failAction('TPがたりない！');return;}
     p.mp-=5;await showCutin('おまじない','もえもえぎゅー！！');
     const damage=moeMagicDamage();
     await damageEnemy('もえもえぎゅー！！',damage);
   }else if(kind==='heal'){
-    if(p.mp<8){await failAction('MPがたりない！');return;}
+    if(p.mp<8){await failAction('TPがたりない！');return;}
     p.mp-=8;await showCutin('おまじない','おいしくなーれ！');
     const heal=Math.min(35,p.maxHp-p.hp);p.hp+=heal;
     setMessage(`おいしくなーれ！ HPが ${heal} 回復！`);
     showDamage(-heal,'player');seHeal();updateUI();
     await sleep(750);if(!state.enemyActedFirst) await enemyTurn();
   }else if(kind==='sleep'){
-    if(p.mp<4){await failAction('MPがたりない！');return;}
+    if(p.mp<4){await failAction('TPがたりない！');return;}
     p.mp-=4;
     const target=currentEnemy();
     const turns=1+Math.floor(Math.random()*3);
@@ -1022,20 +1022,20 @@ async function useMagic(kind){
     await sleep(800);
     if(!state.enemyActedFirst) await enemyTurn();
   }else if(kind==='nishiki'){
-    if(p.mp<16){await failAction('MPがたりない！');return;}
+    if(p.mp<16){await failAction('TPがたりない！');return;}
     p.mp-=16;await showCutin('必殺おまじない','にしきぬやまー！！');screenFlash();
     const target=currentEnemy();
     const damage=target.boss?magicPower(50):magicPower(75);
     await damageEnemy('にしきぬやまー！！',damage);
   }else if(kind==='shower'){
-    if(p.mp<12){await failAction('MPがたりない！');return;}
+    if(p.mp<12){await failAction('TPがたりない！');return;}
     p.mp-=12;await showCutin('全体おまじない','チェキフラッシュ！！');screenFlash();
     await damageAllEnemies('チェキフラッシュ！！',magicPower(32));
   }else if(kind==='charge'){
     await showCutin('補助おまじない','萌えちゃーじ！');
     const gain=Math.min(20,p.maxMp-p.mp);
     p.mp+=gain;
-    setMessage(`MPが ${gain} 回復した！`);
+    setMessage(`TPが ${gain} 回復した！`);
     seHeal();updateUI();
     await sleep(700);
     if(!state.enemyActedFirst) await enemyTurn();
@@ -1062,10 +1062,10 @@ async function useItem(kind){
     if(p.items.tea<=0||p.mp>=p.maxMp){await failAction('紅茶は使えない！');return;}
     p.items.tea--;
     const healMp=Math.min(10,p.maxMp-p.mp);p.mp+=healMp;
-    setMessage(`紅茶を飲んだ！ MPが ${healMp} 回復！`);
+    setMessage(`紅茶を飲んだ！ TPが ${healMp} 回復！`);
     seHeal();updateUI();await sleep(750);if(!isMapMode() && !state.enemyActedFirst) await enemyTurn();
   }else if(kind==='horse'){
-    if(isMapMode()){await failAction('くろれきしは戦闘中のみ使えます！');return;}
+    if(isMapMode()){await failAction('くろれきしはお給仕中のみ使えます！');return;}
     if(p.items.horse<=0){await failAction('くろれきしは持っていない！');return;}
     p.items.horse--;
     const damage=e.boss?55:999;

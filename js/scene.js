@@ -1,6 +1,6 @@
 /* =========================
    ポトロクエスト scene.js（STEP14）
-   画面遷移・戦闘開始終了・特殊イベント分離ファイル
+   画面遷移・お給仕開始終了・特殊イベント分離ファイル
 
    読み込み順：
    1. js/game.js
@@ -51,7 +51,7 @@ function selectTarget(index){
   setMessage(`${state.enemiesInBattle[index].name}を対象にした！`);
 }
 
-/* ===== 初回戦闘ヒント ===== */
+/* ===== 初回お給仕ヒント ===== */
 function getBattleOpeningMessage(){
   const baseMessage = state.enemiesInBattle.length > 1
     ? `${state.enemiesInBattle[0].name}たちが あらわれた！`
@@ -59,13 +59,13 @@ function getBattleOpeningMessage(){
 
   if(!state.firstBattleHintShown){
     state.firstBattleHintShown = true;
-    return `${baseMessage} はじめての戦闘です。「おまじない」や「どうぐ」も使ってみましょう。`;
+    return `${baseMessage} はじめてのお給仕です。「おまじない」や「どうぐ」も使ってみましょう。`;
   }
 
   return baseMessage;
 }
 
-/* ===== 戦闘開始 ===== */
+/* ===== お給仕開始 ===== */
 function startBattle(enemy,fromMap){
   playBgm(
     (enemy && enemy.helper)
@@ -104,7 +104,7 @@ function startBattle(enemy,fromMap){
   startBgm(state.enemiesInBattle.some(e => e.boss) ? 'boss' : 'battle');
 }
 
-/* ===== 戦闘終了：マップへ戻る ===== */
+/* ===== お給仕終了：マップへ戻る ===== */
 function endBattleToMap(){
   playMapBgm();
 
@@ -126,7 +126,7 @@ function endBattleToMap(){
 
   state.busy = false;
 
-  setMapMessage('戦闘に勝利した！ 探索を続けよう。');
+  setMapMessage('お給仕に勝利した！ 探索を続けよう。');
   drawMaze();
 }
 

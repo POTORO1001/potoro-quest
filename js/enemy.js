@@ -263,7 +263,7 @@ async function enemySpecialAction(e){
     p.hp = Math.max(0, p.hp - damage);
     p.mp = Math.max(0, p.mp - mpDamage);
 
-    setMessage(`爆買いプレッシャー！ ${p.name} に ${damage}ダメージ、MP-${mpDamage}！`);
+    setMessage(`爆買いプレッシャー！ ${p.name} に ${damage}ダメージ、TP-${mpDamage}！`);
     showDamage(damage, 'player', 'enemy-critical-text');
     seMagic();
     screenFlash();

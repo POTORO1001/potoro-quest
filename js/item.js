@@ -6,7 +6,7 @@
 
    対応内容：
    - drop.jsで追加した新どうぐを使用可能にする
-   - 戦闘中 / マップ中の使用に対応
+   - お給仕中 / マップ中の使用に対応
    - 状態異常回復
    - バフ系どうぐ
    - ランダム系どうぐ
@@ -28,7 +28,7 @@ const POTORO_ITEMS = {
   tea: {
     id:'tea',
     name:'紅茶',
-    label:'紅茶　MP10回復',
+    label:'紅茶　TP10回復',
     type:'healMp',
     amount:10,
     usableOnMap:true,
@@ -59,7 +59,7 @@ const POTORO_ITEMS = {
   royal_milk_tea: {
     id:'royal_milk_tea',
     name:'ロイヤルミルクティー',
-    label:'ロイヤルミルクティー　MP30回復',
+    label:'ロイヤルミルクティー　TP30回復',
     type:'healMp',
     amount:30,
     usableOnMap:true,
@@ -69,7 +69,7 @@ const POTORO_ITEMS = {
   sweets_plate: {
     id:'sweets_plate',
     name:'ご褒美スイーツプレート',
-    label:'ご褒美スイーツプレート　HP25・MP15回復',
+    label:'ご褒美スイーツプレート　HP25・TP15回復',
     type:'healBoth',
     hpAmount:25,
     mpAmount:15,
@@ -324,7 +324,7 @@ function canUseItem(kind){
   const mapMode = isMapMode();
 
   if(mapMode && !item.usableOnMap){
-    return {ok:false,message:`${item.name}は戦闘中のみ使えます！`};
+    return {ok:false,message:`${item.name}はお給仕中のみ使えます！`};
   }
 
   if(!mapMode && !item.usableInBattle){
@@ -434,7 +434,7 @@ async function useItem(kind){
     const healMp = Math.min(item.amount,p.maxMp-p.mp);
     p.mp += healMp;
 
-    const msg = `${item.name}を使った！ MPが ${healMp} 回復！`;
+    const msg = `${item.name}を使った！ TPが ${healMp} 回復！`;
     if(isMapMode()) setMapMessage(msg);
     else setMessage(msg);
 
@@ -452,7 +452,7 @@ async function useItem(kind){
     p.hp += heal;
     p.mp += healMp;
 
-    const msg = `${item.name}を使った！ HP${heal}・MP${healMp} 回復！`;
+    const msg = `${item.name}を使った！ HP${heal}・TP${healMp} 回復！`;
     if(isMapMode()) setMapMessage(msg);
     else setMessage(msg);
 
@@ -513,7 +513,7 @@ async function useItem(kind){
 
   else if(item.type === 'damage'){
     if(isMapMode()){
-      await failAction(`${item.name}は戦闘中のみ使えます！`);
+      await failAction(`${item.name}はお給仕中のみ使えます！`);
       return;
     }
 
@@ -538,7 +538,7 @@ async function useItem(kind){
 /* ===== ？？？ドリンク ===== */
 async function useUnknownDrinkEffect(item){
   if(isMapMode()){
-    await failAction(`${item.name}は戦闘中のみ使えます！`);
+    await failAction(`${item.name}はお給仕中のみ使えます！`);
     return;
   }
 

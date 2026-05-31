@@ -5,7 +5,7 @@ const POTORO_MAGIC_CONFIG = {
     moe: {
       id:'moe',
       name:'もえもえぎゅー',
-      label:'もえもえぎゅー　MP5 / 敵に25〜30ダメージ',
+      label:'もえもえぎゅー　TP5 / 敵に25〜30ダメージ',
       mp:5,
       baseDamageMin:25,
       baseDamageMax:30,
@@ -15,7 +15,7 @@ const POTORO_MAGIC_CONFIG = {
     heal: {
       id:'heal',
       name:'おいしくなーれ',
-      label:'おいしくなーれ　MP6 / HP回復',
+      label:'おいしくなーれ　TP6 / HP回復',
       mp:6,
       heal:35,
       requiredLv:3
@@ -23,7 +23,7 @@ const POTORO_MAGIC_CONFIG = {
     sleep: {
       id:'sleep',
       name:'おやすみなさい',
-      label:'おやすみなさい　MP3 / 眠り',
+      label:'おやすみなさい　TP3 / 眠り',
       mp:3,
       minTurns:1,
       maxTurns:3,
@@ -32,7 +32,7 @@ const POTORO_MAGIC_CONFIG = {
     shower: {
       id:'shower',
       name:'チェキフラッシュ',
-      label:'チェキフラッシュ　MP12 / 敵全体ダメージ',
+      label:'チェキフラッシュ　TP12 / 敵全体ダメージ',
       mp:12,
       base:32,
       bossRate:0.8,
@@ -41,7 +41,7 @@ const POTORO_MAGIC_CONFIG = {
     charge: {
       id:'charge',
       name:'萌えちゃーじ',
-      label:'萌えちゃーじ　MP0 / MP20回復',
+      label:'萌えちゃーじ　TP0 / TP20回復',
       mp:0,
       mpRecover:20,
       requiredLv:9
@@ -49,7 +49,7 @@ const POTORO_MAGIC_CONFIG = {
     nishiki: {
       id:'nishiki',
       name:'にしきぬやまー',
-      label:'にしきぬやまー　MP16 / 大ダメージ',
+      label:'にしきぬやまー　TP16 / 大ダメージ',
       mp:16,
       bossBase:50,
       normalBase:75,
@@ -61,7 +61,7 @@ const POTORO_MAGIC_CONFIG = {
     aura: {
       id:'aura',
       name:'キラキラオーラ',
-      label:'キラキラオーラ　MP4 / トーク力↑・速度↑',
+      label:'キラキラオーラ　TP4 / トーク力↑・速度↑',
       mp:4,
       turns:2,
       spdBonus:5,
@@ -71,7 +71,7 @@ const POTORO_MAGIC_CONFIG = {
     charge2: {
       id:'charge2',
       name:'完璧なお給仕',
-      label:'完璧なお給仕　MP7 / 次ダメージ2.5倍',
+      label:'完璧なお給仕　TP7 / 次ダメージ2.5倍',
       mp:7,
       multiplier:2.5,
       requiredLv:7
@@ -79,7 +79,7 @@ const POTORO_MAGIC_CONFIG = {
     multi: {
       id:'multi',
       name:'ご奉仕連撃',
-      label:'ご奉仕連撃　MP8 / 2〜3回攻撃',
+      label:'ご奉仕連撃　TP8 / 2〜3回攻撃',
       mp:8,
       minHits:2,
       maxHits:3,
@@ -89,7 +89,7 @@ const POTORO_MAGIC_CONFIG = {
     rush: {
       id:'rush',
       name:'ご帰宅ラッシュ',
-      label:'ご帰宅ラッシュ　MP12 / 高威力＋混乱',
+      label:'ご帰宅ラッシュ　TP12 / 高威力＋混乱',
       mp:12,
       base:60,
       confuseRate:0.30,
@@ -99,7 +99,7 @@ const POTORO_MAGIC_CONFIG = {
     fullheal: {
       id:'fullheal',
       name:'ひなたぼっこ',
-      label:'ひなたぼっこ　MP12 / 全回復＋状態異常解除',
+      label:'ひなたぼっこ　TP12 / 全回復＋状態異常解除',
       mp:12,
       requiredLv:11
     }
@@ -167,7 +167,7 @@ function getMagicLabel(kind){
   return config ? config.label : kind;
 }
 
-/* ===== MP Check ===== */
+/* ===== TP Check ===== */
 function hasEnoughMp(kind){
   const config = getMagicConfig(kind);
   if(!config) return false;

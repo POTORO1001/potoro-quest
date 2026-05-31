@@ -74,7 +74,7 @@ function updatePlayerStatusPanel(p){
   const title = document.querySelector('.status-panel h2');
 
   if(hp) hp.textContent = `HP ${p.hp} / ${p.maxHp}`;
-  if(mp) mp.textContent = `MP ${p.mp} / ${p.maxMp}`;
+  if(mp) mp.textContent = `TP ${p.mp} / ${p.maxMp}`;
   if(spd) spd.textContent = `すばやさ ${totalSpd()}`;
   if(talk) talk.textContent = `トーク力 ${totalTalk()}`;
   if(statusEffects) statusEffects.textContent = `状態：${statusText()}`;

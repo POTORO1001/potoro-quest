@@ -44,7 +44,7 @@
     {id:'shower', key:'shower', name:'チェキフラッシュ', level:6, mp:12, desc:'敵全体ダメージ'},
     {id:'perfect_service', key:'perfect_service', name:'完璧なお給仕', level:7, mp:7, desc:'次の行動ダメージ2.5倍'},
     {id:'combo', key:'combo', name:'ご奉仕連撃', level:8, mp:8, desc:'2〜3回攻撃'},
-    {id:'charge', key:'charge', name:'萌えちゃーじ', level:9, mp:0, desc:'MP回復'},
+    {id:'charge', key:'charge', name:'萌えちゃーじ', level:9, mp:0, desc:'TP回復'},
     {id:'rush', key:'rush', name:'ご帰宅ラッシュ', level:10, mp:12, desc:'高ダメージ＋低確率混乱'},
     {id:'sunny', key:'sunny', name:'ひなたぼっこ', level:11, mp:12, desc:'HP全回復＋状態異常回復'},
     {id:'nishiki', key:'nishiki', name:'にしきぬやまー', level:12, mp:16, desc:'超高威力単体攻撃'}
@@ -150,7 +150,7 @@
   }
 
   function buttonTextForMagic(magic){
-    return `${magic.name}　MP${magic.mp} / ${magic.desc}`;
+    return `${magic.name}　TP${magic.mp} / ${magic.desc}`;
   }
 
   function rebuildMagicMenu(){

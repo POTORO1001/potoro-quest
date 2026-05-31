@@ -27,7 +27,7 @@
   };
 
   const POTORO_ITEM_LABEL_RENAMES = {
-    tea:'ココア　MP10回復',
+    tea:'ココア　TP10回復',
     cool_tea:'ホットミルク　混乱回復',
     refresh_aroma:'ジュエリーウォーター　状態異常回復',
     kira_powder:'マジックパウダー　おまじない強化'
