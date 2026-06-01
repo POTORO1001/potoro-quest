@@ -14,7 +14,7 @@
 ========================= */
 
 var POTORO_DROP_CONFIG = {
-  version:'item-drop-rare-only-edition',
+  version:'item-drop-refresh-v1',
 
   itemDropRate:0.42,
 
@@ -55,9 +55,28 @@ var POTORO_DROP_CONFIG = {
     ],
 
     neochi:[
-      {id:'alarm_bell',name:'目覚ましベル',count:1,rate:0.55},
+      {id:'cool_tea',name:'冷静の紅茶',count:1,rate:0.45},
       {id:'tea',name:'紅茶',count:1,rate:0.35},
-      {id:'omurice',name:'オムライス',count:1,rate:0.10}
+      {id:'omurice',name:'オムライス',count:1,rate:0.20}
+    ],
+
+    maigo:[
+      {id:'cool_tea',name:'冷静の紅茶',count:1,rate:0.40},
+      {id:'tea',name:'紅茶',count:1,rate:0.35},
+      {id:'omurice',name:'オムライス',count:1,rate:0.25}
+    ],
+
+    shousou:[
+      {id:'tea',name:'紅茶',count:1,rate:0.45},
+      {id:'voice_message',name:'応援のボイスメッセージ',count:1,rate:0.30},
+      {id:'omurice',name:'オムライス',count:1,rate:0.25}
+    ],
+
+    sanzai:[
+      {id:'unknown_drink',name:'？？？ドリンク',count:1,rate:0.35},
+      {id:'refresh_aroma',name:'リフレッシュアロマ',count:1,rate:0.25},
+      {id:'tea',name:'紅茶',count:1,rate:0.25},
+      {id:'omurice',name:'オムライス',count:1,rate:0.15}
     ],
 
     deisui:[
@@ -72,6 +91,20 @@ var POTORO_DROP_CONFIG = {
       {id:'kira_powder',name:'キラキラパウダー',count:1,rate:0.30},
       {id:'omurice',name:'オムライス',count:1,rate:0.20},
       {id:'tea',name:'紅茶',count:1,rate:0.10}
+    ],
+
+    bousou:[
+      {id:'refresh_aroma',name:'リフレッシュアロマ',count:1,rate:0.35},
+      {id:'cool_tea',name:'冷静の紅茶',count:1,rate:0.25},
+      {id:'omurice',name:'オムライス',count:1,rate:0.25},
+      {id:'tea',name:'紅茶',count:1,rate:0.15}
+    ],
+
+    juuatsu:[
+      {id:'service_manual',name:'お給仕マニュアル',count:1,rate:0.35},
+      {id:'kira_powder',name:'キラキラパウダー',count:1,rate:0.25},
+      {id:'omurice',name:'オムライス',count:1,rate:0.25},
+      {id:'tea',name:'紅茶',count:1,rate:0.15}
     ]
   },
 

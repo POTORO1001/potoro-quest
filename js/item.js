@@ -87,16 +87,6 @@ const POTORO_ITEMS = {
     usableInBattle:true
   },
 
-  alarm_bell: {
-    id:'alarm_bell',
-    name:'目覚ましベル',
-    label:'目覚ましベル　睡眠回復',
-    type:'cureStatus',
-    cures:['sleep'],
-    usableOnMap:true,
-    usableInBattle:true
-  },
-
   refresh_aroma: {
     id:'refresh_aroma',
     name:'リフレッシュアロマ',
@@ -374,7 +364,6 @@ function ownedItemKinds(){
     'royal_milk_tea',
     'sweets_plate',
     'cool_tea',
-    'alarm_bell',
     'refresh_aroma',
     'voice_message',
     'kira_powder',
