@@ -89,7 +89,7 @@
     patchEnemy('deisui',{hp:96,mp:18,maxMp:18,atk:38,def:10,spd:8,talk:14,exp:50});
     patchEnemy('shisseki',{hp:114,mp:25,maxMp:25,atk:44,def:12,spd:14,talk:16,exp:68});
     patchEnemy('bousou',{hp:98,mp:10,maxMp:10,atk:40,def:10,spd:16,talk:10,exp:54});
-    patchEnemy('juuatsu',{hp:122,mp:20,maxMp:20,atk:43,def:14,spd:4,talk:14,exp:70});
+    patchEnemy('juuatsu',{hp:122,mp:20,maxMp:20,atk:38,def:14,spd:4,talk:14,exp:70});
 
     patchEnemy('tamachan',{hp:1,mp:0,maxMp:0,atk:0,def:0,spd:99,talk:99,exp:0});
     patchEnemy('boss',{hp:340,maxHp:340,mp:48,maxMp:48,atk:52,def:18,spd:18,talk:24,exp:140,boss:true});

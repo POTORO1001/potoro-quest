@@ -93,7 +93,7 @@ const POTORO_ENEMY_AI = {
     recoilRate: 0.35
   },
   juuatsu: {
-    rate: 0.34,
+    rate: 0.28,
     turns: 2
   },
   boss: {
