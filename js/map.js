@@ -325,7 +325,7 @@ function placeChests(){
     }
   }
   floors.sort(() => Math.random() - .5);
-  const chestCount = state.floor === 1 ? 5 : 7;
+  const chestCount = state.floor === 1 ? 6 : 8;
   state.chests = floors.slice(0,chestCount).map((point,index) => ({...point, opened:false, id:`${state.floor}-${index}`}));
 }
 

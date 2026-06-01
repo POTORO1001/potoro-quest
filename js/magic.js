@@ -72,6 +72,18 @@ totalTalk = function(){
   return base;
 };
 
+const _potoroMagicTotalDef = totalDef;
+totalDef = function(){
+  let base = _potoroMagicTotalDef();
+
+  const aura = requireMagicConfig('aura');
+  if(buffState.aura > 0 && aura){
+    base += aura.defBonus || 0;
+  }
+
+  return base;
+};
+
 /* ===== おまじないメニュー：習得済みのみ表示 ===== */
 const _potoroMagicOpenSubMenu = openSubMenu;
 
@@ -272,7 +284,7 @@ async function useMagicAura(){
     : (config.turns || 2);
 
   await showCutin('おまじない','キラキラオーラ☆');
-  setMessage(`トーク力とすばやさが ${buffState.aura}ターン アップ！`);
+  setMessage(`トーク力・すばやさ・防御が ${buffState.aura}ターン アップ！`);
 
   playOmajinaiSe();
   updateUI();

@@ -217,9 +217,9 @@
     await showCutin('補助おまじない','キラキラオーラ！');
 
     const buffs = ensureBuffs();
-    buffs.kiraAura = typeof applyEquipmentBuffTurns === 'function' ? applyEquipmentBuffTurns(2) : 2;
+    buffs.kiraAura = typeof applyEquipmentBuffTurns === 'function' ? applyEquipmentBuffTurns(3) : 3;
 
-    setMessage('キラキラオーラ！ トーク力とすばやさが上がった！');
+    setMessage('キラキラオーラ！ トーク力・すばやさ・防御が上がった！');
     playOmajinaiSe();
     screenFlash();
     updateUI();
@@ -386,7 +386,7 @@
   }
 
   /*
-    totalSpd / totalTalk にキラキラオーラ補正を乗せる。
+    totalSpd / totalTalk / totalDef にキラキラオーラ補正を乗せる。
   */
   if(typeof totalSpd === 'function' && !window.__potoroAuraTotalSpdPatched){
     window.__potoroAuraTotalSpdPatched = true;
@@ -408,6 +408,20 @@
 
     totalTalk = function(){
       let value = originalTotalTalk.apply(this,arguments);
+      const buffs = state.player && state.player.buffs ? state.player.buffs : {};
+      if(buffs.kiraAura && buffs.kiraAura > 0){
+        value += 5;
+      }
+      return value;
+    };
+  }
+
+  if(typeof totalDef === 'function' && !window.__potoroAuraTotalDefPatched){
+    window.__potoroAuraTotalDefPatched = true;
+    const originalTotalDef = totalDef;
+
+    totalDef = function(){
+      let value = originalTotalDef.apply(this,arguments);
       const buffs = state.player && state.player.buffs ? state.player.buffs : {};
       if(buffs.kiraAura && buffs.kiraAura > 0){
         value += 5;

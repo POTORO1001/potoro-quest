@@ -61,11 +61,12 @@ const POTORO_MAGIC_CONFIG = {
     aura: {
       id:'aura',
       name:'キラキラオーラ',
-      label:'キラキラオーラ　TP4 / トーク力↑・速度↑',
+      label:'キラキラオーラ　TP4 / トーク力↑・速度↑・防御↑',
       mp:4,
-      turns:2,
+      turns:3,
       spdBonus:5,
       talkBonus:5,
+      defBonus:5,
       requiredLv:5
     },
     charge2: {
