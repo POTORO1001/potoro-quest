@@ -1,5 +1,5 @@
 const POTORO_MAGIC_CONFIG = {
-  version: 'magic-config-level-learn-fixed',
+  version: 'magic-tp-desc-v1',
 
   existing: {
     moe: {
@@ -80,7 +80,7 @@ const POTORO_MAGIC_CONFIG = {
     multi: {
       id:'multi',
       name:'ご奉仕連撃',
-      label:'ご奉仕連撃　TP8 / 3〜4回攻撃',
+      label:'ご奉仕連撃　TP8 / 敵を選ばず3〜4回攻撃',
       mp:8,
       minHits:3,
       maxHits:4,
@@ -90,7 +90,7 @@ const POTORO_MAGIC_CONFIG = {
     rush: {
       id:'rush',
       name:'ご帰宅ラッシュ',
-      label:'ご帰宅ラッシュ　TP12 / 高威力＋混乱',
+      label:'ご帰宅ラッシュ　TP12 / 単体高ダメージ＋低確率混乱',
       mp:12,
       base:60,
       confuseRate:0.30,

@@ -39,13 +39,13 @@
     {id:'moe', key:'moe', name:'もえもえぎゅー', level:1, mp:5, desc:'単体ダメージ'},
     {id:'sleep', key:'sleep', name:'おやすみなさい', level:2, mp:3, desc:'敵を眠らせる'},
     {id:'heal', key:'heal', name:'おいしくなーれ', level:3, mp:6, desc:'HP回復'},
-    {id:'first_strike', key:'first_strike', name:'ご主人様ファースト', level:4, mp:6, desc:'必ず先制攻撃・威力75%'},
+    {id:'first_strike', key:'first_strike', name:'ご主人様ファースト', level:4, mp:5, desc:'必ず先制攻撃・威力75%'},
     {id:'aura', key:'aura', name:'キラキラオーラ', level:5, mp:4, desc:'トーク力・すばやさ・防御UP'},
     {id:'shower', key:'shower', name:'チェキフラッシュ', level:6, mp:12, desc:'敵全体ダメージ'},
     {id:'perfect_service', key:'perfect_service', name:'完璧なお給仕', level:7, mp:7, desc:'次の行動ダメージ2.5倍'},
-    {id:'combo', key:'combo', name:'ご奉仕連撃', level:8, mp:8, desc:'3〜4回攻撃'},
+    {id:'combo', key:'combo', name:'ご奉仕連撃', level:8, mp:8, desc:'敵を選ばず3〜4回攻撃'},
     {id:'charge', key:'charge', name:'萌えちゃーじ', level:9, mp:0, desc:'TP回復'},
-    {id:'rush', key:'rush', name:'ご帰宅ラッシュ', level:10, mp:12, desc:'高ダメージ＋低確率混乱'},
+    {id:'rush', key:'rush', name:'ご帰宅ラッシュ', level:10, mp:12, desc:'単体高ダメージ＋低確率混乱'},
     {id:'sunny', key:'sunny', name:'ひなたぼっこ', level:11, mp:12, desc:'HP全回復＋状態異常回復'},
     {id:'nishiki', key:'nishiki', name:'にしきぬやまー', level:12, mp:16, desc:'超高威力単体攻撃'}
   ];
