@@ -43,6 +43,9 @@ const POTORO_TANABATA_COSTUME_LIST = [
   'セーラー服'
 ];
 
+const POTORO_TANABATA_ALMIGHTY_COSTUME = 'オールマイティ（衣装を選べます）';
+const POTORO_TANABATA_ALMIGHTY_RATE = 1 / 3;
+
 function shuffleTanabataCostumes(list){
   const arr = [...list];
 
@@ -54,6 +57,33 @@ function shuffleTanabataCostumes(list){
   return arr;
 }
 
+function createTanabataRouletteSegments(includeAlmighty=false){
+  const selectedCostumes = shuffleTanabataCostumes(POTORO_TANABATA_COSTUME_LIST)
+    .slice(0,includeAlmighty ? 7 : 8);
+
+  const segments = selectedCostumes.map((name,index) => ({
+    type:'tanabata_costume',
+    label:name,
+    costume:name,
+    index:index
+  }));
+
+  if(includeAlmighty){
+    const insertIndex = Math.floor(Math.random() * 8);
+    segments.splice(insertIndex,0,{
+      type:'tanabata_almighty',
+      label:'オールマイティ',
+      costume:POTORO_TANABATA_ALMIGHTY_COSTUME,
+      index:insertIndex
+    });
+  }
+
+  return segments.map((segment,index) => ({
+    ...segment,
+    index:index
+  }));
+}
+
 function getBossRouletteSegments(){
   if(
     Array.isArray(window.__potoroTanabataRouletteSegments) &&
@@ -62,14 +92,7 @@ function getBossRouletteSegments(){
     return window.__potoroTanabataRouletteSegments;
   }
 
-  const selectedCostumes = shuffleTanabataCostumes(POTORO_TANABATA_COSTUME_LIST).slice(0,8);
-
-  window.__potoroTanabataRouletteSegments = selectedCostumes.map((name,index) => ({
-    type:'tanabata_costume',
-    label:name,
-    costume:name,
-    index:index
-  }));
+  window.__potoroTanabataRouletteSegments = createTanabataRouletteSegments(false);
 
   return window.__potoroTanabataRouletteSegments;
 }
@@ -79,12 +102,18 @@ function resetTanabataRouletteSegments(){
 }
 
 function drawBossRoulettePrize(){
+  const almightyHit = Math.random() < POTORO_TANABATA_ALMIGHTY_RATE;
+
+  window.__potoroTanabataRouletteSegments = createTanabataRouletteSegments(almightyHit);
+
   const segments = getBossRouletteSegments();
-  const stopIndex = Math.floor(Math.random() * segments.length);
+  const stopIndex = almightyHit
+    ? segments.findIndex(segment => segment.type === 'tanabata_almighty')
+    : Math.floor(Math.random() * segments.length);
   const selected = segments[stopIndex];
 
   return {
-    type:'tanabata_costume',
+    type:selected.type,
     label:selected.label,
     costume:selected.costume,
     stopIndex:stopIndex,
@@ -287,6 +316,12 @@ function injectBossRouletteStyle(){
       word-break: keep-all;
     }
 
+    .boss-roulette-seg-label.tanabata_almighty {
+      color: #be123c;
+      font-size: 11px;
+      text-shadow: 0 1px 0 #fff, 0 0 8px rgba(250,204,21,.9);
+    }
+
     .boss-roulette-burst.hidden { display:none !important; }
 
     .boss-roulette-burst {
@@ -434,7 +469,7 @@ function renderBossRouletteSegments(){
 
   segments.forEach((seg,index) => {
     const label = document.createElement('div');
-    label.className = 'boss-roulette-seg-label tanabata_costume';
+    label.className = `boss-roulette-seg-label ${seg.type || 'tanabata_costume'}`;
     label.textContent = seg.label;
 
     const angle = index * 45 + 22.5;
@@ -720,12 +755,14 @@ function bindEndingEvents(){
 window.potoroBossRouletteReport = function(){
   return {
     installed:true,
-    version:'tanabata-event-roulette-v1',
+    version:'tanabata-event-roulette-almighty-v1',
     event:'七夕イベント',
+    almightyCostume:POTORO_TANABATA_ALMIGHTY_COSTUME,
     costumeList:POTORO_TANABATA_COSTUME_LIST,
     visualSegments:getBossRouletteSegments(),
     rates:{
-      tanabataCostume:'8枠すべて当たり / 停止枠は均等抽選'
+      almighty:'1/3',
+      tanabataCostume:'2/3 / 通常衣装から抽選'
     },
     lastPrize:window.__potoroLastBossRoulettePrize || null,
     lastStopIndex:window.__potoroLastBossRouletteStopIndex ?? null
@@ -751,6 +788,10 @@ window.potoroForceTanabataCostumeTicket = function(costumeName){
   window.__potoroLastBossRoulettePrize = prize;
   window.__potoroLastBossRouletteStopIndex = 0;
   finalizeBossRouletteResult(prize);
+};
+
+window.potoroForceTanabataAlmightyTicket = function(){
+  return window.potoroForceTanabataCostumeTicket(POTORO_TANABATA_ALMIGHTY_COSTUME);
 };
 
 if(document.readyState === 'loading'){
