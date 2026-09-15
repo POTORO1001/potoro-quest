@@ -281,6 +281,54 @@ async function main() {
     assert(resolvedIntent.confuse > 0, '予兆に対応した特殊効果が適用されません。');
     assert(!resolvedIntent.badge, '発動後も敵カードに予兆が表示されています。');
 
+    const statusBadges = await page.evaluate(() => {
+      const p = state.player;
+      p.status.sleep = 0;
+      p.status.confuse = 0;
+      p.status.defDown = 2;
+      p.itemBuffs = {
+        atk:4,
+        def:0,
+        spd:0,
+        talk:0,
+        turns:2,
+        magicBoost:1.4,
+        magicBoostTurns:1
+      };
+      p.buffs = {kiraAura:3,perfectService:1};
+      updateUI();
+
+      return {
+        text:statusText(),
+        badges:[...document.querySelectorAll('#playerStatusEffects .status-effect-badge')].map(element => ({
+          effect:element.dataset.effect,
+          text:element.textContent,
+          tone:[...element.classList].find(name => ['positive','negative','neutral'].includes(name)) || ''
+        })),
+        alert:document.getElementById('playerStatusEffects').classList.contains('potoro-status-alert')
+      };
+    });
+    assert(statusBadges.text.includes('防御DOWN') && statusBadges.text.includes('キラキラオーラ'), 'バフとデバフを同時に状態欄へ表示できません。');
+    assert(statusBadges.badges.some(badge => badge.effect === 'defDown' && badge.tone === 'negative'), 'デバフが悪い効果として色分けされません。');
+    assert(statusBadges.badges.some(badge => badge.effect === 'kiraAura' && badge.text.includes('残り3') && badge.tone === 'positive'), 'キラキラオーラの残りターンが表示されません。');
+    assert(statusBadges.badges.some(badge => badge.effect === 'magicBoost' && badge.text.includes('残り1')), 'どうぐのおまじない強化が表示されません。');
+    assert(statusBadges.alert, 'デバフ中に状態欄の注意表示が有効になりません。');
+
+    const buffOnlyAlert = await page.evaluate(() => {
+      state.player.status.defDown = 0;
+      updateUI();
+      return document.getElementById('playerStatusEffects').classList.contains('potoro-status-alert');
+    });
+    assert(!buffOnlyAlert, '良い効果だけでもデバフ注意表示が有効になります。');
+
+    if(process.env.POTORO_TEST_SCREENSHOT){
+      await page.waitForTimeout(500);
+      await page.screenshot({
+        path:path.join(root, 'test-results', 'player-status-badges-mobile.png'),
+        fullPage:true
+      });
+    }
+
     assert(!failedResponses.length, `読み込み失敗:\n${failedResponses.join('\n')}`);
     assert(!runtimeErrors.length, `ブラウザ実行エラー:\n${runtimeErrors.join('\n')}`);
     console.log('ブラウザ検査 OK: タイトル / あらすじ / 1F・2F / 宝箱 / 通常戦闘 / メニュー');

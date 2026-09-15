@@ -354,7 +354,9 @@ updateUI = function(){
 
   const statusEl = document.getElementById('playerStatusEffects');
   if(statusEl){
-    const hasBadStatus = typeof statusText === 'function' && statusText() !== 'なし';
+    const hasBadStatus = typeof hasPlayerDebuff === 'function'
+      ? hasPlayerDebuff()
+      : (typeof statusText === 'function' && statusText() !== 'なし');
     statusEl.classList.toggle('potoro-status-alert',hasBadStatus);
   }
 

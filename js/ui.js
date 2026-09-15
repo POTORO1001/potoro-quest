@@ -77,9 +77,42 @@ function updatePlayerStatusPanel(p){
   if(mp) mp.textContent = `TP ${p.mp} / ${p.maxMp}`;
   if(spd) spd.textContent = `すばやさ ${totalSpd()}`;
   if(talk) talk.textContent = `トーク力 ${totalTalk()}`;
-  if(statusEffects) statusEffects.textContent = `状態：${statusText()}`;
+  if(statusEffects) renderPlayerStatusEffects(statusEffects);
   if(exp) exp.textContent = `EXP ${p.exp} / ${p.nextExp}`;
   if(title) title.textContent = `${p.name} Lv.${p.lv} 攻${totalAtk()} 防${totalDef()}`;
+}
+
+function renderPlayerStatusEffects(element){
+  if(!element) return;
+
+  const entries = typeof getPlayerEffectEntries === 'function'
+    ? getPlayerEffectEntries()
+    : [];
+
+  element.innerHTML = '';
+
+  const label = document.createElement('span');
+  label.className = 'status-effect-label';
+  label.textContent = '状態：';
+  element.appendChild(label);
+
+  if(!entries.length){
+    const empty = document.createElement('span');
+    empty.className = 'status-effect-empty';
+    empty.textContent = 'なし';
+    element.appendChild(empty);
+    return;
+  }
+
+  entries.forEach(entry => {
+    const badge = document.createElement('span');
+    badge.className = `status-effect-badge ${entry.tone}`;
+    badge.dataset.effect = entry.key;
+    badge.textContent = entry.turns > 0
+      ? `${entry.label} 残り${entry.turns}`
+      : entry.label;
+    element.appendChild(badge);
+  });
 }
 
 /* ===== Boss Background Class ===== */

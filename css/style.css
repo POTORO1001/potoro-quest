@@ -1225,7 +1225,50 @@ body.critical-flash .battle-screen{animation:criticalFlash .45s ease;}
 }
 
 /* ===== Enemy Specials + Status UI ===== */
-.status-effects{color:#fde68a;font-weight:800;}
+.status-effects{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:4px;
+  min-height:22px;
+  color:#fde68a;
+  font-weight:800;
+}
+
+.status-effect-label,
+.status-effect-empty{
+  font-size:11px;
+}
+
+.status-effect-badge{
+  display:inline-flex;
+  align-items:center;
+  min-height:20px;
+  padding:2px 5px;
+  border:1px solid transparent;
+  border-radius:4px;
+  font-size:10px;
+  font-weight:900;
+  line-height:1.2;
+}
+
+.status-effect-badge.positive{
+  border-color:#86efac;
+  background:#14532d;
+  color:#dcfce7;
+}
+
+.status-effect-badge.negative{
+  border-color:#fca5a5;
+  background:#7f1d1d;
+  color:#fee2e2;
+}
+
+.status-effect-badge.neutral{
+  border-color:#93c5fd;
+  background:#1e3a8a;
+  color:#dbeafe;
+}
 
 /* ===== Floating Text ===== */
 .potoro-floating-text{

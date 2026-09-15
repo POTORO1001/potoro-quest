@@ -126,14 +126,65 @@ function ensurePlayerItems(){
 
 /* ===== Status Text ===== */
 function statusText(){
+  const entries = getPlayerEffectEntries();
+  return entries.length ? entries.map(entry => entry.label).join(' / ') : 'なし';
+}
+
+function addPlayerEffectEntry(entries,key,label,tone,turns=0){
+  if(entries.some(entry => entry.key === key)) return;
+  entries.push({key,label,tone,turns:Math.max(0,Number(turns || 0))});
+}
+
+function getPlayerEffectEntries(){
+  if(!state || !state.player) return [];
+
+  const p = state.player;
   const s = ensurePlayerStatus();
-  const parts = [];
+  const entries = [];
 
-  if(s.sleep > 0) parts.push(`😴 睡眠(${s.sleep})`);
-  if(s.confuse > 0) parts.push(`💫 混乱(${s.confuse})`);
-  if(s.defDown > 0) parts.push(`🔻 防御ダウン(${s.defDown})`);
+  if(s.sleep > 0) addPlayerEffectEntry(entries,'sleep','睡眠','negative');
+  if(s.confuse > 0) addPlayerEffectEntry(entries,'confuse','混乱','negative');
+  if(s.defDown > 0) addPlayerEffectEntry(entries,'defDown','防御DOWN','negative');
+  if(s.atkDown > 0) addPlayerEffectEntry(entries,'atkDown','攻撃DOWN','negative');
+  if(s.spdDown > 0) addPlayerEffectEntry(entries,'spdDown','すばやさDOWN','negative');
+  if(s.talkDown > 0) addPlayerEffectEntry(entries,'talkDown','トークDOWN','negative');
+  if(p.guarding || p.guard) addPlayerEffectEntry(entries,'guarding','ぼうぎょ','neutral');
 
-  return parts.length ? parts.join(' ') : 'なし';
+  const itemBuffs = p.itemBuffs || {};
+  if(Number(itemBuffs.turns || 0) > 0){
+    const turns = Number(itemBuffs.turns);
+    if(Number(itemBuffs.atk || 0) > 0) addPlayerEffectEntry(entries,'itemAtk','攻撃UP','positive',turns);
+    if(Number(itemBuffs.def || 0) > 0) addPlayerEffectEntry(entries,'itemDef','防御UP','positive',turns);
+    if(Number(itemBuffs.spd || 0) > 0) addPlayerEffectEntry(entries,'itemSpd','すばやさUP','positive',turns);
+    if(Number(itemBuffs.talk || 0) > 0) addPlayerEffectEntry(entries,'itemTalk','トークUP','positive',turns);
+  }
+  if(Number(itemBuffs.magicBoostTurns || 0) > 0 && Number(itemBuffs.magicBoost || 1) > 1){
+    addPlayerEffectEntry(entries,'magicBoost','おまじない強化','positive',itemBuffs.magicBoostTurns);
+  }
+
+  const magicBuffs = p.buffs || {};
+  const auraTurns = Number(magicBuffs.kiraAura || magicBuffs.aura || 0);
+  if(auraTurns > 0) addPlayerEffectEntry(entries,'kiraAura','キラキラオーラ','positive',auraTurns);
+
+  const perfectService = Number(magicBuffs.perfectService || magicBuffs.charge || 0);
+  if(perfectService > 0 || p.charged){
+    addPlayerEffectEntry(entries,'perfectService','完璧なお給仕','positive');
+  }
+
+  if(typeof buffState !== 'undefined'){
+    if(Number(buffState.aura || 0) > 0){
+      addPlayerEffectEntry(entries,'kiraAura','キラキラオーラ','positive',buffState.aura);
+    }
+    if(Number(buffState.charge || 0) > 0){
+      addPlayerEffectEntry(entries,'perfectService','完璧なお給仕','positive');
+    }
+  }
+
+  return entries;
+}
+
+function hasPlayerDebuff(){
+  return getPlayerEffectEntries().some(entry => entry.tone === 'negative');
 }
 
 /* ===== Effective Defense ===== */

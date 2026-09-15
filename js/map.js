@@ -772,58 +772,17 @@ function updateMapStatusPanel(){
   `;
 }
 
-function normalizeStatusValue(value){
-  return Number(value || 0);
-}
-
 function buildPlayerMapStatusText(){
-  if(!state || !state.player) return 'なし';
-
-  const p = state.player;
-  const s = p.status || p.statusEffects || {};
-  const parts = [];
-
-  if(normalizeStatusValue(s.sleep) > 0) parts.push('睡眠');
-  if(normalizeStatusValue(s.confuse) > 0) parts.push('混乱');
-  if(normalizeStatusValue(s.defDown) > 0) parts.push('防御ダウン');
-  if(normalizeStatusValue(s.atkDown) > 0) parts.push('攻撃ダウン');
-  if(normalizeStatusValue(s.spdDown) > 0) parts.push('すばやさダウン');
-  if(normalizeStatusValue(s.talkDown) > 0) parts.push('トーク力ダウン');
-  if(p.guard) parts.push('防御中');
-
-  if(p.itemBuffs){
-    const b = p.itemBuffs;
-
-    if(normalizeStatusValue(b.turns) > 0){
-      const buffs = [];
-      if(normalizeStatusValue(b.atk) > 0) buffs.push('攻撃UP');
-      if(normalizeStatusValue(b.def) > 0) buffs.push('防御UP');
-      if(normalizeStatusValue(b.spd) > 0) buffs.push('すばやさUP');
-      if(normalizeStatusValue(b.talk) > 0) buffs.push('トーク力UP');
-      if(buffs.length) parts.push(buffs.join('・'));
-    }
-
-    if(normalizeStatusValue(b.magicBoostTurns) > 0 && Number(b.magicBoost || 1) > 1){
-      parts.push('おまじない強化');
-    }
-  }
-
-  if(p.buffs){
-    const b = p.buffs;
-
-    if(normalizeStatusValue(b.aura) > 0) parts.push('キラキラオーラ');
-    if(normalizeStatusValue(b.charge) > 0 || p.charged) parts.push('ため中');
-    if(normalizeStatusValue(b.def) > 0) parts.push('防御UP');
-    if(normalizeStatusValue(b.talk) > 0) parts.push('トーク力UP');
-    if(normalizeStatusValue(b.spd) > 0) parts.push('すばやさUP');
-  }
-
-  return parts.length ? parts.join(' / ') : 'なし';
+  if(typeof getPlayerEffectEntries !== 'function') return 'なし';
+  const entries = getPlayerEffectEntries();
+  return entries.length ? entries.map(entry => entry.label).join(' / ') : 'なし';
 }
 
 function syncBattleStatusText(){
   const el = document.getElementById('playerStatusEffects');
-  if(el) el.textContent = `状態：${buildPlayerMapStatusText()}`;
+  if(!el) return;
+  if(typeof renderPlayerStatusEffects === 'function') renderPlayerStatusEffects(el);
+  else el.textContent = `状態：${buildPlayerMapStatusText()}`;
 }
 
 function syncMapStatus(){
@@ -831,16 +790,8 @@ function syncMapStatus(){
   syncBattleStatusText();
 }
 
-const originalMapStatusText = statusText;
 statusText = function(){
-  const safe = buildPlayerMapStatusText();
-
-  try{
-    const original = originalMapStatusText.apply(this, arguments);
-    if(original && original !== 'なし') return original;
-  }catch(e){}
-
-  return safe;
+  return buildPlayerMapStatusText();
 };
 
 const originalMapUpdateUI = updateUI;
