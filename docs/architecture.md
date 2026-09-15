@@ -21,7 +21,7 @@
 7. `js/audio.js`
 8. `js/ui.js`
 9. `js/opening.js`
-10. `js/ending-event.js`
+10. `js/ending.js`
 11. `js/scene.js`
 12. `js/magic-learn-compat.js`
 13. `js/battle.js`
@@ -88,8 +88,8 @@
 
 ### エンディング
 
-- `ending.js`: 通常版のボス撃破後挑戦券ルーレット。七夕イベント確認中は `index.html` では読み込まれていません。
-- `ending-event.js`: 七夕イベント版エンディング。現在 `index.html` で読み込まれています。
+- `ending.js`: 通常版のボス撃破後挑戦券ルーレット。現在 `index.html` で読み込まれています。
+- `ending-event.js`: 七夕イベント版エンディング。イベント終了後の保管用で、現在は読み込まれていません。
 
 ### 素材・音
 
@@ -112,7 +112,7 @@
 - `enemyTurn`: `battle.js` を土台に `magic.js`、`magic-complete.js` が補強。
 - `updateUI`: `ui.js` を土台に `map.js`、`effects.js` が補強。
 - `showDamage`、`criticalFlash`、`bossEntrance`、`showLevelToast`、`enemyFlash`、`playerFlash`: `ui.js` を土台に `effects.js` が補強。
-- `runBossRoulette` / `renderBossRouletteSegments`: 七夕イベント確認中は `ending-event.js` が担当。
+- `runBossRoulette` / `renderBossRouletteSegments`: 現在は通常版の `ending.js` が担当。
 
 ## 統合のおすすめ順
 
@@ -153,6 +153,7 @@
 ## 作業ルール
 
 - 1回のPRまたは変更で統合する領域は1つに限定する。
+- 変更後は `npm test` で静的検査とブラウザ検査を実行する。
 - 統合後は `index.html` の読み込み順を必ず更新する。
 - 統合後は GitHub Pages で次を確認する。
   - タイトルから開始できる

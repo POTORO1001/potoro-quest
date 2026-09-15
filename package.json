@@ -1,0 +1,13 @@
+{
+  "name": "potoro-quest",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test": "node tests/static-audit.cjs && node tests/smoke.cjs",
+    "test:static": "node tests/static-audit.cjs",
+    "test:smoke": "node tests/smoke.cjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.62.1"
+  }
+}
