@@ -44,6 +44,7 @@ function startGame(){
   state.started = true;
   state.inBattle = false;
   state.firstBattleHintShown = false;
+  state.seenEnemyHints = [];
 
   setButtonsDisabled(false);
   setupFloor(1);

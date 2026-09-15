@@ -65,7 +65,7 @@
 ### 戦闘
 
 - `battle.js`: プレイヤー行動、敵ターン、勝利、ゲームオーバー。
-- `enemy.js`: 敵ごとの特殊行動。`enemySpecialAction` を上書き。
+- `enemy.js`: 敵ごとの特殊行動と初遭遇時の特徴ヒント。`enemySpecialAction` を上書き。
 - `balance.js`: 敵・プレイヤーの難易度調整。
 - `effects.js`: ダメージ、会心、ボス演出、レベルアップなどの演出を上書き・追加。
 

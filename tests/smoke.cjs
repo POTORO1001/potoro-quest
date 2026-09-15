@@ -179,6 +179,7 @@ async function main() {
     });
     await page.locator('#battleScreen').waitFor({ state: 'visible' });
     assert(await page.locator('#enemySlots .enemy-slot').count() >= 1, '通常敵が戦闘画面に表示されていません。');
+    assert((await page.locator('#messageText').textContent()).includes('はじめてのお給仕です'), '初回お給仕の案内が表示されません。');
 
     const attackResult = await page.evaluate(async () => {
       const beforeEnemyHp = currentEnemy().hp;
@@ -207,6 +208,26 @@ async function main() {
     await page.locator('#subMenu').waitFor({ state: 'visible' });
     assert(await page.locator('#subMenuTitle').textContent() === 'どうぐ', '戦闘中のどうぐメニューが開きません。');
     await page.evaluate(() => closeSubMenu());
+
+    const enemyHint = await page.evaluate(() => {
+      endBattleToMap();
+      startBattle(getEnemyById('maigo'), true);
+      return {
+        message:document.getElementById('messageText')?.textContent || '',
+        seen:[...(state.seenEnemyHints || [])],
+        hintCount:typeof potoroEnemyHintReport === 'function' ? potoroEnemyHintReport().length : 0
+      };
+    });
+    assert(enemyHint.message.includes('とてもすばやく'), '敵の初遭遇ヒントが表示されません。');
+    assert(enemyHint.seen.includes('maigo'), '表示済みの敵ヒントが記録されません。');
+    assert(enemyHint.hintCount === 13, '敵特徴ヒントの登録数が想定と違います。');
+
+    const repeatedHintMessage = await page.evaluate(() => {
+      endBattleToMap();
+      startBattle(getEnemyById('maigo'), true);
+      return document.getElementById('messageText')?.textContent || '';
+    });
+    assert(!repeatedHintMessage.includes('とてもすばやく'), '同じ敵の初遭遇ヒントが繰り返し表示されます。');
 
     assert(!failedResponses.length, `読み込み失敗:\n${failedResponses.join('\n')}`);
     assert(!runtimeErrors.length, `ブラウザ実行エラー:\n${runtimeErrors.join('\n')}`);

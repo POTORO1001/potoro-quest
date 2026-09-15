@@ -439,6 +439,8 @@ function restartFromGameOver(){
   state.busy = false;
   state.started = false;
   state.inBattle = false;
+  state.firstBattleHintShown = false;
+  state.seenEnemyHints = [];
   state.floor = 1;
   state.stairs = null;
   state.maze = [];

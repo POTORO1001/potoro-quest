@@ -102,6 +102,36 @@ const POTORO_ENEMY_AI = {
   }
 };
 
+/* ===== 初遭遇時の敵特徴ヒント ===== */
+const POTORO_ENEMY_BATTLE_HINTS = {
+  kuufuku: 'こちらの元気を吸い取り、自分を回復することがあるようだ。',
+  zangyo: '疲れを忘れて、続けざまに攻撃してくることがあるようだ。',
+  meisou: '話を迷走させ、こちらを混乱させてくるようだ。',
+  gekimu: '追い込まれるほど攻撃が激しくなるようだ。',
+  neochi: '強い眠気に巻き込まれないよう気をつけよう。',
+  deisui: '千鳥足で動きが読めない。自分にぶつかることもあるようだ。',
+  shisseki: '厳しい言葉で、こちらの防御を崩してくるようだ。',
+  maigo: 'とてもすばやく、道案内でこちらを迷わせてくるようだ。',
+  shousou: 'かなりすばやい。急かしトークにも注意しよう。',
+  sanzai: '爆買いの圧で、HPとTPを同時に削ってくるようだ。',
+  bousou: 'すばやい連続攻撃を仕掛けるが、反動の隙が生まれることもあるようだ。',
+  juuatsu: '動きは遅いがとても硬く、重圧でこちらの防御を崩してくるようだ。',
+  boss: 'これまで以上の威圧を感じる。装備とどうぐを惜しまず使おう。'
+};
+
+function getEnemyBattleHint(enemy){
+  if(!enemy || enemy.helper) return '';
+  return POTORO_ENEMY_BATTLE_HINTS[enemy.id] || '';
+}
+
+function potoroEnemyHintReport(){
+  return Object.entries(POTORO_ENEMY_BATTLE_HINTS).map(([id,hint]) => ({
+    id,
+    name:findEnemyById(id)?.name || id,
+    hint
+  }));
+}
+
 /* ===== 敵AI：特殊行動本体 ===== */
 async function enemySpecialAction(e){
   const p = state.player;

@@ -238,6 +238,7 @@ function resetRuntimeState(){
   state.inBattle = false;
   state.enemyActedFirst = false;
   state.firstBattleHintShown = false;
+  state.seenEnemyHints = [];
   state.floor = 1;
   state.stairs = null;
   state.boss = {x:15,y:15};

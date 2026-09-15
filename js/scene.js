@@ -62,6 +62,18 @@ function getBattleOpeningMessage(){
     return `${baseMessage} はじめてのお給仕です。「おまじない」や「どうぐ」も使ってみましょう。`;
   }
 
+  if(!Array.isArray(state.seenEnemyHints)) state.seenEnemyHints = [];
+
+  const hintEnemy = state.enemiesInBattle.find(enemy => {
+    if(state.seenEnemyHints.includes(enemy.id)) return false;
+    return typeof getEnemyBattleHint === 'function' && !!getEnemyBattleHint(enemy);
+  });
+
+  if(hintEnemy){
+    state.seenEnemyHints.push(hintEnemy.id);
+    return `${baseMessage} ${getEnemyBattleHint(hintEnemy)}`;
+  }
+
   return baseMessage;
 }
 
