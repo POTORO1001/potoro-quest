@@ -556,6 +556,45 @@ function refreshEquipMenuAfterTreasure(){
   return false;
 }
 
+function equipTreasureDropNow(drop){
+  const item = getTreasureEquipmentObject(drop);
+  if(!item) return false;
+
+  const slot = drop.type === 'weapon' ? 'weapon' : item.slot;
+  if(!slot) return false;
+
+  state.player.equip[slot] = drop.id;
+  setMapMessage(`${item.name} を装備した！ 探索を続けよう。`);
+
+  if(typeof updateUI === 'function') updateUI();
+  if(typeof updateMapStatusPanel === 'function') updateMapStatusPanel();
+  return true;
+}
+
+function openTreasureEquipmentChoice(drop,name,slotLabel,rarity){
+  if(typeof openTreasureMenu !== 'function') return false;
+
+  const item = getTreasureEquipmentObject(drop);
+  if(!item) return false;
+
+  const slot = drop.type === 'weapon' ? 'weapon' : item.slot;
+  const current = typeof equippedItemBySlot === 'function' ? equippedItemBySlot(slot) : null;
+  const comparison = typeof buildEquipButtonHtml === 'function'
+    ? buildEquipButtonHtml(slot,item)
+    : getTreasureEquipmentStatText(drop);
+  const currentName = current?.name || 'なし';
+
+  openTreasureMenu(`【${rarity}】${slotLabel}：${name}`,{
+    detailHtml:`<div class="treasure-current">現在：${currentName}</div>${comparison}`,
+    primaryText:'今すぐ装備',
+    secondaryText:'あとで装備する',
+    playSound:false,
+    onEquip:() => equipTreasureDropNow(drop)
+  });
+
+  return true;
+}
+
 function rollTreasureEquipment(floor){
   if(typeof potoroInstallEquipmentRarityAddon === 'function'){
     potoroInstallEquipmentRarityAddon();
@@ -608,6 +647,7 @@ function giveMapTreasureEquipment(){
   if(typeof updateUI === 'function') updateUI();
 
   refreshEquipMenuAfterTreasure();
+  openTreasureEquipmentChoice(drop,name,slotLabel,rarity);
 
   return {drop,name,slotLabel,rarity,statText};
 }

@@ -152,7 +152,7 @@ function closeGuide(){
 }
 
 /* ===== 宝箱モーダル ===== */
-function openTreasureMenu(rewardText){
+function openTreasureMenu(rewardText,options={}){
   const menu = document.getElementById('treasureMenu');
   const body = document.getElementById('treasureMenuBody');
 
@@ -162,22 +162,44 @@ function openTreasureMenu(rewardText){
 
   const box = document.createElement('div');
   box.className = 'equip-current treasure-box';
-  box.innerHTML = `<div class="treasure-rare">${rewardText}</div>`;
+  box.innerHTML = `
+    <div class="treasure-rare">${rewardText}</div>
+    ${options.detailHtml ? `<div class="treasure-comparison">${options.detailHtml}</div>` : ''}
+  `;
   body.appendChild(box);
 
-  const btn = document.createElement('button');
-  btn.className = 'treasure-btn';
-  btn.textContent = '受け取る';
-  btn.onclick = closeTreasureMenu;
-  body.appendChild(btn);
+  if(typeof options.onEquip === 'function'){
+    const equipBtn = document.createElement('button');
+    equipBtn.className = 'treasure-equip-btn';
+    equipBtn.textContent = options.primaryText || '今すぐ装備';
+    equipBtn.onclick = () => {
+      closeTreasureMenu();
+      options.onEquip();
+    };
+    body.appendChild(equipBtn);
+
+    const laterBtn = document.createElement('button');
+    laterBtn.className = 'treasure-btn';
+    laterBtn.textContent = options.secondaryText || 'あとで装備する';
+    laterBtn.onclick = closeTreasureMenu;
+    body.appendChild(laterBtn);
+  }else{
+    const btn = document.createElement('button');
+    btn.className = 'treasure-btn';
+    btn.textContent = '受け取る';
+    btn.onclick = closeTreasureMenu;
+    body.appendChild(btn);
+  }
 
   menu.classList.remove('hidden');
-  seTreasure();
+  if(typeof state !== 'undefined' && !state.inBattle) state.busy = true;
+  if(options.playSound !== false) seTreasure();
 }
 
 function closeTreasureMenu(){
   const menu = document.getElementById('treasureMenu');
   if(menu) menu.classList.add('hidden');
+  if(typeof state !== 'undefined' && !state.inBattle) state.busy = false;
 }
 
 /* ===== たまちゃんイベント ===== */

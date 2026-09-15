@@ -267,6 +267,32 @@ background:linear-gradient(180deg,#7c5c10,#3b2f0b);
 border:2px solid #facc15;
 }
 .sub-menu-body .treasure-btn{background:#92400e;}
+.sub-menu-body .treasure-equip-btn{
+background:#1d4ed8;
+text-align:center;
+font-weight:900;
+}
+.treasure-comparison{
+margin-top:10px;
+padding-top:10px;
+border-top:1px solid rgba(254,243,199,.38);
+color:#fff;
+}
+.treasure-current{
+margin-bottom:8px;
+color:#fef3c7;
+font-size:13px;
+font-weight:800;
+}
+.treasure-comparison .equip-button-main{
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:8px;
+}
+.treasure-comparison .equip-button-name{color:#fff;font-weight:900;}
+.treasure-comparison .equip-button-compare{margin-top:6px;}
+.treasure-comparison .equip-button-effect{margin-top:6px;color:#fef3c7;}
 
 .damage-text{
 position:absolute;

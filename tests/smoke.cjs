@@ -169,6 +169,49 @@ async function main() {
     await page.locator('#equipMenu').waitFor({ state: 'visible' });
     await page.evaluate(() => closeEquipMenu());
 
+    const treasureChoice = await page.evaluate(() => {
+      const originalRandom = Math.random;
+      try {
+        Math.random = () => 0;
+        const beforeWeapon = state.player.equip.weapon;
+        const reward = giveMapTreasureEquipment();
+        return {
+          beforeWeapon,
+          rewardId:reward?.drop?.id || '',
+          menuVisible:!document.getElementById('treasureMenu')?.classList.contains('hidden'),
+          comparison:document.querySelector('#treasureMenu .treasure-comparison')?.textContent || '',
+          busy:state.busy
+        };
+      } finally {
+        Math.random = originalRandom;
+      }
+    });
+    assert(treasureChoice.rewardId && treasureChoice.rewardId !== treasureChoice.beforeWeapon, '宝箱から未入手装備を獲得できません。');
+    assert(treasureChoice.menuVisible && treasureChoice.busy, '宝箱の装備比較モーダルが表示されません。');
+    assert(treasureChoice.comparison.includes('現在：ご奉仕ロッド'), '宝箱モーダルに現在装備が表示されません。');
+    assert(treasureChoice.comparison.includes('攻↑'), '宝箱モーダルに能力差が表示されません。');
+
+    if(process.env.POTORO_TEST_SCREENSHOT){
+      const outputDirectory = path.join(root, 'test-results');
+      fs.mkdirSync(outputDirectory, { recursive: true });
+      await page.waitForTimeout(1500);
+      await page.screenshot({
+        path:path.join(outputDirectory, 'treasure-equip-choice-mobile.png'),
+        fullPage:true
+      });
+    }
+
+    await page.getByRole('button', { name: '今すぐ装備', exact: true }).click();
+    const equippedTreasure = await page.evaluate(() => ({
+      weapon:state.player.equip.weapon,
+      menuHidden:document.getElementById('treasureMenu')?.classList.contains('hidden'),
+      busy:state.busy,
+      message:document.getElementById('mapMessage')?.textContent || ''
+    }));
+    assert(equippedTreasure.weapon === treasureChoice.rewardId, '宝箱から入手した装備をその場で装備できません。');
+    assert(equippedTreasure.menuHidden && !equippedTreasure.busy, '即時装備後に宝箱モーダルの操作ロックが解除されません。');
+    assert(equippedTreasure.message.includes('装備した'), '即時装備の完了メッセージが表示されません。');
+
     const secondFloor = await page.evaluate(() => {
       setupFloor(2);
       const snapshot = getMapSnapshot();

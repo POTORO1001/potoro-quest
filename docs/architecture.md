@@ -72,7 +72,7 @@
 ### 装備・報酬・道具
 
 - `equipment.js`: 装備メニュー、装備ステータス、装備処理、装備データの追加、レアリティ付与、装備ステータスの調整。
-- `drop.js`: アイテム・装備ドロップ、宝箱報酬、宝箱レアリティ演出。`giveReward`、`treasureDrop` を上書き。
+- `drop.js`: アイテム・装備ドロップ、宝箱報酬、宝箱レアリティ演出、入手装備の比較・即時装備。`giveReward`、`treasureDrop` を上書き。
 - `item.js`: 道具効果、道具メニュー、バフ。`openSubMenu`、ステータス計算系を一部上書き。
 - `item-name-rename.js`: アイテム名の調整。
 
