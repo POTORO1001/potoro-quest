@@ -97,7 +97,8 @@ const state={
   boss:{x:15,y:15},
   chests:[],
   inBattle:false,
-  enemyActedFirst:false
+  enemyActedFirst:false,
+  lastMapEnemyId:null
 };
 
 window.enemies = enemies;

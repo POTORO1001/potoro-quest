@@ -160,6 +160,35 @@ async function main() {
     });
     assert(armoredDamage === 6, '高防御時の終盤敵ダメージが最低値になりません。');
 
+    const enemyRotation = await page.evaluate(() => {
+      const originalRandom = Math.random;
+      try {
+        state.lastMapEnemyId = null;
+        Math.random = () => 0;
+        const first = selectRandomMapEnemy();
+        const second = selectRandomMapEnemy();
+        const rememberedBeforeReport = state.lastMapEnemyId;
+        potoroEnemyZoneReport();
+        return {
+          first:first?.id || '',
+          second:second?.id || '',
+          rememberedBeforeReport,
+          rememberedAfterReport:state.lastMapEnemyId
+        };
+      } finally {
+        Math.random = originalRandom;
+      }
+    });
+    assert(enemyRotation.first && enemyRotation.second && enemyRotation.first !== enemyRotation.second, '同じ通常敵が連続して選ばれます。');
+    assert(enemyRotation.rememberedBeforeReport === enemyRotation.second, '直前に出現した通常敵が記録されません。');
+    assert(enemyRotation.rememberedAfterReport === enemyRotation.second, '敵ゾーン診断が出現履歴を書き換えます。');
+
+    const rotationReset = await page.evaluate(() => {
+      setupFloor(1);
+      return state.lastMapEnemyId;
+    });
+    assert(rotationReset === null, '階層生成時に通常敵の出現履歴がリセットされません。');
+
     await page.locator('#mapItemBtn').click();
     await page.locator('#subMenu').waitFor({ state: 'visible' });
     assert(await page.locator('#subMenuTitle').textContent() === 'どうぐ', 'マップのどうぐメニューが開きません。');

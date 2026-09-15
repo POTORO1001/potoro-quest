@@ -210,6 +210,7 @@ function potoroMapProgressReport(){
 /* ===== Floor Setup ===== */
 function setupFloor(floor){
   state.floor = floor;
+  state.lastMapEnemyId = null;
   state.maze = generateRandomMaze();
 
   buildDistanceMapFromStart();
@@ -607,15 +608,20 @@ function getAllowedEnemiesByCurrentZone(){
     .filter(Boolean);
 }
 
-function pickEnemyFromIds(ids){
-  const candidates = ids
+function pickEnemyFromIds(ids,avoidId=''){
+  const eligible = ids
     .map(id => findEnemyByIdSafe(id))
     .filter(Boolean)
     .filter(enemy => !enemy.boss && !enemy.helper);
 
-  if(!candidates.length){
+  if(!eligible.length){
     return findEnemyByIdSafe('teiji') || enemies[0] || null;
   }
+
+  const alternatives = avoidId
+    ? eligible.filter(enemy => enemy.id !== avoidId)
+    : eligible;
+  const candidates = alternatives.length ? alternatives : eligible;
 
   return candidates[Math.floor(Math.random() * candidates.length)];
 }
@@ -696,9 +702,10 @@ function checkTileEvent(){
 
 function getEncounterRate(){ return 0.18; }
 
-function selectRandomMapEnemy(){
+function selectRandomMapEnemy({remember=true}={}){
   const ids = getAllowedEnemyIdsByCurrentZone();
-  const enemy = pickEnemyFromIds(ids);
+  const avoidId = state.lastMapEnemyId || '';
+  let enemy = pickEnemyFromIds(ids,avoidId);
 
   if(enemy && !isEnemyAllowedOnCurrentFloor(enemy)){
     console.warn('[PO・TORO QUEST enemy zone] blocked wrong-floor enemy', {
@@ -707,16 +714,17 @@ function selectRandomMapEnemy(){
       name:enemy.name
     });
 
-    return pickEnemyFromIds(ids);
+    enemy = pickEnemyFromIds(ids,avoidId);
   }
 
+  if(enemy && remember) state.lastMapEnemyId = enemy.id;
   return enemy;
 }
 
 function potoroEnemyZoneReport(){
   const zone = safeGetProgressZone();
   const ids = getAllowedEnemyIdsByCurrentZone();
-  const selected = selectRandomMapEnemy();
+  const selected = selectRandomMapEnemy({remember:false});
   const party = selected ? buildEnemyParty(selected).map(enemy => ({
     id:enemy.id,
     name:enemy.name
