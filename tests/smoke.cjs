@@ -148,6 +148,18 @@ async function main() {
     assert(new Set(firstFloor.normalEnemyIds).size === firstFloor.normalEnemyIds.length, '敵IDが重複しています。');
     assert(new Set(firstFloor.equipmentIds).size === firstFloor.equipmentIds.length, '装備IDが重複しています。');
 
+    const damageFloors = await page.evaluate(() => potoroEnemyDamageFloorReport());
+    const normalDamageFloors = damageFloors.filter(enemy => enemy.id !== 'boss');
+    const bossDamageFloor = damageFloors.find(enemy => enemy.id === 'boss');
+    assert(normalDamageFloors.every(enemy => enemy.minimumDamage >= 2 && enemy.minimumDamage <= 6), '通常敵の最低ダメージが想定範囲外です。');
+    assert(bossDamageFloor?.minimumDamage === 7, 'ボスの最低ダメージが7ではありません。');
+
+    const armoredDamage = await page.evaluate(() => {
+      const enemy = getEnemyById('shisseki');
+      return calculateEnemyBasicDamage(enemy,999,0);
+    });
+    assert(armoredDamage === 6, '高防御時の終盤敵ダメージが最低値になりません。');
+
     await page.locator('#mapItemBtn').click();
     await page.locator('#subMenu').waitFor({ state: 'visible' });
     assert(await page.locator('#subMenuTitle').textContent() === 'どうぐ', 'マップのどうぐメニューが開きません。');

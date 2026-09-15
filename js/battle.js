@@ -366,11 +366,32 @@ async function announceEnemyAttack(e){
   await sleep(520);
 }
 
+function getEnemyBasicDamageFloor(enemy){
+  if(!enemy || enemy.helper) return 0;
+  return Math.max(1,Math.floor(Number(enemy.atk || 0) * 0.14));
+}
+
+function calculateEnemyBasicDamage(enemy,defense=effectiveDef(),randomBonus=Math.floor(Math.random()*3)){
+  const rawDamage = Number(enemy?.atk || 0) - Number(defense || 0) + Number(randomBonus || 0);
+  return Math.max(getEnemyBasicDamageFloor(enemy),rawDamage);
+}
+
+function potoroEnemyDamageFloorReport(){
+  return enemies
+    .filter(enemy => !enemy.helper)
+    .map(enemy => ({
+      id:enemy.id,
+      name:enemy.name,
+      atk:enemy.atk,
+      minimumDamage:getEnemyBasicDamageFloor(enemy)
+    }));
+}
+
 async function enemyBasicAttack(e, options){
   const p = state.player;
   const opts = options || {};
 
-  let damage = Math.max(1,e.atk - effectiveDef() + Math.floor(Math.random()*3));
+  let damage = calculateEnemyBasicDamage(e);
   const isCritical = Math.random() < 0.08;
 
   if(isCritical) damage = Math.floor(damage*2);
