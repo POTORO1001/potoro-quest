@@ -132,13 +132,71 @@ function potoroEnemyHintReport(){
   }));
 }
 
+/* ===== 特殊行動の予兆 ===== */
+const POTORO_ENEMY_SPECIAL_INTENTS = {
+  drain:{config:'drain',label:'元気吸収',message:'おなかを押さえ、こちらの元気を狙っている…'},
+  double:{config:'double',label:'連続攻撃',message:'疲れを忘れ、まだ働き続けようとしている…'},
+  confuse:{config:'confuse',label:'思考迷走',message:'話が迷走し始め、頭の中がかき乱されそうだ…'},
+  powerup:{config:'powerup',label:'攻撃強化',message:'さらに自分を追い込もうとしている…'},
+  sleep:{config:'sleep',label:'強い眠気',message:'大きなあくびが広がり、眠気が近づいてくる…'},
+  drunk:{config:'drunk',label:'千鳥足トーク',message:'足元が大きくふらつき、次の動きが読めない…'},
+  defdown:{config:'defdown',label:'叱責',message:'厳しい言葉をため込み、こちらを見据えている…'},
+  lost:{config:'maigo',label:'迷わせる案内',message:'地図を広げ、怪しい道案内を始めた…'},
+  rush_pressure:{config:'shousou',label:'急かしトーク',message:'時計を見ながら、焦りを募らせている…'},
+  spend:{config:'sanzai',label:'爆買いの圧',message:'ブラックカードを高く掲げた…'},
+  runaway:{config:'bousou',label:'暴走突撃',message:'煙を上げ、突進の勢いをためている…'},
+  weight:{config:'juuatsu',label:'重圧',message:'重い空気が、こちらへのしかかってくる…'},
+  boss:{config:'boss',label:'闇の特殊攻撃',message:'鬼怒夜魔さんの闇が大きく膨らんでいる…'}
+};
+
+function getEnemySpecialIntent(enemy){
+  if(!enemy || !enemy.skill) return null;
+  return POTORO_ENEMY_SPECIAL_INTENTS[enemy.skill] || null;
+}
+
+function getEnemySpecialIntentLabel(enemy){
+  const intent = getEnemySpecialIntent(enemy);
+  return enemy && enemy.pendingSpecial && intent ? intent.label : '';
+}
+
+function prepareEnemySpecialIntent(enemy){
+  if(!enemy || enemy.pendingSpecial) return false;
+
+  const intent = getEnemySpecialIntent(enemy);
+  const config = intent ? POTORO_ENEMY_AI[intent.config] : null;
+  if(!intent || !config || Math.random() >= config.rate) return false;
+
+  enemy.pendingSpecial = enemy.skill;
+  return true;
+}
+
+function consumeEnemySpecialIntent(enemy,skill){
+  if(!enemy || enemy.pendingSpecial !== skill) return false;
+  enemy.pendingSpecial = '';
+  return true;
+}
+
+function getEnemySpecialWarning(enemy){
+  const intent = getEnemySpecialIntent(enemy);
+  return intent ? `${enemy.name}は ${intent.message}` : '';
+}
+
+function potoroEnemyIntentReport(){
+  return Object.entries(POTORO_ENEMY_SPECIAL_INTENTS).map(([skill,intent]) => ({
+    skill,
+    rate:POTORO_ENEMY_AI[intent.config]?.rate || 0,
+    label:intent.label,
+    message:intent.message
+  }));
+}
+
 /* ===== 敵AI：特殊行動本体 ===== */
 async function enemySpecialAction(e){
   const p = state.player;
   const s = ensurePlayerStatus();
 
   /* 空腹のご主人様：ドレイン */
-  if(e.skill === 'drain' && Math.random() < POTORO_ENEMY_AI.drain.rate){
+  if(e.skill === 'drain' && consumeEnemySpecialIntent(e,'drain')){
     await announceEnemyAttack(e);
     let damage = Math.max(4, Math.floor(e.atk * .75) - Math.floor(effectiveDef() * .35));
     if(typeof applyEquipmentDamageCut === 'function') damage = applyEquipmentDamageCut(damage);
@@ -155,7 +213,7 @@ async function enemySpecialAction(e){
   }
 
   /* 残業のご主人様：2回攻撃 */
-  if(e.skill === 'double' && Math.random() < POTORO_ENEMY_AI.double.rate){
+  if(e.skill === 'double' && consumeEnemySpecialIntent(e,'double')){
     await announceEnemyAttack(e);
     setMessage(`${POTORO_ENEMY_AI.double.label}`);
     await sleep(450);
@@ -165,7 +223,7 @@ async function enemySpecialAction(e){
   }
 
   /* 迷走のご主人様：混乱 */
-  if(e.skill === 'confuse' && Math.random() < POTORO_ENEMY_AI.confuse.rate){
+  if(e.skill === 'confuse' && consumeEnemySpecialIntent(e,'confuse')){
     await announceEnemyAttack(e);
     if(typeof resistsEquipmentStatus === 'function' && resistsEquipmentStatus('confuseResist')){
       setMessage(`装備効果！ ${p.name} は混乱を防いだ！`);
@@ -184,7 +242,7 @@ async function enemySpecialAction(e){
   }
 
   /* 激務のご主人様：攻撃アップ */
-  if(e.skill === 'powerup' && Math.random() < POTORO_ENEMY_AI.powerup.rate){
+  if(e.skill === 'powerup' && consumeEnemySpecialIntent(e,'powerup')){
     await announceEnemyAttack(e);
     e.atk += POTORO_ENEMY_AI.powerup.atkUp;
     setMessage(`${POTORO_ENEMY_AI.powerup.label} 攻撃力が上がった！`);
@@ -193,7 +251,7 @@ async function enemySpecialAction(e){
   }
 
   /* 寝落のご主人様：睡眠 */
-  if(e.skill === 'sleep' && Math.random() < POTORO_ENEMY_AI.sleep.rate){
+  if(e.skill === 'sleep' && consumeEnemySpecialIntent(e,'sleep')){
     await announceEnemyAttack(e);
     if(typeof resistsEquipmentStatus === 'function' && resistsEquipmentStatus('sleepResist')){
       setMessage(`装備効果！ ${p.name} は眠気を防いだ！`);
@@ -212,7 +270,7 @@ async function enemySpecialAction(e){
   }
 
   /* 泥酔のご主人様：自傷 or 混乱 */
-  if(e.skill === 'drunk' && Math.random() < POTORO_ENEMY_AI.drunk.rate){
+  if(e.skill === 'drunk' && consumeEnemySpecialIntent(e,'drunk')){
     await announceEnemyAttack(e);
     if(Math.random() < POTORO_ENEMY_AI.drunk.selfHitRate){
       const selfDamage = Math.max(8, Math.floor(e.atk * .9));
@@ -242,7 +300,7 @@ async function enemySpecialAction(e){
   }
 
   /* 叱責のご主人様：防御ダウン */
-  if(e.skill === 'defdown' && Math.random() < POTORO_ENEMY_AI.defdown.rate){
+  if(e.skill === 'defdown' && consumeEnemySpecialIntent(e,'defdown')){
     await announceEnemyAttack(e);
     s.defDown = Math.max(s.defDown, POTORO_ENEMY_AI.defdown.turns);
     setMessage(`${POTORO_ENEMY_AI.defdown.label} ${p.name} の防御が下がった！`);
@@ -251,7 +309,7 @@ async function enemySpecialAction(e){
     return true;
   }
 
-  if(e.skill === 'lost' && Math.random() < POTORO_ENEMY_AI.maigo.rate){
+  if(e.skill === 'lost' && consumeEnemySpecialIntent(e,'lost')){
     await announceEnemyAttack(e);
     if(typeof resistsEquipmentStatus === 'function' && resistsEquipmentStatus('confuseResist')){
       setMessage(`装備効果！ ${p.name} は混乱を防いだ！`);
@@ -269,7 +327,7 @@ async function enemySpecialAction(e){
     return true;
   }
 
-  if(e.skill === 'rush_pressure' && Math.random() < POTORO_ENEMY_AI.shousou.rate){
+  if(e.skill === 'rush_pressure' && consumeEnemySpecialIntent(e,'rush_pressure')){
     await announceEnemyAttack(e);
     let damage = Math.max(5, Math.floor(e.atk * .85) - Math.floor(effectiveDef() * .45));
     if(p.guarding) damage = Math.max(1, Math.floor(damage / 2));
@@ -283,7 +341,7 @@ async function enemySpecialAction(e){
     return true;
   }
 
-  if(e.skill === 'spend' && Math.random() < POTORO_ENEMY_AI.sanzai.rate){
+  if(e.skill === 'spend' && consumeEnemySpecialIntent(e,'spend')){
     await announceEnemyAttack(e);
     let damage = Math.max(6, Math.floor(e.atk * .8) - Math.floor(effectiveDef() * .4));
     if(p.guarding) damage = Math.max(1, Math.floor(damage / 2));
@@ -301,7 +359,7 @@ async function enemySpecialAction(e){
     return true;
   }
 
-  if(e.skill === 'runaway' && Math.random() < POTORO_ENEMY_AI.bousou.rate){
+  if(e.skill === 'runaway' && consumeEnemySpecialIntent(e,'runaway')){
     await announceEnemyAttack(e);
     setMessage(`暴走突撃！`);
     await sleep(350);
@@ -320,7 +378,7 @@ async function enemySpecialAction(e){
     return true;
   }
 
-  if(e.skill === 'weight' && Math.random() < POTORO_ENEMY_AI.juuatsu.rate){
+  if(e.skill === 'weight' && consumeEnemySpecialIntent(e,'weight')){
     await announceEnemyAttack(e);
     s.defDown = Math.max(s.defDown, POTORO_ENEMY_AI.juuatsu.turns);
 
@@ -338,7 +396,7 @@ async function enemySpecialAction(e){
   }
 
   /* 鬼怒夜魔さん：ボス行動 */
-  if(e.skill === 'boss' && Math.random() < POTORO_ENEMY_AI.boss.rate){
+  if(e.skill === 'boss' && consumeEnemySpecialIntent(e,'boss')){
     await announceEnemyAttack(e);
     const roll = Math.random();
 

@@ -2037,6 +2037,32 @@ body.potoro-boss-criticalhp .enemy-slot.selected{
   }
 }
 
+/* ===== Enemy special attack intent ===== */
+.enemy-special-intent{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  min-height:20px;
+  margin-top:3px;
+  padding:2px 4px;
+  color:#fde68a;
+  font-size:10px;
+  font-weight:900;
+  line-height:1.2;
+  text-align:center;
+}
+
+.enemy-slot.preparing-special{
+  border-color:#fbbf24;
+  background:rgba(245,158,11,.12);
+  box-shadow:0 0 16px rgba(245,158,11,.28);
+}
+
+.enemy-slots.single-enemy .enemy-special-intent{
+  font-size:11px;
+}
+
 .enemy-target-marker{
   position:relative;
   z-index:2;

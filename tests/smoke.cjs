@@ -229,6 +229,58 @@ async function main() {
     });
     assert(!repeatedHintMessage.includes('とてもすばやく'), '同じ敵の初遭遇ヒントが繰り返し表示されます。');
 
+    const preparedIntent = await page.evaluate(() => {
+      const enemy = currentEnemy();
+      const originalRandom = Math.random;
+      try {
+        Math.random = () => 0;
+        const prepared = prepareEnemySpecialIntent(enemy);
+        updateUI();
+        return {
+          prepared,
+          pending:enemy.pendingSpecial,
+          badge:document.querySelector('.enemy-special-intent')?.textContent || ''
+        };
+      } finally {
+        Math.random = originalRandom;
+      }
+    });
+    assert(preparedIntent.prepared, '敵の特殊行動予兆を準備できません。');
+    assert(preparedIntent.pending === 'lost', '予兆に対応する特殊行動が記録されません。');
+    assert(preparedIntent.badge.includes('迷わせる案内'), '敵カードに特殊行動予兆が表示されません。');
+
+    if(process.env.POTORO_TEST_SCREENSHOT){
+      const outputDirectory = path.join(root, 'test-results');
+      fs.mkdirSync(outputDirectory, { recursive: true });
+      await page.screenshot({
+        path:path.join(outputDirectory, 'enemy-special-intent-mobile.png'),
+        fullPage:true
+      });
+    }
+
+    const resolvedIntent = await page.evaluate(async () => {
+      const enemy = currentEnemy();
+      const originalSleep = sleep;
+      state.player.status.confuse = 0;
+      try {
+        sleep = () => Promise.resolve();
+        const used = await enemySpecialAction(enemy);
+        updateUI();
+        return {
+          used,
+          pending:enemy.pendingSpecial,
+          confuse:state.player.status.confuse,
+          badge:document.querySelector('.enemy-special-intent')?.textContent || ''
+        };
+      } finally {
+        sleep = originalSleep;
+      }
+    });
+    assert(resolvedIntent.used, '予兆後の特殊行動が発動しません。');
+    assert(!resolvedIntent.pending, '発動後も特殊行動予兆が残っています。');
+    assert(resolvedIntent.confuse > 0, '予兆に対応した特殊効果が適用されません。');
+    assert(!resolvedIntent.badge, '発動後も敵カードに予兆が表示されています。');
+
     assert(!failedResponses.length, `読み込み失敗:\n${failedResponses.join('\n')}`);
     assert(!runtimeErrors.length, `ブラウザ実行エラー:\n${runtimeErrors.join('\n')}`);
     console.log('ブラウザ検査 OK: タイトル / あらすじ / 1F・2F / 宝箱 / 通常戦闘 / メニュー');

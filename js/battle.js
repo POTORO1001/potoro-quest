@@ -336,6 +336,10 @@ async function enemyTurn(){
       continue;
     }
 
+    const preparedSpecial = typeof prepareEnemySpecialIntent === 'function'
+      ? prepareEnemySpecialIntent(e)
+      : false;
+
     await enemyBasicAttack(e);
 
     if(p.hp <= 0){
@@ -343,6 +347,12 @@ async function enemyTurn(){
       await sleep(900);
       showGameOver();
       return;
+    }
+
+    if(preparedSpecial){
+      setMessage(getEnemySpecialWarning(e));
+      updateUI();
+      await sleep(700);
     }
   }
 

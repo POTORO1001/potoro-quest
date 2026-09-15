@@ -205,6 +205,7 @@ async function enemyFirstCheck(){
 function cloneEnemy(base){
   const cloned = deepClone(base);
   cloned.sleepTurns = cloned.sleepTurns || 0;
+  cloned.pendingSpecial = '';
   return cloned;
 }
 

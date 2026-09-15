@@ -142,6 +142,14 @@ function createEnemySlot(enemy,index){
   name.className = 'enemy-slot-name';
   name.textContent = enemy.hp > 0 ? enemy.name : '撃破';
 
+  const intent = document.createElement('div');
+  intent.className = 'enemy-special-intent';
+  if(enemy.hp > 0 && enemy.pendingSpecial && typeof getEnemySpecialIntentLabel === 'function'){
+    const intentLabel = getEnemySpecialIntentLabel(enemy);
+    intent.textContent = intentLabel ? `次：${intentLabel}` : '';
+    if(intentLabel) slot.classList.add('preparing-special');
+  }
+
   const hpBar = document.createElement('div');
   hpBar.className = 'enemy-slot-hp';
 
@@ -155,6 +163,7 @@ function createEnemySlot(enemy,index){
   slot.appendChild(marker);
   slot.appendChild(img);
   slot.appendChild(name);
+  slot.appendChild(intent);
   slot.appendChild(hpBar);
 
   if(enemy.hp > 0){
