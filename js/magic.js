@@ -536,7 +536,8 @@ async function damageAllEnemiesConfigured(message,baseDamage,bossRate){
   let defeated = null;
 
   aliveEnemies().forEach(enemy => {
-    const damage = enemy.boss ? Math.floor(baseDamage * bossRate) : baseDamage;
+    let damage = enemy.boss ? Math.floor(baseDamage * bossRate) : baseDamage;
+    damage = applyEquipmentOutgoingDamage(damage,enemy,{magic:true});
     enemy.hp = Math.max(0,enemy.hp - damage);
 
     if(enemy.hp <= 0) defeated = enemy;

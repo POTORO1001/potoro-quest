@@ -792,6 +792,65 @@ async function main() {
       assert(result.charged.secondDamage === result.normal.damage, `${kind}の2回目にも強化が適用されます。`);
     }
 
+    const showerEquipment = await page.evaluate(async () => {
+      const saved = {player:state.player,sleep,showCutin,random:Math.random,buffState:{...buffState}};
+      try {
+        sleep = () => Promise.resolve();
+        showCutin = () => Promise.resolve();
+        Math.random = () => 0.5;
+        const results = [];
+        for(const setup of [
+          {weapon:'rod'},
+          {weapon:'calling_bell'},
+          {weapon:'rod',accessory:'magic_ribbon'},
+          {weapon:'legend_menu'},
+          {weapon:'service_hammer',defDown:true},
+          {weapon:'calling_bell',accessory:'magic_ribbon',charged:true}
+        ]){
+          endBattleToMap();
+          state.player = makePlayer();
+          const p = state.player;
+          p.mapX = p.mapY = 1;
+          p.lv = 12;
+          p.mp = p.maxMp = 200;
+          p.equip.weapon = setup.weapon;
+          if(setup.accessory) p.equip.accessory = setup.accessory;
+          p.buffs = {perfectService:setup.charged ? 1 : 0};
+          buffState.charge = buffState.aura = 0;
+          startBattle(getEnemyById('teiji'),true);
+          const regular = state.enemiesInBattle[0];
+          regular.hp = regular.maxHp = 99999;
+          regular.sleepTurns = 50;
+          regular.equipmentDefDownTurns = setup.defDown ? 3 : 0;
+          const boss = {...regular,boss:true,name:'補正テストBOSS'};
+          state.enemiesInBattle = [regular,boss];
+          const cfg = requireMagicConfig('shower');
+          const base = Math.floor(magicPower(cfg.base) * (setup.charged ? 2.5 : 1));
+          const magicRate = equipmentEffectValue('magicDamageRate');
+          const bossRate = equipmentEffectValue('bossDamageRate');
+          const defRate = setup.defDown ? equipmentEffectValue('defDownDamageRate') : 0;
+          const expectedRegular = Math.floor(Math.floor(base * (1+magicRate)) * (1+defRate));
+          const expectedBoss = Math.floor(Math.floor(Math.floor(Math.floor(base * cfg.bossRate) * (1+magicRate)) * (1+bossRate)) * (1+defRate));
+          await useMagic('shower');
+          results.push({setup,expectedRegular,expectedBoss,regular:99999-regular.hp,boss:99999-boss.hp,cost:200-p.mp,consumed:!p.buffs.perfectService});
+        }
+        return results;
+      } finally {
+        sleep = saved.sleep;
+        showCutin = saved.showCutin;
+        Math.random = saved.random;
+        Object.assign(buffState,saved.buffState);
+        endBattleToMap();
+        state.player = saved.player;
+        updateUI();
+        updateMapStatusPanel();
+      }
+    });
+    for(const result of showerEquipment){
+      assert(result.regular === result.expectedRegular && result.boss === result.expectedBoss, `チェキフラッシュの装備補正が対象ごとに適用されません: ${JSON.stringify(result.setup)}`);
+      assert(result.cost === (result.setup.accessory ? 13 : 12) && result.consumed, '全体攻撃のTP消費または強化消費が変わっています。');
+    }
+
     assert(!failedResponses.length, `読み込み失敗:\n${failedResponses.join('\n')}`);
     assert(!runtimeErrors.length, `ブラウザ実行エラー:\n${runtimeErrors.join('\n')}`);
     console.log('ブラウザ検査 OK: タイトル / あらすじ / 1F・2F / 宝箱 / 通常戦闘 / メニュー');
