@@ -311,12 +311,14 @@ function createLevelParticles(){
 /* ===== Enhanced Enemy Flash ===== */
 const _potoroEffectsEnemyFlash = enemyFlash;
 
-enemyFlash = function(){
-  _potoroEffectsEnemyFlash();
+enemyFlash = function(enemyIndex){
+  _potoroEffectsEnemyFlash(enemyIndex);
 
   if(!POTORO_EFFECTS.enabled) return;
 
-  const selected = document.querySelector('.enemy-slot.selected');
+  const selected = Number.isInteger(enemyIndex)
+    ? document.querySelectorAll('.enemy-slot')[enemyIndex]
+    : document.querySelector('.enemy-slot.selected');
   if(selected){
     selected.classList.remove('potoro-hit-ring');
     void selected.offsetWidth;

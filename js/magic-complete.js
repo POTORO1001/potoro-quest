@@ -277,11 +277,11 @@
 
       if(target.hp <= 0) state.lastDefeatedEnemy = target;
 
-      setMessage(`ご奉仕連撃！ ${i+1}回目！ ${damage} ダメージ！`);
+      setMessage(`ご奉仕連撃！ ${i+1}回目！ ${target.name} に ${damage} ダメージ！`);
       showDamage(damage,'enemy');
       playOmajinaiSe();
-      enemyFlash();
       updateUI();
+      enemyFlash(state.enemiesInBattle.indexOf(target));
 
       await sleep(420);
 

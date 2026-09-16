@@ -681,6 +681,52 @@ async function main() {
       await page.evaluate(() => endBattleToMap());
     }
 
+    const comboTargets = await page.evaluate(async () => {
+      const saved = {player:state.player,sleep,showCutin,enemyFlash,setMessage,random:Math.random};
+      const hits = [];
+      const messages = [];
+      try {
+        sleep = () => Promise.resolve();
+        showCutin = () => Promise.resolve();
+        Math.random = () => 0.75;
+        setMessage = message => { messages.push(message); saved.setMessage(message); };
+        enemyFlash = index => {
+          saved.enemyFlash(index);
+          const slots = [...document.querySelectorAll('.enemy-slot')];
+          hits.push({index,flashing:slots.map((slot,i) => slot.querySelector('img').classList.contains('hit') ? i : -1).filter(i => i >= 0)});
+        };
+        state.player = makePlayer();
+        const p = state.player;
+        p.mapX = p.mapY = 1;
+        p.lv = 12;
+        p.mp = p.maxMp = 100;
+        startBattle(getEnemyById('teiji'),true);
+        const first = state.enemiesInBattle[0];
+        const second = {...first,name:'連撃テストのご主人様',hp:1,maxHp:1};
+        first.hp = first.maxHp = 9999;
+        first.sleepTurns = second.sleepTurns = 20;
+        state.enemiesInBattle = [first,second];
+        state.targetIndex = 0;
+        updateUI();
+        await useMagic('combo');
+        return {hits,messages,firstHp:first.hp,secondHp:second.hp,cost:100-p.mp,targetIndex:state.targetIndex};
+      } finally {
+        sleep = saved.sleep;
+        showCutin = saved.showCutin;
+        enemyFlash = saved.enemyFlash;
+        setMessage = saved.setMessage;
+        Math.random = saved.random;
+        endBattleToMap();
+        state.player = saved.player;
+        updateUI();
+        updateMapStatusPanel();
+      }
+    });
+    assert(JSON.stringify(comboTargets.hits.map(hit => hit.index)) === '[1,0,0,0]', '連撃がランダム対象に当たらないか、撃破済みの敵を狙っています。');
+    assert(comboTargets.hits.every(hit => hit.flashing.length === 1 && hit.flashing[0] === hit.index), '連撃の命中対象と光る敵が一致しません。');
+    assert(comboTargets.messages.some(message => message.includes('1回目！ 連撃テストのご主人様 に')), '連撃の各ヒットに命中した敵名が表示されません。');
+    assert(comboTargets.firstHp < 9999 && comboTargets.secondHp === 0 && comboTargets.cost === 8 && comboTargets.targetIndex === 0, '連撃のHP・TP処理またはプレイヤーの対象選択が変わってしまいます。');
+
     assert(!failedResponses.length, `読み込み失敗:\n${failedResponses.join('\n')}`);
     assert(!runtimeErrors.length, `ブラウザ実行エラー:\n${runtimeErrors.join('\n')}`);
     console.log('ブラウザ検査 OK: タイトル / あらすじ / 1F・2F / 宝箱 / 通常戦闘 / メニュー');

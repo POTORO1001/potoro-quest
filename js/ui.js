@@ -352,12 +352,12 @@ function showLevelToast(text){
 }
 
 /* ===== Enemy Hit Animation ===== */
-function enemyFlash(){
+function enemyFlash(enemyIndex){
   screenShake();
 
-  const selected =
-    document.querySelector('.enemy-slot.selected img') ||
-    document.querySelector('.enemy-slot img');
+  const selected = Number.isInteger(enemyIndex)
+    ? document.querySelectorAll('.enemy-slot')[enemyIndex]?.querySelector('img')
+    : document.querySelector('.enemy-slot.selected img') || document.querySelector('.enemy-slot img');
 
   if(!selected) return;
 
