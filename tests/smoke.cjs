@@ -795,7 +795,16 @@ async function main() {
     const showerEquipment = await page.evaluate(async () => {
       const saved = {player:state.player,sleep,showCutin,random:Math.random,buffState:{...buffState}};
       try {
-        sleep = () => Promise.resolve();
+        let display = [];
+        let flashing = [];
+        sleep = duration => {
+          const labels = [...document.querySelectorAll('.damage-text[data-enemy-index]')];
+          if(duration === 900 && labels.length){
+            display = labels.map(label => ({index:Number(label.dataset.enemyIndex),text:label.textContent}));
+            flashing = [...document.querySelectorAll('.enemy-slot')].map((slot,index) => slot.querySelector('img').classList.contains('hit') ? index : -1).filter(index => index >= 0);
+          }
+          return Promise.resolve();
+        };
         showCutin = () => Promise.resolve();
         Math.random = () => 0.5;
         const results = [];
@@ -807,6 +816,7 @@ async function main() {
           {weapon:'service_hammer',defDown:true},
           {weapon:'calling_bell',accessory:'magic_ribbon',charged:true}
         ]){
+          document.querySelectorAll('.damage-text').forEach(label => label.remove());
           endBattleToMap();
           state.player = makePlayer();
           const p = state.player;
@@ -832,7 +842,7 @@ async function main() {
           const expectedRegular = Math.floor(Math.floor(base * (1+magicRate)) * (1+defRate));
           const expectedBoss = Math.floor(Math.floor(Math.floor(Math.floor(base * cfg.bossRate) * (1+magicRate)) * (1+bossRate)) * (1+defRate));
           await useMagic('shower');
-          results.push({setup,expectedRegular,expectedBoss,regular:99999-regular.hp,boss:99999-boss.hp,cost:200-p.mp,consumed:!p.buffs.perfectService});
+          results.push({setup,expectedRegular,expectedBoss,regular:99999-regular.hp,boss:99999-boss.hp,cost:200-p.mp,consumed:!p.buffs.perfectService,display,flashing});
         }
         return results;
       } finally {
@@ -849,6 +859,38 @@ async function main() {
     for(const result of showerEquipment){
       assert(result.regular === result.expectedRegular && result.boss === result.expectedBoss, `チェキフラッシュの装備補正が対象ごとに適用されません: ${JSON.stringify(result.setup)}`);
       assert(result.cost === (result.setup.accessory ? 13 : 12) && result.consumed, '全体攻撃のTP消費または強化消費が変わっています。');
+      assert(result.display.length === 2 && result.display[0].text === `-${result.regular}` && result.display[1].text === `-${result.boss}`, '全体攻撃の各敵に実ダメージが表示されません。');
+      assert(JSON.stringify(result.flashing) === '[0,1]', '全体攻撃で命中した敵全員が光りません。');
+    }
+
+    if(process.env.POTORO_TEST_SCREENSHOT){
+      await page.waitForTimeout(2200);
+      await page.evaluate(() => {
+        window.testAreaHitSaved = {player:state.player,sleep};
+        state.player = makePlayer();
+        state.player.mapX = state.player.mapY = 1;
+        startBattle(getEnemyById('teiji'),true);
+        const enemy = state.enemiesInBattle[0];
+        enemy.hp = enemy.maxHp = 999;
+        state.enemiesInBattle = [enemy,{...enemy,boss:true,name:'表示確認BOSS'}];
+        state.enemyActedFirst = true;
+        sleep = () => new Promise(resolve => { window.testAreaHitRelease = resolve; });
+        window.testAreaHitPromise = damageAllEnemiesConfigured('チェキフラッシュ！！',100,0.8);
+      });
+      await page.waitForTimeout(180);
+      await page.screenshot({path:path.join(root,'test-results','area-hit-mobile.png'),fullPage:true});
+      await page.evaluate(async () => {
+        window.testAreaHitRelease();
+        await window.testAreaHitPromise;
+        sleep = window.testAreaHitSaved.sleep;
+        endBattleToMap();
+        state.player = window.testAreaHitSaved.player;
+        updateUI();
+        updateMapStatusPanel();
+        delete window.testAreaHitSaved;
+        delete window.testAreaHitRelease;
+        delete window.testAreaHitPromise;
+      });
     }
 
     assert(!failedResponses.length, `読み込み失敗:\n${failedResponses.join('\n')}`);

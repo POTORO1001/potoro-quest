@@ -259,7 +259,7 @@ function setButtonsDisabled(disabled){
 }
 
 /* ===== Damage Text ===== */
-function showDamage(value,target,extraClass){
+function showDamage(value,target,extraClass,enemyIndex){
   const area = target === 'player'
     ? document.querySelector('.status-panel')
     : document.querySelector('.enemy-area');
@@ -273,6 +273,15 @@ function showDamage(value,target,extraClass){
     : 'damage-text';
 
   if(extraClass) damage.classList.add(extraClass);
+  if(target === 'enemy' && Number.isInteger(enemyIndex)){
+    const slot = document.querySelectorAll('.enemy-slot')[enemyIndex];
+    if(!slot) return;
+    const slotRect = slot.getBoundingClientRect();
+    const areaRect = area.getBoundingClientRect();
+    damage.dataset.enemyIndex = enemyIndex;
+    damage.style.left = `${slotRect.left - areaRect.left + slotRect.width / 2}px`;
+    damage.style.top = `${slotRect.top - areaRect.top + slotRect.height * 0.4}px`;
+  }
 
   damage.textContent = value > 0 ? `-${value}` : `+${Math.abs(value)}`;
 

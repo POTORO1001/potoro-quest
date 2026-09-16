@@ -534,11 +534,13 @@ async function useMagicShowerConfigured(){
 
 async function damageAllEnemiesConfigured(message,baseDamage,bossRate){
   let defeated = null;
+  const hits = [];
 
   aliveEnemies().forEach(enemy => {
     let damage = enemy.boss ? Math.floor(baseDamage * bossRate) : baseDamage;
     damage = applyEquipmentOutgoingDamage(damage,enemy,{magic:true});
     enemy.hp = Math.max(0,enemy.hp - damage);
+    hits.push({index:state.enemiesInBattle.indexOf(enemy),damage});
 
     if(enemy.hp <= 0) defeated = enemy;
   });
@@ -547,10 +549,12 @@ async function damageAllEnemiesConfigured(message,baseDamage,bossRate){
 
   setMessage(`${message} 敵全体にダメージ！`);
 
-  showDamage(baseDamage,'enemy','critical-text');
   playOmajinaiSe();
-  enemyFlash();
   updateUI();
+  hits.forEach(hit => {
+    showDamage(hit.damage,'enemy',undefined,hit.index);
+    enemyFlash(hit.index);
+  });
 
   await sleep(900);
 

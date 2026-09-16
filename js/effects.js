@@ -200,12 +200,12 @@ function showBossPhaseCutin(text){
 /* ===== Enhanced Damage ===== */
 const _potoroEffectsShowDamage = showDamage;
 
-showDamage = function(value,target,extraClass){
-  _potoroEffectsShowDamage(value,target,extraClass);
+showDamage = function(value,target,extraClass,enemyIndex){
+  _potoroEffectsShowDamage(value,target,extraClass,enemyIndex);
 
   if(!POTORO_EFFECTS.enabled || !POTORO_EFFECTS.damageEmoji) return;
 
-  if(target === 'enemy' && value > 0){
+  if(target === 'enemy' && value > 0 && !Number.isInteger(enemyIndex)){
     if(extraClass === 'critical-text'){
       showBattleBurst('CRITICAL!', 'critical');
     }else if(value >= 70){
