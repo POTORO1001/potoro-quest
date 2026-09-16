@@ -283,6 +283,101 @@ async function main() {
     assert(attackResult.afterEnemyHp < attackResult.beforeEnemyHp, '通常攻撃で敵のHPが減りません。');
     assert(!attackResult.busy, '通常攻撃後も操作ロックが解除されません。');
 
+    await page.getByRole('button', { name: '効果一覧', exact: true }).click();
+    await page.locator('#helpModal').waitFor({ state: 'visible' });
+    const effectHelp = await page.evaluate(() => {
+      const allItems = [...equipmentData.weapons,...equipmentData.uniforms];
+      const rows = [...document.querySelectorAll('[data-help-equipment]')];
+      const rowText = id => document.querySelector(`[data-help-equipment="${id}"] > span`)?.textContent || '';
+      return {
+        itemCount:allItems.length,
+        rowCount:rows.length,
+        allItemsShown:allItems.every(item => rows.some(row => row.dataset.helpEquipment === item.id)),
+        cotton:rowText('heart_tiara'),
+        apron:rowText('white_apron'),
+        photo:rowText('broMaid_photo'),
+        teaDress:rowText('tea_time_dress'),
+        hammer:rowText('service_hammer'),
+        magicCostsMatch:potoroMagicLevelOrderReport().order.every(magic => {
+          const row = document.querySelector(`[data-help-magic="${magic.id}"]`);
+          return row?.querySelector('span')?.textContent.startsWith(`基本TP${magic.mp} / `);
+        })
+      };
+    });
+    assert(effectHelp.rowCount === effectHelp.itemCount && effectHelp.allItemsShown, '効果一覧に全装備が1回ずつ表示されません。');
+    assert(effectHelp.cotton === '防御+3・すばやさ+1', 'コットンシュシュの性能表示が実データと違います。');
+    assert(effectHelp.apron === '防御+4 / 基本服装備', '基本服装備の説明が維持されていません。');
+    assert(effectHelp.photo === '防御+3・トーク+5', '推しのブロマイドに旧性能が残っています。');
+    assert(effectHelp.teaDress.includes('毎ターンTP+1'), '装備のターン回復量が表示されません。');
+    assert(effectHelp.hammer.includes('防御ダウン中の敵へダメージ+25%'), '装備の防御ダウン特効が表示されません。');
+    assert(effectHelp.magicCostsMatch, 'おまじないの基本消費TPが効果一覧に表示されません。');
+
+    const photoDefense = await page.evaluate(() => {
+      const originalAccessory = state.player.equip.accessory;
+      try {
+        state.player.equip.accessory = '';
+        const withoutPhoto = totalDef();
+        state.player.equip.accessory = 'broMaid_photo';
+        return totalDef() - withoutPhoto;
+      } finally {
+        state.player.equip.accessory = originalAccessory;
+      }
+    });
+    assert(photoDefense === 3, '推しのブロマイドを装備しても防御が3増えません。');
+
+    const updatedEffectHelp = await page.evaluate(() => {
+      const cotton = findUniform('heart_tiara');
+      const teaDress = findUniform('tea_time_dress');
+      const originalCotton = {name:cotton.name,def:cotton.def,rarity:cotton.rarity};
+      const originalRegen = teaDress.effect.turnMpRegen;
+      const addedItem = {id:'test_effect_help',slot:'accessory',name:'検査用アクセ',rarity:'B',def:5,effect:{turnMpRegen:2}};
+      try {
+        cotton.name = '検査用シュシュ';
+        cotton.def = 9;
+        cotton.rarity = 'A';
+        teaDress.effect.turnMpRegen = 2;
+        equipmentData.uniforms.push(addedItem);
+        closeHelp();
+        openHelp();
+        return {
+          cottonName:document.querySelector('[data-help-equipment="heart_tiara"] > b')?.textContent || '',
+          cottonDescription:document.querySelector('[data-help-equipment="heart_tiara"] > span')?.textContent || '',
+          teaDress:document.querySelector('[data-help-equipment="tea_time_dress"] > span')?.textContent || '',
+          addedItem:document.querySelector('[data-help-equipment="test_effect_help"] > span')?.textContent || ''
+        };
+      } finally {
+        Object.assign(cotton,originalCotton);
+        teaDress.effect.turnMpRegen = originalRegen;
+        equipmentData.uniforms.splice(equipmentData.uniforms.indexOf(addedItem),1);
+        openHelp();
+      }
+    });
+    assert(updatedEffectHelp.cottonName === '検査用シュシュA', '装備名・ランクの変更が効果一覧に反映されません。');
+    assert(updatedEffectHelp.cottonDescription === '防御+9・すばやさ+1', '性能変更後も効果一覧に古い数値が残ります。');
+    assert(updatedEffectHelp.teaDress.includes('毎ターンTP+2'), '特殊性能の変更が効果一覧に反映されません。');
+    assert(updatedEffectHelp.addedItem === '防御+5 / 毎ターンTP+2', '新しく追加した装備が効果一覧に反映されません。');
+    assert(await page.locator('[data-help-equipment]').count() === effectHelp.itemCount, '効果一覧を再表示すると装備行が重複します。');
+
+    for(const viewport of [{width:320,height:740},{width:390,height:844},{width:1280,height:900}]){
+      await page.setViewportSize(viewport);
+      const helpFits = await page.evaluate(() => {
+        return [...document.querySelectorAll('#helpModal .help-table > div')].every(row => {
+          const bounds = row.getBoundingClientRect();
+          return bounds.left >= 0 && bounds.right <= window.innerWidth + 1
+            && [...row.children].every(child => child.scrollWidth <= child.clientWidth + 1);
+        });
+      });
+      assert(helpFits, `効果一覧の文字が画面または列からはみ出します (${viewport.width}px)。`);
+      if(process.env.POTORO_TEST_SCREENSHOT && viewport.width !== 320){
+        const outputDirectory = path.join(root, 'test-results');
+        fs.mkdirSync(outputDirectory, {recursive:true});
+        await page.locator('[data-help-equipment-slot="body"]').evaluate(table => table.parentElement.scrollIntoView({block:'start'}));
+        await page.screenshot({path:path.join(outputDirectory, `effect-help-${viewport.width}.png`),fullPage:true});
+      }
+    }
+    await page.setViewportSize({width:390,height:844});
+    await page.evaluate(() => closeHelp());
+
     await page.getByRole('button', { name: 'おまじない', exact: true }).click();
     await page.locator('#subMenu').waitFor({ state: 'visible' });
     assert(await page.locator('#subMenuTitle').textContent() === 'おまじない', 'おまじないメニューが開きません。');

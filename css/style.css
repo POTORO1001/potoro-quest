@@ -1948,15 +1948,16 @@ body.potoro-boss-criticalhp .enemy-slot.selected{
 
 .help-table div{
   display:grid;
-  grid-template-columns:42% 58%;
+  grid-template-columns:minmax(0,42fr) minmax(0,58fr);
   gap:6px;
   align-items:start;
   padding:7px 8px;
-  border-radius:9px;
+  border-radius:8px;
   background:#fff1f7;
   border:1px solid rgba(244,114,182,.22);
   font-size:12.5px;
   line-height:1.45;
+  overflow-wrap:anywhere;
 }
 
 .help-table b{

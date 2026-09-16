@@ -244,7 +244,7 @@ function rarityBadge(item){
   return `<span class="equip-rarity rarity-${String(rarity).toLowerCase()}">${rarity}</span>`;
 }
 
-function itemEffectText(item){
+function itemEffectText(item,includeDescription=true){
   if(!item) return '';
 
   const e = item.effect || {};
@@ -259,6 +259,7 @@ function itemEffectText(item){
   if(e.stunChance) parts.push(`スタン${Math.round(e.stunChance*100)}%`);
   if(e.multiHitChance) parts.push(`追撃${Math.round(e.multiHitChance*100)}%`);
   if(e.defDownChance) parts.push(`防御ダウン${Math.round(e.defDownChance*100)}%`);
+  if(e.defDownDamageRate) parts.push(`防御ダウン中の敵へダメージ+${Math.round(e.defDownDamageRate*100)}%`);
   if(e.bossDamageRate) parts.push(`ボス特効+${Math.round(e.bossDamageRate*100)}%`);
   if(e.damageCutRate) parts.push(`被ダメ-${Math.round(e.damageCutRate*100)}%`);
   if(e.guardDamageCut) parts.push(`防御時さらに軽減`);
@@ -276,9 +277,50 @@ function itemEffectText(item){
   if(e.bonusRewardChance) parts.push(`追加報酬${Math.round(e.bonusRewardChance*100)}%`);
   if(e.turnAtkStack) parts.push(`毎ターン攻撃UP`);
 
-  if(!parts.length && item.desc) return item.desc;
+  if(!parts.length && includeDescription && item.desc) return item.desc;
 
   return parts.join(' / ');
+}
+
+function equipmentHelpText(item){
+  const stats = [['atk','攻撃'],['def','防御'],['spd','すばやさ'],['talk','トーク']]
+    .map(([key,label]) => {
+      const value = equipStat(item,key);
+      return value ? `${label}${value > 0 ? '+' : ''}${value}` : '';
+    })
+    .filter(Boolean);
+  const effect = itemEffectText(item,false);
+  return [stats.join('・'),effect,item.helpNote].filter(Boolean).join(' / ');
+}
+
+function renderEquipmentHelpTables(){
+  const rarityOrder = {C:0,B:1,A:2,S:3,EVENT:4};
+
+  document.querySelectorAll('[data-help-equipment-slot]').forEach(table => {
+    const slot = table.dataset.helpEquipmentSlot;
+    const items = slot === 'weapon'
+      ? equipmentData.weapons.slice()
+      : equipmentData.uniforms.filter(item => item.slot === slot);
+
+    table.replaceChildren();
+    items.sort((a,b) => (rarityOrder[a.rarity] ?? 5) - (rarityOrder[b.rarity] ?? 5));
+
+    items.forEach(item => {
+      const row = document.createElement('div');
+      row.dataset.helpEquipment = item.id;
+
+      const name = document.createElement('b');
+      name.textContent = item.name;
+      const rarity = document.createElement('em');
+      rarity.textContent = item.rarity || 'B';
+      name.appendChild(rarity);
+
+      const description = document.createElement('span');
+      description.textContent = equipmentHelpText(item);
+      row.append(name,description);
+      table.appendChild(row);
+    });
+  });
 }
 
 function buildEquipButtonHtml(slot,item){
@@ -782,8 +824,9 @@ function potoroInstallEquipmentRarityAddon(){
       slot:'accessory',
       rarity:'A',
       def:3,
-      desc:'トーク力+30%。防御-3。',
-      effect:{talkRate:0.30,defPenalty:3}
+      talk:5,
+      desc:'トーク+5。',
+      effect:{}
     },
     {
       id:'magic_teacup',
@@ -893,6 +936,7 @@ function patchEquipmentDetails(id, details){
 
   if(details.name) item.name = details.name;
   if(details.desc !== undefined) item.desc = details.desc;
+  if(details.helpNote !== undefined) item.helpNote = details.helpNote;
   if(details.effect !== undefined) item.effect = details.effect;
   if(details.slot) item.slot = details.slot;
   if(details.rarity) item.rarity = details.rarity;
@@ -907,10 +951,10 @@ function installPotoroEquipmentBalance(){
   }
 
   [
-    ['rod',{name:'ご奉仕ロッド',desc:'基本武器。'}],
+    ['rod',{name:'ご奉仕ロッド',desc:'基本武器。',helpNote:'基本武器'}],
     ['frill_blade',{name:'お絵かきケチャップ',desc:'トーク+1。'}],
     ['silver_tea_spoon',{name:'フリルコースター',desc:'低確率で追加ダメージ。',effect:{multiHitChance:0.08}}],
-    ['gokitaku_mace',{name:'ご帰宅メイス',desc:'安定火力。'}],
+    ['gokitaku_mace',{name:'ご帰宅メイス',desc:'安定火力。',helpNote:'安定火力'}],
     ['punish_frying_pan',{name:'お仕置きフライパン',desc:'低確率でスタン付与。すばやさ-1。',effect:{stunChance:0.16}}],
     ['kirameki_tray',{name:'きらめきネイル',desc:'クリティカル率UP。',effect:{criticalRateBonus:0.10}}],
     ['magic_staff',{name:'おまじないステッキ',desc:'おまじない消費TP-1。回復おまじない少しUP。',effect:{magicMpMinus:1,healMagicRate:0.20}}],
@@ -918,15 +962,15 @@ function installPotoroEquipmentBalance(){
     ['speed_tray',{name:'スピードトレイ',desc:'開幕先手を取りやすい速度型武器。',effect:{firstTurnSpdBonus:20,afterTurnSpdPenalty:3}}],
     ['service_hammer',{name:'お給仕ハンマー',desc:'攻撃時に防御ダウンを狙える。防御ダウン中の敵に火力上昇。',effect:{defDownChance:0.28,defDownDamageRate:0.25}}],
     ['legend_menu',{name:'伝説のメニュー表',desc:'ボスへのダメージUP。',effect:{bossDamageRate:0.30}}],
-    ['maid_headband',{name:'メイドカチューシャ',desc:'基本頭装備。'}],
+    ['maid_headband',{name:'メイドカチューシャ',desc:'基本頭装備。',helpNote:'基本頭装備'}],
     ['heart_tiara',{name:'コットンシュシュ',desc:'防御+3。すばやさ+1。'}],
     ['rose_ribbon',{name:'猫耳ヘアバンド',desc:'すばやさ+2。'}],
     ['fuwamoko_headband',{name:'ブルーローズリボン',desc:'トーク+1。'}],
     ['kirarin_headdress',{name:'星屑の髪飾り',desc:'毎ターンTP+1。',effect:{turnMpRegen:1}}],
     ['lucky_headband',{name:'極彩色の花かんむり',desc:'状態異常耐性少しUP。',effect:{sleepResist:0.25,confuseResist:0.25}}],
     ['royal_tiara',{name:'ロイヤルティアラ',desc:'被ダメージ少し軽減。',effect:{damageCutRate:0.10}}],
-    ['white_apron',{name:'純白のエプロン',desc:'基本服装備。'}],
-    ['long_maid',{name:'見習いメイド服',desc:'序盤安定。'}],
+    ['white_apron',{name:'純白のエプロン',desc:'基本服装備。',helpNote:'基本服装備'}],
+    ['long_maid',{name:'見習いメイド服',desc:'序盤安定。',helpNote:'序盤安定'}],
     ['tea_time_dress',{name:'ティータイムドレス',desc:'毎ターンTP+1。',effect:{turnMpRegen:1}}],
     ['heart_apron',{name:'ハートエプロン',desc:'毎ターンHP+3。',effect:{turnHpRegen:3}}],
     ['cool_maid_dress',{name:'着ぐるみパジャマ',desc:'睡眠耐性UP。',effect:{sleepResist:0.50}}],
@@ -935,18 +979,18 @@ function installPotoroEquipmentBalance(){
     ['heavy_maid_armor',{name:'重装メイドアーマー',desc:'被ダメージ-20%。すばやさ-5。',effect:{damageCutRate:0.20}}],
     ['perfect_maid_dress',{name:'ベルベッドドレス',desc:'状態異常耐性UP。',effect:{sleepResist:0.50,confuseResist:0.50}}],
     ['royal_maid_dress',{name:'ロイヤルメイド服',desc:'バフ効果ターン+1。',effect:{buffTurnBonus:1}}],
-    ['first_maid',{name:'初代メイド服',desc:'たまちゃん限定。'}],
-    ['black_stocking',{name:'黒のストッキング',desc:'基本アクセ。'}],
+    ['first_maid',{name:'初代メイド服',desc:'たまちゃん限定。',helpNote:'たまちゃん限定'}],
+    ['black_stocking',{name:'黒のストッキング',desc:'基本アクセ。',helpNote:'基本アクセ'}],
     ['service_proof',{name:'お給仕の証',desc:'トーク+2。'}],
     ['oshi_pendant',{name:'推し活ペンダント',desc:'トーク+1。ドロップ率少しUP。',effect:{itemDropRateBonus:0.05}}],
-    ['heart_brooch',{name:'ハートのブローチ',desc:'防御+3の安定アクセ。'}],
+    ['heart_brooch',{name:'ハートのブローチ',desc:'防御+3の安定アクセ。',helpNote:'安定アクセ'}],
     ['business_card',{name:'ご主人様の名刺',desc:'アイテムドロップ率UP。',effect:{itemDropRateBonus:0.15}}],
     ['magic_teacup',{name:'スター缶バッチ',desc:'クリティカル率少しUP。',effect:{criticalRateBonus:0.08}}],
     ['magic_ribbon',{name:'魔力のアクスタ',desc:'おまじない威力UP。TP消費+1。',effect:{magicDamageRate:0.20,magicMpPlus:1}}],
     ['maid_note',{name:'メイドの心得ノート',desc:'状態異常ターン-1、バフターン+1。',effect:{statusTurnMinus:1,buffTurnBonus:1}}],
     ['point_card',{name:'満タンポイントカード',desc:'お給仕後のEXP+20%。低確率で追加報酬。',effect:{expRate:0.20,bonusRewardChance:0.08}}],
-    ['broMaid_photo',{name:'推しのブロマイド',desc:'トーク+5。'}],
-    ['legend_nameplate',{name:'伝説の名札',desc:'安定型アクセ。'}],
+    ['broMaid_photo',{name:'推しのブロマイド',desc:'トーク+5。',effect:{}}],
+    ['legend_nameplate',{name:'伝説の名札',desc:'安定型アクセ。',helpNote:'安定型アクセ'}],
     ['royal_ring',{name:'ロイヤルリング',desc:'低確率で追加行動。',effect:{extraActionChance:0.12}}]
   ].forEach(([id,details]) => patchEquipmentDetails(id,details));
 

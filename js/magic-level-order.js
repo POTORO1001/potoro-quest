@@ -242,7 +242,7 @@
     POTORO_MAGIC_LEVEL_ORDER.forEach(magic => {
       const row = document.createElement('div');
       row.dataset.helpMagic = magic.id;
-      row.innerHTML = `<b>Lv${magic.level} ${magic.name}</b><span>${magic.desc}</span>`;
+      row.innerHTML = `<b>Lv${magic.level} ${magic.name}</b><span>基本TP${magic.mp} / ${magic.desc}</span>`;
       table.appendChild(row);
     });
 
