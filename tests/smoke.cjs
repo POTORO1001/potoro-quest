@@ -618,6 +618,69 @@ async function main() {
     assert(equipmentEffects.itemHealing === 39 && equipmentEffects.normalItemHealing === 30, '道具に一般回復補正が働かないか、回復おまじない補正まで適用されます。');
     assert(equipmentEffects.itemMessage.includes('装備効果') && Object.values(equipmentEffects.itemStatus).every(value => value === 0), '道具のHP回復時に状態回復が実行・通知されません。');
 
+    const stunEffect = await page.evaluate(async () => {
+      const saved = {player:state.player,sleep,setMessage,enemyBasicAttack,enemySpecialAction,random:Math.random};
+      const messages = [];
+      let attacks = 0;
+      try {
+        sleep = () => Promise.resolve();
+        Math.random = () => 0;
+        setMessage = message => { messages.push(message); saved.setMessage(message); };
+        enemySpecialAction = async () => false;
+        enemyBasicAttack = async () => { attacks++; };
+        state.player = makePlayer();
+        state.player.mapX = state.player.mapY = 1;
+        state.player.equip.weapon = 'punish_frying_pan';
+        startBattle(getEnemyById('teiji'),true);
+        state.enemiesInBattle = [state.enemiesInBattle[0]];
+        const enemy = currentEnemy();
+        enemy.hp = enemy.maxHp = 999;
+        enemy.spd = 0;
+        await playerAction('attack');
+        const skippedAttacks = attacks;
+        const afterStun = {stun:enemy.stunTurns,sleep:enemy.sleepTurns || 0};
+        await enemyTurn();
+        const resumedAttacks = attacks;
+        enemy.stunTurns = 1;
+        enemy.sleepTurns = 2;
+        updateUI();
+        const sleepingBadge = document.querySelector('.enemy-slot').classList.contains('sleeping');
+        await enemyTurn();
+        const preservedSleep = enemy.sleepTurns;
+        enemy.sleepTurns = 0;
+        enemy.stunTurns = 1;
+        updateUI();
+        const stunBadge = document.querySelector('.enemy-slot').classList.contains('stunned');
+        return {messages,skippedAttacks,afterStun,resumedAttacks,preservedSleep,sleepingBadge,stunBadge};
+      } finally {
+        sleep = saved.sleep;
+        setMessage = saved.setMessage;
+        enemyBasicAttack = saved.enemyBasicAttack;
+        enemySpecialAction = saved.enemySpecialAction;
+        Math.random = saved.random;
+        endBattleToMap();
+        state.player = saved.player;
+        updateUI();
+        updateMapStatusPanel();
+      }
+    });
+    assert(stunEffect.skippedAttacks === 0 && stunEffect.resumedAttacks === 1, 'ひるみで次の行動を1回だけ休みません。');
+    assert(stunEffect.afterStun.stun === 0 && stunEffect.afterStun.sleep === 0, 'フライパンのひるみが眠りとして適用されます。');
+    assert(stunEffect.messages.some(message => message.includes('ひるんで動けない')) && stunEffect.messages.some(message => message.includes('ひるみから立ち直った')), 'ひるみ開始・終了のメッセージが表示されません。');
+    assert(!stunEffect.messages.some(message => message.includes('目を覚ました')), 'ひるみ解除で目を覚ましたと表示されます。');
+    assert(stunEffect.preservedSleep === 2 && stunEffect.sleepingBadge && stunEffect.stunBadge, 'ひるみが既存の眠りを上書きするか、状態表示が不正です。');
+
+    if(process.env.POTORO_TEST_SCREENSHOT){
+      await page.evaluate(() => {
+        startBattle(getEnemyById('teiji'),true);
+        currentEnemy().stunTurns = 1;
+        updateUI();
+      });
+      await page.waitForTimeout(1200);
+      await page.screenshot({path:path.join(root,'test-results','enemy-stun-mobile.png'),fullPage:true});
+      await page.evaluate(() => endBattleToMap());
+    }
+
     assert(!failedResponses.length, `読み込み失敗:\n${failedResponses.join('\n')}`);
     assert(!runtimeErrors.length, `ブラウザ実行エラー:\n${runtimeErrors.join('\n')}`);
     console.log('ブラウザ検査 OK: タイトル / あらすじ / 1F・2F / 宝箱 / 通常戦闘 / メニュー');

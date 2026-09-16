@@ -1005,7 +1005,8 @@ body.critical-flash .battle-screen{animation:criticalFlash .45s ease;}
   transition:opacity .35s ease;
 }
 /* ===== Root Cause Fixed ===== */
-.enemy-slot.sleeping::after{
+.enemy-slot.sleeping::after,
+.enemy-slot.stunned::after{
   content:"Zzz";
   position:absolute;
   top:4px;
@@ -1014,6 +1015,11 @@ body.critical-flash .battle-screen{animation:criticalFlash .45s ease;}
   font-size:13px;
   font-weight:900;
   text-shadow:0 0 8px rgba(147,197,253,.9);
+}
+
+.enemy-slot.stunned::after{
+  content:"ひるみ";
+  color:#fde68a;
 }
 
 /* ===== Tamachan GET Effect ===== */

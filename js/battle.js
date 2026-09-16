@@ -167,7 +167,7 @@ async function playerAction(type){
     }
 
     if(target.hp > 0 && typeof equipmentChance === 'function' && Math.random() < equipmentChance('stunChance')){
-      target.sleepTurns = Math.max(target.sleepTurns || 0,1);
+      target.stunTurns = Math.max(target.stunTurns || 0,1);
       setMessage(`装備効果！ ${target.name} はひるんだ！`);
       seMagic();
       screenFlash();
@@ -295,6 +295,19 @@ async function enemyTurn(){
   if(!attackers.length) return;
 
   for(const e of attackers){
+    if(e.stunTurns && e.stunTurns > 0){
+      e.stunTurns--;
+      setMessage(`${e.name} はひるんで動けない！`);
+      updateUI();
+      await sleep(700);
+      if(e.stunTurns <= 0){
+        setMessage(`${e.name} はひるみから立ち直った！`);
+        updateUI();
+        await sleep(650);
+      }
+      continue;
+    }
+
     if(e.sleepTurns && e.sleepTurns > 0){
       e.sleepTurns--;
       setMessage(`${e.name} は眠っている…`);

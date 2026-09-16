@@ -155,6 +155,7 @@ function createEnemySlot(enemy,index){
     slot.classList.add('regular-enemy', `enemy-${enemy.id}`);
   }
   if(enemy.sleepTurns && enemy.sleepTurns > 0) slot.classList.add('sleeping');
+  else if(enemy.stunTurns && enemy.stunTurns > 0) slot.classList.add('stunned');
 
   const indexLabel = document.createElement('div');
   indexLabel.className = 'enemy-slot-index';
