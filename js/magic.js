@@ -184,9 +184,12 @@ async function payMagicCost(kind){
 
 function applyChargeIfNeeded(damage){
   const charge = requireMagicConfig('charge2');
+  const buffs = state.player.buffs || {};
+  const perfectService = buffs.perfectService > 0;
 
-  if(buffState.charge > 0 && charge){
-    const multiplier = charge.multiplier || 2.5;
+  if(perfectService || (buffState.charge > 0 && charge)){
+    const multiplier = perfectService ? 2.5 : (charge.multiplier || 2.5);
+    buffs.perfectService = 0;
     buffState.charge = 0;
     return Math.floor(damage * multiplier);
   }

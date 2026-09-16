@@ -130,17 +130,6 @@
     return Math.floor(base + totalTalk()*1.6);
   }
 
-  function applyChargeIfNeeded(damage){
-    const buffs = ensureBuffs();
-
-    if(buffs.perfectService && buffs.perfectService > 0){
-      buffs.perfectService = 0;
-      return Math.floor(damage * 2.5);
-    }
-
-    return damage;
-  }
-
   function applyAuraBonusToDamage(damage){
     const buffs = ensureBuffs();
 

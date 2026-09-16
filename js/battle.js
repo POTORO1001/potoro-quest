@@ -126,6 +126,7 @@ async function playerAction(type){
     const isCritical = Math.random() < (0.10 + criticalBonus);
     const baseDamage = Math.max(1,totalAtk() + Math.floor(Math.random()*4));
     let damage = isCritical ? Math.floor(baseDamage*2.2) : baseDamage;
+    damage = applyChargeIfNeeded(damage);
     if(typeof applyEquipmentOutgoingDamage === 'function'){
       damage = applyEquipmentOutgoingDamage(damage,target,{attack:true});
     }

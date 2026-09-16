@@ -727,6 +727,71 @@ async function main() {
     assert(comboTargets.messages.some(message => message.includes('1回目！ 連撃テストのご主人様 に')), '連撃の各ヒットに命中した敵名が表示されません。');
     assert(comboTargets.firstHp < 9999 && comboTargets.secondHp === 0 && comboTargets.cost === 8 && comboTargets.targetIndex === 0, '連撃のHP・TP処理またはプレイヤーの対象選択が変わってしまいます。');
 
+    const chargedActions = await page.evaluate(async () => {
+      const saved = {player:state.player,sleep,showCutin,random:Math.random,buffState:{...buffState}};
+      try {
+        sleep = () => Promise.resolve();
+        showCutin = () => Promise.resolve();
+        Math.random = () => 0.5;
+        async function run(kind,charged){
+          endBattleToMap();
+          state.player = makePlayer();
+          const p = state.player;
+          p.mapX = p.mapY = 1;
+          p.lv = 12;
+          p.hp = p.maxHp = 200;
+          p.mp = p.maxMp = 200;
+          p.buffs = {};
+          buffState.charge = buffState.aura = 0;
+          startBattle(getEnemyById('teiji'),true);
+          state.enemiesInBattle = [state.enemiesInBattle[0]];
+          const enemy = currentEnemy();
+          enemy.hp = enemy.maxHp = 99999;
+          enemy.spd = 0;
+          enemy.sleepTurns = 50;
+          let retained = false;
+          if(charged){
+            await useMagic('perfect_service');
+            await playerAction('guard');
+            p.hp -= 10;
+            await useMagic('heal');
+            retained = p.buffs.perfectService > 0;
+          }
+          const before = enemy.hp;
+          if(kind === 'attack') await playerAction('attack');
+          else await useMagic(kind);
+          const damage = before - enemy.hp;
+          const consumed = !p.buffs.perfectService;
+          const secondBefore = enemy.hp;
+          if(kind === 'attack') await playerAction('attack');
+          else await useMagic(kind);
+          return {damage,secondDamage:secondBefore-enemy.hp,retained,consumed};
+        }
+        const result = {};
+        for(const kind of ['attack','moe','shower','nishiki','combo','rush','first_strike']){
+          result[kind] = {normal:await run(kind,false),charged:await run(kind,true)};
+        }
+        return result;
+      } finally {
+        sleep = saved.sleep;
+        showCutin = saved.showCutin;
+        Math.random = saved.random;
+        Object.assign(buffState,saved.buffState);
+        endBattleToMap();
+        state.player = saved.player;
+        updateUI();
+        updateMapStatusPanel();
+      }
+    });
+    for(const [kind,result] of Object.entries(chargedActions)){
+      const expected = kind === 'combo'
+        ? Math.floor((result.normal.damage / 4) * 2.5) + (result.normal.damage / 4) * 3
+        : Math.floor(result.normal.damage * 2.5);
+      assert(result.charged.damage === expected, `${kind}に完璧なお給仕の2.5倍補正が正しく適用されません。`);
+      assert(result.charged.retained && result.charged.consumed, `${kind}の強化が防御・回復で消えるか、攻撃後に残ります。`);
+      assert(result.charged.secondDamage === result.normal.damage, `${kind}の2回目にも強化が適用されます。`);
+    }
+
     assert(!failedResponses.length, `読み込み失敗:\n${failedResponses.join('\n')}`);
     assert(!runtimeErrors.length, `ブラウザ実行エラー:\n${runtimeErrors.join('\n')}`);
     console.log('ブラウザ検査 OK: タイトル / あらすじ / 1F・2F / 宝箱 / 通常戦闘 / メニュー');
