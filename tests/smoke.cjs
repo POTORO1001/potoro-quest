@@ -693,7 +693,11 @@ async function main() {
         enemyFlash = index => {
           saved.enemyFlash(index);
           const slots = [...document.querySelectorAll('.enemy-slot')];
-          hits.push({index,flashing:slots.map((slot,i) => slot.querySelector('img').classList.contains('hit') ? i : -1).filter(i => i >= 0)});
+          const labels = [...document.querySelectorAll(`.damage-text[data-enemy-index="${index}"]`)];
+          const label = labels[0];
+          const labelRect = label?.getBoundingClientRect();
+          const slotRect = slots[index].getBoundingClientRect();
+          hits.push({index,flashing:slots.map((slot,i) => slot.querySelector('img').classList.contains('hit') ? i : -1).filter(i => i >= 0),labelCount:labels.length,label:label?.textContent,centerOffset:labelRect ? Math.abs(labelRect.left + labelRect.width / 2 - slotRect.left - slotRect.width / 2) : null});
         };
         state.player = makePlayer();
         const p = state.player;
@@ -724,8 +728,57 @@ async function main() {
     });
     assert(JSON.stringify(comboTargets.hits.map(hit => hit.index)) === '[1,0,0,0]', '連撃がランダム対象に当たらないか、撃破済みの敵を狙っています。');
     assert(comboTargets.hits.every(hit => hit.flashing.length === 1 && hit.flashing[0] === hit.index), '連撃の命中対象と光る敵が一致しません。');
+    assert(comboTargets.hits.every(hit => hit.labelCount === 1 && /^-\d+$/.test(hit.label) && hit.centerOffset < 2), '連撃の数値が命中対象の位置に表示されないか、連続ヒットで重なります。');
     assert(comboTargets.messages.some(message => message.includes('1回目！ 連撃テストのご主人様 に')), '連撃の各ヒットに命中した敵名が表示されません。');
     assert(comboTargets.firstHp < 9999 && comboTargets.secondHp === 0 && comboTargets.cost === 8 && comboTargets.targetIndex === 0, '連撃のHP・TP処理またはプレイヤーの対象選択が変わってしまいます。');
+
+    if(process.env.POTORO_TEST_SCREENSHOT){
+      await page.waitForTimeout(2200);
+      await page.evaluate(() => {
+        window.testComboSaved = {player:state.player,sleep,showCutin,random:Math.random};
+        state.player = makePlayer();
+        const p = state.player;
+        p.mapX = p.mapY = 1;
+        p.lv = 12;
+        p.mp = p.maxMp = 100;
+        startBattle(getEnemyById('teiji'),true);
+        const first = state.enemiesInBattle[0];
+        first.hp = first.maxHp = 999;
+        first.sleepTurns = 20;
+        state.enemiesInBattle = [first,{...first,name:'迷子のご主人様',id:'maigo',image:getEnemyById('maigo').image}];
+        state.targetIndex = 0;
+        Math.random = () => 0.75;
+        showCutin = () => Promise.resolve();
+        sleep = duration => duration === 420
+          ? new Promise(resolve => { window.testComboRelease = resolve; })
+          : Promise.resolve();
+        window.testComboPromise = useMagic('combo');
+      });
+      await page.waitForFunction(() => typeof window.testComboRelease === 'function');
+      await page.evaluate(() => {
+        document.querySelectorAll('.damage-text[data-enemy-index]').forEach(label => {
+          label.style.animation = 'none';
+          label.style.opacity = '1';
+          label.style.transform = 'translateX(-50%)';
+        });
+      });
+      await page.screenshot({path:path.join(root,'test-results','combo-damage-mobile.png'),fullPage:true});
+      await page.evaluate(async () => {
+        sleep = () => Promise.resolve();
+        window.testComboRelease();
+        await window.testComboPromise;
+        sleep = window.testComboSaved.sleep;
+        showCutin = window.testComboSaved.showCutin;
+        Math.random = window.testComboSaved.random;
+        endBattleToMap();
+        state.player = window.testComboSaved.player;
+        updateUI();
+        updateMapStatusPanel();
+        delete window.testComboSaved;
+        delete window.testComboRelease;
+        delete window.testComboPromise;
+      });
+    }
 
     const chargedActions = await page.evaluate(async () => {
       const saved = {player:state.player,sleep,showCutin,random:Math.random,buffState:{...buffState}};

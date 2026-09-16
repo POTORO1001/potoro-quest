@@ -276,6 +276,7 @@ function showDamage(value,target,extraClass,enemyIndex){
   if(target === 'enemy' && Number.isInteger(enemyIndex)){
     const slot = document.querySelectorAll('.enemy-slot')[enemyIndex];
     if(!slot) return;
+    area.querySelectorAll(`.damage-text[data-enemy-index="${enemyIndex}"]`).forEach(label => label.remove());
     const slotRect = slot.getBoundingClientRect();
     const areaRect = area.getBoundingClientRect();
     damage.dataset.enemyIndex = enemyIndex;
