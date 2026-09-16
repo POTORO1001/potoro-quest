@@ -404,10 +404,11 @@ async function useItem(kind){
   }
 
   if(item.type === 'healHp'){
-    const heal = Math.min(item.amount,p.maxHp-p.hp);
+    const heal = Math.min(equipmentHealingAmount(item.amount),p.maxHp-p.hp);
     p.hp += heal;
 
-    const msg = `${item.name}を使った！ HPが ${heal} 回復！`;
+    const statusMessage = equipmentRecoveryStatusMessage(heal);
+    const msg = `${item.name}を使った！ HPが ${heal} 回復！${statusMessage}`;
     if(isMapMode()) setMapMessage(msg);
     else setMessage(msg);
 
@@ -435,13 +436,14 @@ async function useItem(kind){
   }
 
   else if(item.type === 'healBoth'){
-    const heal = Math.min(item.hpAmount,p.maxHp-p.hp);
+    const heal = Math.min(equipmentHealingAmount(item.hpAmount),p.maxHp-p.hp);
     const healMp = Math.min(item.mpAmount,p.maxMp-p.mp);
 
     p.hp += heal;
     p.mp += healMp;
 
-    const msg = `${item.name}を使った！ HP${heal}・TP${healMp} 回復！`;
+    const statusMessage = equipmentRecoveryStatusMessage(heal);
+    const msg = `${item.name}を使った！ HP${heal}・TP${healMp} 回復！${statusMessage}`;
     if(isMapMode()) setMapMessage(msg);
     else setMessage(msg);
 
@@ -535,9 +537,10 @@ async function useUnknownDrinkEffect(item){
   const roll = Math.random();
 
   if(roll < 0.35){
-    const heal = Math.min(40,p.maxHp-p.hp);
+    const heal = Math.min(equipmentHealingAmount(40),p.maxHp-p.hp);
     p.hp += heal;
-    setMessage(`？？？ドリンク！ なぜかHPが ${heal} 回復した！`);
+    const statusMessage = equipmentRecoveryStatusMessage(heal);
+    setMessage(`？？？ドリンク！ なぜかHPが ${heal} 回復した！${statusMessage}`);
     showDamage(-heal,'player');
     if(typeof seHeal === 'function') seHeal();
     updateUI();

@@ -84,7 +84,13 @@ function totalSpd(){
     if(item) spd += equipStat(item,'spd');
   });
 
-  return spd;
+  if(state.inBattle){
+    spd += (state.enemyTurnCount || 0) === 0
+      ? equipmentEffectValue('firstTurnSpdBonus')
+      : -equipmentEffectValue('afterTurnSpdPenalty');
+  }
+
+  return Math.max(0,spd);
 }
 
 function totalTalk(){
@@ -132,6 +138,27 @@ function equipmentChance(key){
   return Math.max(0,Math.min(0.95,equipmentEffectValue(key)));
 }
 
+function equipmentHealingAmount(baseAmount,{magic=false}={}){
+  const bonus = equipmentEffectValue('healRate')
+    + (magic ? equipmentEffectValue('healMagicRate') : 0);
+  return Math.max(0,Math.floor(baseAmount * (1 + bonus)));
+}
+
+function equipmentRecoveryStatusMessage(recoveredHp){
+  if(recoveredHp <= 0) return '';
+  const chance = equipmentChance('statusHealChance');
+  if(chance <= 0) return '';
+
+  const p = state.player;
+  const status = p.status || {};
+  const names = {sleep:'眠り',confuse:'混乱',defDown:'防御低下'};
+  const active = Object.keys(names).filter(key => status[key] > 0);
+  if(!active.length || Math.random() >= chance) return '';
+
+  active.forEach(key => { status[key] = 0; });
+  return ` 装備効果！ ${p.name} の${active.map(key => names[key]).join('・')}が回復した！`;
+}
+
 function applyEquipmentDamageCut(damage){
   const cut = Math.max(0,Math.min(0.75,equipmentEffectValue('damageCutRate')));
   return Math.max(1,Math.floor(damage * (1 - cut)));
@@ -173,7 +200,8 @@ async function applyEquipmentTurnRecovery(){
   if(hp) parts.push(`HPが ${hp} 回復`);
   if(mp) parts.push(`TPが ${mp} 回復`);
 
-  setMessage(`装備効果！ ${parts.join('、')}！`);
+  const statusMessage = equipmentRecoveryStatusMessage(hp);
+  setMessage(`装備効果！ ${parts.join('、')}！${statusMessage}`);
   if(typeof seHeal === 'function') seHeal();
   if(typeof updateUI === 'function') updateUI();
   await sleep(550);
@@ -254,8 +282,11 @@ function itemEffectText(item,includeDescription=true){
   if(e.magicMpPlus) parts.push(`TP消費+${e.magicMpPlus}`);
   if(e.talkRate) parts.push(`トーク+${Math.round(e.talkRate*100)}%`);
   if(e.magicDamageRate) parts.push(`おまじない+${Math.round(e.magicDamageRate*100)}%`);
-  if(e.healMagicRate) parts.push(`回復魔法+${Math.round(e.healMagicRate*100)}%`);
+  if(e.healMagicRate) parts.push(`回復おまじない+${Math.round(e.healMagicRate*100)}%`);
   if(e.healRate) parts.push(`回復量+${Math.round(e.healRate*100)}%`);
+  if(e.statusHealChance) parts.push(`HP回復時${Math.round(e.statusHealChance*100)}%で状態異常回復`);
+  if(e.firstTurnSpdBonus) parts.push(`開幕すばやさ+${e.firstTurnSpdBonus}`);
+  if(e.afterTurnSpdPenalty) parts.push(`開幕以降すばやさ-${e.afterTurnSpdPenalty}`);
   if(e.stunChance) parts.push(`スタン${Math.round(e.stunChance*100)}%`);
   if(e.multiHitChance) parts.push(`追撃${Math.round(e.multiHitChance*100)}%`);
   if(e.defDownChance) parts.push(`防御ダウン${Math.round(e.defDownChance*100)}%`);

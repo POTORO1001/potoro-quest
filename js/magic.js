@@ -458,13 +458,13 @@ async function useMagicHealConfigured(){
   await showCutin('おまじない','おいしくなーれ！');
 
   const p = state.player;
-  const healRate = typeof equipmentEffectValue === 'function' ? equipmentEffectValue('healRate') : 0;
-  const healBase = Math.floor((config.heal || 35) * (1 + healRate));
+  const healBase = equipmentHealingAmount(config.heal || 35,{magic:true});
   const heal = Math.min(healBase,p.maxHp - p.hp);
 
   p.hp += heal;
 
-  setMessage(`おいしくなーれ！ HPが ${heal} 回復！`);
+  const statusMessage = equipmentRecoveryStatusMessage(heal);
+  setMessage(`おいしくなーれ！ HPが ${heal} 回復！${statusMessage}`);
   showDamage(-heal,'player');
   seHeal();
   updateUI();

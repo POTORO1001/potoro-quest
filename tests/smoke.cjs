@@ -508,6 +508,116 @@ async function main() {
       });
     }
 
+    const equipmentEffects = await page.evaluate(async () => {
+      const originalPlayer = state.player;
+      const originalSleep = sleep;
+      const originalCutin = showCutin;
+      const originalRandom = Math.random;
+      try {
+        sleep = () => Promise.resolve();
+        showCutin = () => Promise.resolve();
+        Math.random = () => 0;
+        endBattleToMap();
+        state.player = makePlayer();
+        const p = state.player;
+        p.mapX = p.mapY = 1;
+        p.equip.weapon = 'speed_tray';
+        const mapSpeed = totalSpd();
+        startBattle(getEnemyById('teiji'),true);
+        state.enemiesInBattle.forEach(enemy => { enemy.spd = 20; enemy.sleepTurns = 4; });
+        const openingSpeed = totalSpd();
+        const openingEnemyFirst = enemyActsFirstThisTurn();
+        const partySize = state.enemiesInBattle.length;
+        await enemyTurn();
+        const laterSpeed = totalSpd();
+        const laterEnemyFirst = enemyActsFirstThisTurn();
+        const firstCount = state.enemyTurnCount;
+        await enemyTurn();
+        const secondCount = state.enemyTurnCount;
+        const secondSpeed = totalSpd();
+        endBattleToMap();
+        const returnedMapSpeed = totalSpd();
+        startBattle(getEnemyById('teiji'),true);
+        const restartedSpeed = totalSpd();
+        state.enemiesInBattle.forEach(enemy => { enemy.sleepTurns = 20; });
+
+        p.lv = 12;
+        p.hp = 10;
+        p.maxHp = 200;
+        p.mp = p.maxMp = 100;
+        p.equip.weapon = 'magic_staff';
+        p.equip.body = 'white_apron';
+        await useMagic('heal');
+        const staffHealing = p.hp - 10;
+        const staffCost = 100 - p.mp;
+
+        p.equip.body = 'healing_apron';
+        p.hp = 10;
+        state.enemyActedFirst = true;
+        await useMagicHealConfigured();
+        const stackedHealing = p.hp - 10;
+        p.hp = 198;
+        await useMagicHealConfigured();
+        const cappedHp = p.hp;
+
+        p.status = {sleep:2,confuse:3,defDown:2};
+        Math.random = () => 0.20;
+        const missedCure = equipmentRecoveryStatusMessage(1);
+        const missedStatus = {...p.status};
+        Math.random = () => 0.19;
+        const zeroCure = equipmentRecoveryStatusMessage(0);
+        const zeroStatus = {...p.status};
+        const hitCure = equipmentRecoveryStatusMessage(1);
+        const hitStatus = {...p.status};
+        p.equip.body = 'white_apron';
+        p.status = {sleep:2,confuse:3,defDown:2};
+        const unequippedCure = equipmentRecoveryStatusMessage(1);
+        const unequippedStatus = {...p.status};
+
+        endBattleToMap();
+        p.equip.body = 'healing_apron';
+        p.hp = 10;
+        p.items.omurice = 2;
+        await useItem('omurice');
+        const itemHealing = p.hp - 10;
+        const itemStatus = {...p.status};
+        const itemMessage = document.getElementById('mapMessage').textContent;
+        p.equip.body = 'white_apron';
+        p.hp = 10;
+        await useItem('omurice');
+        const normalItemHealing = p.hp - 10;
+
+        return {
+          mapSpeed,openingSpeed,openingEnemyFirst,partySize,laterSpeed,laterEnemyFirst,
+          firstCount,secondCount,secondSpeed,returnedMapSpeed,restartedSpeed,
+          staffHealing,staffCost,stackedHealing,cappedHp,
+          missedCure,missedStatus,zeroCure,zeroStatus,hitCure,hitStatus,
+          unequippedCure,unequippedStatus,itemHealing,itemStatus,itemMessage,normalItemHealing
+        };
+      } finally {
+        sleep = originalSleep;
+        showCutin = originalCutin;
+        Math.random = originalRandom;
+        endBattleToMap();
+        state.player = originalPlayer;
+        updateUI();
+        updateMapStatusPanel();
+      }
+    });
+    assert(equipmentEffects.openingSpeed === equipmentEffects.mapSpeed + 20, 'スピードトレイの開幕すばやさ補正が働きません。');
+    assert(!equipmentEffects.openingEnemyFirst && equipmentEffects.laterEnemyFirst, 'スピードトレイの補正が先手判定に反映されません。');
+    assert(equipmentEffects.laterSpeed === equipmentEffects.mapSpeed - 3 && equipmentEffects.secondSpeed === equipmentEffects.laterSpeed, '開幕以降の速度ペナルティが正しく適用されません。');
+    assert(equipmentEffects.partySize === 2 && equipmentEffects.firstCount === 1 && equipmentEffects.secondCount === 2, '2体出現時にターンが敵数分進んでしまいます。');
+    assert(equipmentEffects.returnedMapSpeed === equipmentEffects.mapSpeed && equipmentEffects.restartedSpeed === equipmentEffects.openingSpeed, '速度補正がマップに残るか、次のお給仕でリセットされません。');
+    assert(equipmentEffects.staffHealing === 42 && equipmentEffects.staffCost === 5, 'おまじないステッキの回復+20%・TP軽減が働きません。');
+    assert(equipmentEffects.stackedHealing === 52 && equipmentEffects.cappedHp === 200, '回復補正の重ね掛け・HP上限が正しく計算されません。');
+    assert(!equipmentEffects.missedCure && Object.values(equipmentEffects.missedStatus).every(value => value > 0), '状態回復の20%当選境界が不正です。');
+    assert(!equipmentEffects.zeroCure && Object.values(equipmentEffects.zeroStatus).every(value => value > 0), 'HP回復量0でも状態回復が発動します。');
+    assert(equipmentEffects.hitCure.includes('装備効果') && Object.values(equipmentEffects.hitStatus).every(value => value === 0), '状態回復の当選時に解除・通知されません。');
+    assert(!equipmentEffects.unequippedCure && Object.values(equipmentEffects.unequippedStatus).every(value => value > 0), '癒しのエプロン未装備でも状態回復が発動します。');
+    assert(equipmentEffects.itemHealing === 39 && equipmentEffects.normalItemHealing === 30, '道具に一般回復補正が働かないか、回復おまじない補正まで適用されます。');
+    assert(equipmentEffects.itemMessage.includes('装備効果') && Object.values(equipmentEffects.itemStatus).every(value => value === 0), '道具のHP回復時に状態回復が実行・通知されません。');
+
     assert(!failedResponses.length, `読み込み失敗:\n${failedResponses.join('\n')}`);
     assert(!runtimeErrors.length, `ブラウザ実行エラー:\n${runtimeErrors.join('\n')}`);
     console.log('ブラウザ検査 OK: タイトル / あらすじ / 1F・2F / 宝箱 / 通常戦闘 / メニュー');

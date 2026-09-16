@@ -904,9 +904,10 @@ async function useMapItem(kind){
     if((p.items.omurice || 0) <= 0){ potoroMapItemFail(`${itemName}は持っていない！`); return; }
     if(p.hp >= p.maxHp){ potoroMapItemFail('HPはすでに満タンです！'); return; }
     p.items.omurice--;
-    const heal = Math.min(getMapItemAmount('omurice',30),p.maxHp - p.hp);
+    const heal = Math.min(equipmentHealingAmount(getMapItemAmount('omurice',30)),p.maxHp - p.hp);
     p.hp += heal;
-    setMapMessage(`${itemName}を食べた！ HPが ${heal} 回復！`);
+    const statusMessage = equipmentRecoveryStatusMessage(heal);
+    setMapMessage(`${itemName}を食べた！ HPが ${heal} 回復！${statusMessage}`);
     if(typeof seHeal === 'function') seHeal();
     updateMapStatusPanel();
     if(typeof updateUI === 'function') updateUI();

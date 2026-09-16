@@ -290,6 +290,7 @@ function resetRuntimeState(){
   state.inBattle = false;
   state.enemyActedFirst = false;
   state.lastMapEnemyId = null;
+  state.enemyTurnCount = 0;
   state.firstBattleHintShown = false;
   state.seenEnemyHints = [];
   state.floor = 1;

@@ -98,7 +98,8 @@ const state={
   chests:[],
   inBattle:false,
   enemyActedFirst:false,
-  lastMapEnemyId:null
+  lastMapEnemyId:null,
+  enemyTurnCount:0
 };
 
 window.enemies = enemies;

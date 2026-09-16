@@ -357,6 +357,13 @@ async function enemyTurn(){
   }
 
   p.guarding = false;
+  const openingEnded = (state.enemyTurnCount || 0) === 0;
+  state.enemyTurnCount = (state.enemyTurnCount || 0) + 1;
+  if(openingEnded && equipmentEffectValue('firstTurnSpdBonus') > 0){
+    setMessage('装備効果！ 開幕の勢いが落ち着いた。以降のお給仕ではすばやさが少し下がる。');
+    updateUI();
+    await sleep(550);
+  }
 }
 
 /* ===== Enemy Basic Attack ===== */

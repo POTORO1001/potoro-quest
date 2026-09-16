@@ -86,6 +86,7 @@ function startBattle(enemy,fromMap){
   );
 
   state.inBattle = true;
+  state.enemyTurnCount = 0;
   state.enemiesInBattle = buildEnemyParty(enemy);
   state.targetIndex = 0;
   state.lastDefeatedEnemy = null;
