@@ -122,6 +122,7 @@ async function playerAction(type){
 
   if(type === 'attack'){
     const target = currentEnemy();
+    const enemyIndex = state.enemiesInBattle.indexOf(target);
     const criticalBonus = typeof equipmentChance === 'function' ? equipmentChance('criticalRateBonus') : 0;
     const isCritical = Math.random() < (0.10 + criticalBonus);
     const baseDamage = Math.max(1,totalAtk() + Math.floor(Math.random()*4));
@@ -140,15 +141,14 @@ async function playerAction(type){
     if(isCritical){
       setMessage(`会心の癒し！ ${target.name} に ${damage} ダメージ！`);
       criticalFlash();
-      showDamage(damage,'enemy','critical-text');
     }else{
       setMessage(`${target.name} に ${damage} ダメージ！`);
-      showDamage(damage,'enemy');
     }
 
     seAttack();
-    enemyFlash();
     updateUI();
+    showDamage(damage,'enemy',isCritical ? 'critical-text' : undefined,enemyIndex);
+    enemyFlash(enemyIndex);
 
     await sleep(isCritical ? 950 : 700);
 
@@ -160,10 +160,10 @@ async function playerAction(type){
       target.hp = Math.max(0,target.hp - finalFollowDamage);
       if(target.hp <= 0) state.lastDefeatedEnemy = target;
       setMessage(`装備効果！ ${target.name} に ${finalFollowDamage} 追加ダメージ！`);
-      showDamage(finalFollowDamage,'enemy');
       seAttack();
-      enemyFlash();
       updateUI();
+      showDamage(finalFollowDamage,'enemy',undefined,enemyIndex);
+      enemyFlash(enemyIndex);
       await sleep(700);
     }
 

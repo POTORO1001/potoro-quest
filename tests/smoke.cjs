@@ -946,6 +946,57 @@ async function main() {
       });
     }
 
+    const attackTargets = await page.evaluate(async () => {
+      const saved = {player:state.player,sleep,enemyFlash,random:Math.random};
+      try {
+        sleep = () => Promise.resolve();
+        const results = [];
+        for(const kind of ['normal','critical','follow']){
+          endBattleToMap();
+          document.querySelectorAll('.damage-text').forEach(label => label.remove());
+          state.player = makePlayer();
+          const p = state.player;
+          p.mapX = p.mapY = 1;
+          p.equip.weapon = kind === 'follow' ? 'silver_tea_spoon' : 'rod';
+          Math.random = () => kind === 'normal' ? 0.5 : 0;
+          startBattle(getEnemyById('teiji'),true);
+          const survivor = state.enemiesInBattle[0];
+          survivor.hp = survivor.maxHp = 9999;
+          survivor.spd = 0;
+          survivor.sleepTurns = 20;
+          const expectedMain = kind === 'normal' ? totalAtk() + 2 : Math.floor(totalAtk() * 2.2);
+          const victim = {...survivor,name:'命中表示テストのご主人様',hp:kind === 'follow' ? expectedMain + 1 : 1};
+          state.enemiesInBattle = [survivor,victim];
+          state.targetIndex = 1;
+          const hits = [];
+          enemyFlash = index => {
+            saved.enemyFlash(index);
+            const label = document.querySelector(`.damage-text[data-enemy-index="${index}"]`);
+            const slots = [...document.querySelectorAll('.enemy-slot')];
+            hits.push({index,text:label?.textContent,critical:label?.classList.contains('critical-text'),flashing:slots.map((slot,i) => slot.querySelector('img').classList.contains('hit') ? i : -1).filter(i => i >= 0)});
+          };
+          await playerAction('attack');
+          results.push({kind,hits,expectedMain,expectedFollow:Math.max(1,Math.floor(totalAtk()*0.55)),targetIndex:state.targetIndex,victimHp:victim.hp,survivorHp:survivor.hp});
+        }
+        return results;
+      } finally {
+        sleep = saved.sleep;
+        enemyFlash = saved.enemyFlash;
+        Math.random = saved.random;
+        endBattleToMap();
+        state.player = saved.player;
+        updateUI();
+        updateMapStatusPanel();
+      }
+    });
+    for(const result of attackTargets){
+      assert(result.hits.length === (result.kind === 'follow' ? 2 : 1), '通常攻撃・追撃の命中演出回数が変わっています。');
+      assert(result.hits.every(hit => hit.index === 1 && JSON.stringify(hit.flashing) === '[1]'), '撃破した相手ではなく、生存する敵へ命中演出が移っています。');
+      assert(result.hits[0].text === `-${result.expectedMain}` && result.hits[0].critical === (result.kind !== 'normal'), '通常・会心攻撃の実ダメージまたは会心表示が一致しません。');
+      if(result.kind === 'follow') assert(result.hits[1].text === `-${result.expectedFollow}`, '追撃の実ダメージ表示が一致しません。');
+      assert(result.victimHp === 0 && result.survivorHp === 9999 && result.targetIndex === 0, '撃破後の対象切替やHP処理が変わっています。');
+    }
+
     assert(!failedResponses.length, `読み込み失敗:\n${failedResponses.join('\n')}`);
     assert(!runtimeErrors.length, `ブラウザ実行エラー:\n${runtimeErrors.join('\n')}`);
     console.log('ブラウザ検査 OK: タイトル / あらすじ / 1F・2F / 宝箱 / 通常戦闘 / メニュー');

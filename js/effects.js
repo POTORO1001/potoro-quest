@@ -205,10 +205,10 @@ showDamage = function(value,target,extraClass,enemyIndex){
 
   if(!POTORO_EFFECTS.enabled || !POTORO_EFFECTS.damageEmoji) return;
 
-  if(target === 'enemy' && value > 0 && !Number.isInteger(enemyIndex)){
+  if(target === 'enemy' && value > 0){
     if(extraClass === 'critical-text'){
       showBattleBurst('CRITICAL!', 'critical');
-    }else if(value >= 70){
+    }else if(value >= 70 && !Number.isInteger(enemyIndex)){
       showBattleBurst('BIG HIT!', 'big');
     }
   }
