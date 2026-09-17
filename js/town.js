@@ -17,18 +17,21 @@ let townDialogReturnFocus = null;
 
 function startTown(){
   state.town = {x:7,y:10,lastMoveAt:0};
+  state.field = null;
   state.player.townCoins = 30;
   showTown(`ようこそ、${state.player.name}！ ポ・トロの町に、今日もお給仕の時間が訪れました。`);
 }
 
 function showTown(message='おかえりなさい。ポ・トロの町は、今日もあなたを待っていました。'){
   if(state.inBattle) return;
+  closeTownDialog();
   closeSubMenu();
   closeEquipMenu();
   closeTreasureMenu();
   hideElement('mapScreen');
   hideElement('battleScreen');
   hideElement('endingScreen');
+  hideElement('fieldScreen');
   state.location = 'town';
   state.busy = false;
   showElement('townScreen');
@@ -38,27 +41,13 @@ function showTown(message='おかえりなさい。ポ・トロの町は、今�
   updateTownStatus();
 }
 
-function enterTownDungeon(){
-  if(state.location !== 'town' || state.inBattle) return;
-  closeTownDialog();
-  closeEquipMenu();
-  state.location = 'dungeon';
-  state.busy = false;
-  hideElement('townScreen');
-  showElement('mapScreen');
-  drawMaze();
-  updateMapStatusPanel();
-  setMapMessage('お屋敷に着いた。ご主人様たちの声が、奥から聞こえてくる。');
-  playMapBgm();
-}
-
 function requestReturnToTown(){
   if(state.inBattle || state.busy || document.getElementById('mapScreen').classList.contains('hidden')) return;
   openMapChoiceModal({
-    title:'ポ・トロの町へ',
-    message:'いったん町へ戻りますか？ 探索の続きには、この場所から戻れます。',
-    primaryText:'町へ戻る',
-    onPrimary:() => showTown()
+    title:'お屋敷の外へ',
+    message:'いったん外へ出ますか？ 探索の続きには、この場所から戻れます。',
+    primaryText:'外へ出る',
+    onPrimary:() => showField('manor')
   });
 }
 
@@ -123,7 +112,7 @@ function openTownDialog(title,text){
 
 function closeTownDialog(){
   hideElement('townDialog');
-  if(state.location === 'town') state.busy = false;
+  if(state.location === 'town' || state.location === 'field') state.busy = false;
   townDialogReturnFocus?.focus();
   townDialogReturnFocus = null;
 }
@@ -143,7 +132,7 @@ function visitTownPlace(id){
   if(!place || place.id !== id) return;
   if(id === 'manor'){
     openTownDialog('お屋敷「ポ・トロ」','「お帰りなさい。奥のお屋敷で、ご主人様たちが困っているの。どうか、あなたのお給仕でいやしてあげて。」');
-    townDialogAction('お屋敷へ出発',enterTownDungeon);
+    townDialogAction('郊外へ出発',leaveTownForField);
   }else if(id === 'rest'){
     openTownDialog('メイドさんの休憩室','「お疲れさま。温かい飲み物を用意したよ。少し休んでいかない？」');
     townDialogAction('ひと休みする',() => {
@@ -164,8 +153,8 @@ function visitTownPlace(id){
   }else if(id === 'plaza'){
     openTownDialog('町の広場','「東の出口から、奥のお屋敷へ向かえるよ。お給仕でいただいたコインは、メイド喫茶で使えるんだって。無理せず、休憩室にも寄ってね。」');
   }else if(id === 'exit'){
-    openTownDialog('町の出口','町の向こうに、お屋敷の灯りが見える。ご主人様たちに会いに行きますか？');
-    townDialogAction('お屋敷へ出発',enterTownDungeon);
+    openTownDialog('町の出口','門の向こうに、川沿いの道が続いている。お屋敷へ向かいますか？');
+    townDialogAction('郊外へ出発',leaveTownForField);
   }
 }
 
@@ -292,7 +281,7 @@ function bindTownEvents(){
   document.getElementById('townDialogClose').onclick = closeTownDialog;
   document.getElementById('mapTownBtn').onclick = requestReturnToTown;
   document.addEventListener('keydown',event => {
-    if(state.location !== 'town') return;
+    if(state.location !== 'town' && state.location !== 'field') return;
     const dialog = document.getElementById('townDialog');
     if(!dialog.classList.contains('hidden')){
       if(event.key === 'Escape'){ event.preventDefault(); closeTownDialog(); }
@@ -305,6 +294,7 @@ function bindTownEvents(){
       }
       return;
     }
+    if(state.location !== 'town') return;
     const deltas = {ArrowUp:[0,-1],ArrowDown:[0,1],ArrowLeft:[-1,0],ArrowRight:[1,0]};
     if(deltas[event.key]){ event.preventDefault(); moveTownPlayer(...deltas[event.key]); }
   });

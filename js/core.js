@@ -289,6 +289,7 @@ function resetRuntimeState(){
   state.started = false;
   state.location = null;
   state.town = null;
+  state.field = null;
   state.inBattle = false;
   state.enemyActedFirst = false;
   state.lastMapEnemyId = null;

@@ -132,6 +132,29 @@ async function main() {
       for(const [dx,dy] of path){state.town.lastMoveAt=0;moveTownPlayer(dx,dy);}
       return {x:state.town.x,y:state.town.y,busy:state.busy};
     },id);
+    const walkField = async id => page.evaluate(id=>{
+      const target=POTORO_FIELD.buildings.find(place=>place.id===id).door;
+      const queue=[{x:state.field.x,y:state.field.y,path:[]}],seen=new Set();
+      let path;
+      while(queue.length){
+        const current=queue.shift(),key=`${current.x},${current.y}`;
+        if(seen.has(key)) continue;
+        seen.add(key);
+        if(current.x===target.x && current.y===target.y){path=current.path;break;}
+        for(const [dx,dy] of [[0,-1],[1,0],[0,1],[-1,0]]){
+          const x=current.x+dx,y=current.y+dy;
+          if(!fieldTileBlocked(x,y)) queue.push({x,y,path:[...current.path,[dx,dy]]});
+        }
+      }
+      if(!path) throw new Error(`フィールドの${id}へ到達できません。`);
+      if(!path.length) visitFieldPlace(id);
+      for(const [dx,dy] of path){state.field.lastMoveAt=0;moveFieldPlayer(dx,dy);}
+    },id);
+    const departTown = async()=>{
+      await page.getByRole('button',{name:'郊外へ出発',exact:true}).click();
+      await walkField('manor');
+      await page.locator('#townDialog').getByRole('button',{name:'お屋敷へ入る',exact:true}).click();
+    };
     await walkTown('manor');
     assert(await page.locator('#townDialogTitle').textContent() === 'お屋敷「ポ・トロ」', 'お屋敷で会話が開きません。');
     const blockedDialogMove = await page.evaluate(() => {
@@ -189,7 +212,47 @@ async function main() {
       await page.setViewportSize({width:390,height:844});
     }
     await walkTown('exit');
-    await page.getByRole('button',{name:'お屋敷へ出発',exact:true}).click();
+    await page.getByRole('button',{name:'郊外へ出発',exact:true}).click();
+    await page.locator('#fieldScreen').waitFor({state:'visible'});
+    const fieldSpawn=await page.evaluate(()=>({...state.field}));
+    await page.keyboard.press('ArrowDown');
+    assert(await page.evaluate(()=>state.field.y)===fieldSpawn.y+1,'フィールドのキーボード移動が1歩ずつ動きません。');
+    await page.waitForTimeout(150);
+    await page.locator('[data-field-move="right"]').click();
+    assert(await page.evaluate(()=>state.field.x)===fieldSpawn.x+1,'フィールドの十字キーが動きません。');
+    const fieldChecks=await page.evaluate(()=>{
+      state.field={x:6,y:5,lastMoveAt:0};moveFieldPlayer(1,0);
+      const riverBlocked=state.field.x===6;
+      state.field={x:6,y:6,lastMoveAt:0};moveFieldPlayer(1,0);
+      const bridgePass=state.field.x===7;
+      state.field={x:3,y:9,lastMoveAt:0};moveFieldPlayer(0,-1);
+      const buildingBlocked=state.field.y===9;
+      state.field={x:1,y:10,lastMoveAt:0};moveFieldPlayer(-1,0);
+      const boundaryBlocked=state.field.x===1;
+      state.field={x:6,y:6,lastMoveAt:0};drawField();updateFieldStatus();
+      const ctx=document.getElementById('fieldCanvas').getContext('2d');
+      const pixels=ctx.getImageData(0,0,480,416).data,colors=new Set();
+      for(let i=0;i<pixels.length;i+=4) colors.add(`${pixels[i]},${pixels[i+1]},${pixels[i+2]}`);
+      return {riverBlocked,bridgePass,buildingBlocked,boundaryBlocked,nonblank:colors.size>20};
+    });
+    assert(Object.values(fieldChecks).every(Boolean),'フィールドの川・橋・建物の衝突または描画に問題があります。');
+    await page.locator('#fieldEquipBtn').click();
+    assert(await page.evaluate(()=>{const x=state.field.x;moveFieldPlayer(1,0);return state.field.x===x;}),'装備中にもフィールドを歩けます。');
+    await page.evaluate(()=>closeEquipMenu());
+    if(process.env.POTORO_TEST_SCREENSHOT){
+      for(const width of [320,390,1280]){
+        await page.setViewportSize({width,height:844});
+        await page.locator('#fieldScreen').screenshot({path:path.join(root,'test-results',`field-${width}.png`)});
+        assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'フィールド画面が横にはみ出します。');
+      }
+      await page.setViewportSize({width:390,height:844});
+    }
+    await walkField('manor');
+    assert(await page.evaluate(()=>{const x=state.field.x;moveFieldPlayer(-1,0);return state.field.x===x;}),'入口の確認中にもフィールドを歩けます。');
+    await page.getByRole('button',{name:'歩き続ける',exact:true}).click();
+    assert(await page.locator('#fieldScreen').isVisible() && await page.locator('#townDialog').isHidden(),'入口で歩き続けるを選べません。');
+    await page.locator('#fieldVisitBtn').click();
+    await page.locator('#townDialog').getByRole('button',{name:'お屋敷へ入る',exact:true}).click();
     await page.locator('#mapScreen').waitFor({ state: 'visible' });
     const dungeonBeforeTown = await page.evaluate(() => {
       state.chests[0].opened=true;
@@ -197,9 +260,11 @@ async function main() {
     });
     await page.locator('#mapTownBtn').click();
     await page.locator('.potoro-map-choice-primary').click();
+    await walkField('town');
+    await page.locator('#townDialog').getByRole('button',{name:'町へ入る',exact:true}).click();
     await page.locator('#townScreen').waitFor({state:'visible'});
     await page.locator('#townVisitBtn').click();
-    await page.getByRole('button',{name:'お屋敷へ出発',exact:true}).click();
+    await departTown();
     const dungeonAfterTown = await page.evaluate(() => JSON.stringify({maze:state.maze,chests:state.chests,floor:state.floor,x:state.player.mapX,y:state.player.mapY}));
     assert(dungeonBeforeTown===dungeonAfterTown, '町との往復で探索位置・マップ・宝箱が失われます。');
     await page.evaluate(() => {state.chests[0].opened=false;});
@@ -388,8 +453,10 @@ async function main() {
     const secondFloorBeforeTown = await page.evaluate(() => JSON.stringify(getMapSnapshot()));
     await page.locator('#mapTownBtn').click();
     await page.locator('.potoro-map-choice-primary').click();
+    await walkField('town');
+    await page.locator('#townDialog').getByRole('button',{name:'町へ入る',exact:true}).click();
     await page.locator('#townVisitBtn').click();
-    await page.getByRole('button',{name:'お屋敷へ出発',exact:true}).click();
+    await departTown();
     assert(await page.evaluate(() => JSON.stringify(getMapSnapshot())) === secondFloorBeforeTown, '町との往復で2Fの探索状態が失われます。');
 
     await page.evaluate(() => {
@@ -1154,11 +1221,11 @@ async function main() {
 
     await page.evaluate(() => {showTitleScreen();document.getElementById('oshiNameInput').value='新しい推し';});
     await page.locator('#startBtn').click();
-    assert(await page.evaluate(() => state.location==='town' && state.player.townCoins===30 && state.player.name==='新しい推し' && state.town.x===7 && state.town.y===10), '新しい冒険で町の状態が初期化されません。');
+    assert(await page.evaluate(() => state.location==='town' && !state.field && state.player.townCoins===30 && state.player.name==='新しい推し' && state.town.x===7 && state.town.y===10), '新しい冒険で町・フィールドの状態が初期化されません。');
 
     assert(!failedResponses.length, `読み込み失敗:\n${failedResponses.join('\n')}`);
     assert(!runtimeErrors.length, `ブラウザ実行エラー:\n${runtimeErrors.join('\n')}`);
-    console.log('ブラウザ検査 OK: タイトル / あらすじ / 町・メイド喫茶・休憩 / 1F・2F往復 / 宝箱 / 通常戦闘 / メニュー');
+    console.log('ブラウザ検査 OK: タイトル / あらすじ / 町・メイド喫茶・休憩 / フィールド・橋・入場確認 / 1F・2F往復 / 宝箱 / 通常戦闘 / メニュー');
   } finally {
     await browser.close();
     await new Promise(resolve => server.close(resolve));

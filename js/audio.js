@@ -50,7 +50,7 @@ function playBgm(id){
 
 /* ===== マップBGM ===== */
 function playMapBgm(){
-  playBgm(state.location !== 'town' && state.floor === 2 ? 'bgmMap2F' : 'bgmMap1F');
+  playBgm(state.location === 'dungeon' && state.floor === 2 ? 'bgmMap2F' : 'bgmMap1F');
 }
 
 /* ===== 旧WebAudio BGM停止互換 ===== */

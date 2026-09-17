@@ -30,6 +30,7 @@ function getMapContext(){
 const potoroMaidMapImage = new Image();
 potoroMaidMapImage.onload = () => {
   if(state.location === 'town' && typeof drawTown === 'function') drawTown();
+  if(state.location === 'field' && typeof drawField === 'function') drawField();
   if(state.maze?.length && state.player) drawMaze();
 };
 potoroMaidMapImage.src = POTORO_ASSETS.characters[0];

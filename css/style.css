@@ -6,6 +6,7 @@
 .town-wallet{font-size:12px;margin:0;white-space:nowrap;}
 .town-wallet strong{display:block;text-align:right;font-size:24px;color:#ffe48c;}
 #townCanvas{display:block;width:100%;height:auto;aspect-ratio:15/13;image-rendering:pixelated;border:2px solid #8daead;border-radius:4px;background:#398a68;}
+#fieldCanvas{display:block;width:100%;height:auto;aspect-ratio:15/13;image-rendering:pixelated;border:2px solid #8daead;border-radius:4px;background:#398a68;}
 .town-message{font-size:14px;line-height:1.7;min-height:3.4em;margin:16px 0 12px;padding-left:12px;border-left:3px solid #ef96bb;color:#edf4f3;}
 .town-status{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;padding:10px 0;border-top:1px solid #486267;border-bottom:1px solid #486267;font-size:13px;}
 .town-status span:first-child{flex:1 1 120px;color:#ffdd92;font-weight:700;overflow-wrap:anywhere;}
