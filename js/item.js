@@ -514,6 +514,7 @@ async function useItem(kind){
     await damageEnemy(`${item.name}を召喚した！`,damage);
   }
 
+  if(!state.inBattle && !isMapMode()) return;
   if(!isMapMode()){
     tickItemBuffs();
   }

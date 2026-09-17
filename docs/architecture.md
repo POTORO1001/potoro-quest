@@ -19,27 +19,30 @@
 5. `js/assets.js`
 6. `js/loading.js`
 7. `js/audio.js`
-8. `js/ui.js`
-9. `js/opening.js`
-10. `js/ending.js`
-11. `js/scene.js`
-12. `js/magic-learn-compat.js`
-13. `js/battle.js`
-14. `js/enemy.js`
-15. `js/item.js`
-16. `js/map.js`
-17. `js/balance.js`
-18. `js/drop.js`
-19. `js/item-name-rename.js`
-20. `js/event.js`
-21. `js/magic-config.js`
-22. `js/magic.js`
-23. `js/magic-learn-effect.js`
-24. `js/magic-first-strike.js`
-25. `js/magic-level-order.js`
-26. `js/magic-complete.js`
-27. `js/effects.js`
-28. `js/restart-confirm.js`
+8. `js/companion.js`
+9. `js/ui.js`
+10. `js/opening.js`
+11. `js/ending.js`
+12. `js/scene.js`
+13. `js/magic-learn-compat.js`
+14. `js/battle.js`
+15. `js/enemy.js`
+16. `js/item.js`
+17. `js/map.js`
+18. `js/balance.js`
+19. `js/drop.js`
+20. `js/item-name-rename.js`
+21. `js/town.js`
+22. `js/field.js`
+23. `js/event.js`
+24. `js/magic-config.js`
+25. `js/magic.js`
+26. `js/magic-learn-effect.js`
+27. `js/magic-first-strike.js`
+28. `js/magic-level-order.js`
+29. `js/magic-complete.js`
+30. `js/effects.js`
+31. `js/restart-confirm.js`
 
 ## 役割ごとのまとまり
 
@@ -65,9 +68,15 @@
 ### 戦闘
 
 - `battle.js`: プレイヤー行動、敵ターン、敵通常攻撃の最低ダメージ、勝利、ゲームオーバー。
+- `companion.js`: 任意加入の仲間、作戦による自動行動、パーティの生存判定・敵の対象選択、仲間ステータス表示。詳細は `rpg-expansion.md` を参照。
 - `enemy.js`: 敵ごとの特殊行動、初遭遇時の特徴ヒント、特殊行動の予兆設定。`enemySpecialAction` を上書き。
 - `balance.js`: 敵・プレイヤーの難易度調整。
 - `effects.js`: ダメージ、会心、ボス演出、レベルアップなどの演出を上書き・追加。
+
+拡張ブランチでは、敵の通常・特殊行動が受け手を引数で渡します。主人公だけに装備補正を適用し、仲間のHP・TP・状態・防御を分離。
+`playerFlash(member)` と `showDamage(value,'companion')` は仲間の枠に演出を出します。後続の `effects.js` でも受け手を保持してください。
+仲間は敵行動1ラウンドの末尾で1回行動。敵が先手を取るラウンド中に仲間が撃破する場合もあるため、`enemyFirstCheck` はお給仕終了を検出して主人公の行動を打ち切ります。
+ボス勝利時も `winBattle` で `inBattle=false` にしてからエンディングへ遷移し、二重発券・追加攻撃を防ぎます。
 
 ### 装備・報酬・道具
 

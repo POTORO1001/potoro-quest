@@ -246,7 +246,11 @@ async function enemyFirstCheck(){
 
     state.enemyActedFirst = true;
 
-    return state.player.hp <= 0;
+    if(state.player.hp<=0 || !state.inBattle){
+      if(state.inBattle && !isPartyDefeated()) unlockBattleControls();
+      return true;
+    }
+    return false;
   }
 
   return false;

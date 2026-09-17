@@ -213,7 +213,7 @@ showDamage = function(value,target,extraClass,enemyIndex){
     }
   }
 
-  if(target === 'player' && value < 0){
+  if((target === 'player' || target === 'companion') && value < 0){
     showBattleBurst('HEAL', 'heal');
     potoroScreenGlow('heal');
   }
@@ -332,12 +332,12 @@ enemyFlash = function(enemyIndex){
 /* ===== Enhanced Player Flash ===== */
 const _potoroEffectsPlayerFlash = playerFlash;
 
-playerFlash = function(){
-  _potoroEffectsPlayerFlash();
+playerFlash = function(member=state.player){
+  _potoroEffectsPlayerFlash(member);
 
   if(!POTORO_EFFECTS.enabled) return;
 
-  const panel = document.querySelector('.status-panel');
+  const panel = member===state.player ? document.querySelector('.status-panel') : document.getElementById('companionPanel');
   if(panel){
     panel.classList.remove('potoro-player-danger');
     void panel.offsetWidth;

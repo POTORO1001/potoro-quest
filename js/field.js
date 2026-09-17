@@ -57,6 +57,7 @@ function moveFieldPlayer(dx,dy){
 }
 
 function updateFieldStatus(){
+  updateCompanionUI();
   const p=state.player;
   document.getElementById('fieldPlayerName').textContent=`${p.name} Lv.${p.lv}`;
   document.getElementById('fieldHp').textContent=`HP ${p.hp}/${p.maxHp}`;
@@ -133,6 +134,7 @@ function drawField(){
   ctx.fillStyle='#253e48';ctx.fillRect(5*s-4,5*s+8,2*s+6,18);
   ctx.fillStyle='#fff';ctx.font='13px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
   ctx.fillText('お屋敷 →',6*s-1,5*s+17);
+  drawCompanionOnMap(ctx,s,state.field,(x,y)=>!fieldTileBlocked(x,y) && !fieldPlaceAt(x,y));
   drawMapPlayer(ctx,s,state.field);
 }
 

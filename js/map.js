@@ -414,6 +414,7 @@ function drawMaze(){
     mapCtx.fillRect(state.boss.x*size+size*.25,state.boss.y*size+size*.25,size*.5,size*.5);
   }
 
+  drawCompanionOnMap(mapCtx,size,{x:state.player.mapX,y:state.player.mapY},(x,y)=>state.maze[y]?.[x]===0 && isTileVisible(x,y) && !state.chests.some(c=>!c.opened && c.x===x && c.y===y) && !(state.stairs?.x===x && state.stairs?.y===y) && !(state.boss.x===x && state.boss.y===y));
   drawMapPlayer(mapCtx,size);
 
   if(POTORO_FOG_CONFIG.enabled){

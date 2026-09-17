@@ -65,7 +65,7 @@ function townTileBlocked(x,y){
   if(x < 1 || y < 1 || x >= POTORO_TOWN.width-1 || y >= POTORO_TOWN.height-1) return true;
   if(POTORO_TOWN.buildings.some(b => x >= b.x && x < b.x+b.w && y >= b.y && y < b.y+b.h)) return true;
   if(POTORO_TOWN.trees.some(tree => tree.x === x && tree.y === y)) return true;
-  return (x >= 9 && x <= 11 && y >= 9 && y <= 10) || (x === 7 && y === 5) || (x === 6 && y === 6);
+  return (x >= 9 && x <= 11 && y >= 9 && y <= 10) || (x === 7 && y === 5) || (x === 6 && y === 6 && !state.player.companion);
 }
 
 function moveTownPlayer(dx,dy){
@@ -88,6 +88,7 @@ function moveTownPlayer(dx,dy){
 }
 
 function updateTownStatus(){
+  updateCompanionUI();
   const p = state.player;
   document.getElementById('townCoins').textContent = p.townCoins || 0;
   document.getElementById('townPlayerName').textContent = `${p.name} Lv.${p.lv}`;
@@ -142,6 +143,7 @@ function visitTownPlace(id){
       clearPlayerTemporaryState();
       p.buffs = {};
       p.itemBuffs = {};
+      syncCompanionLevel(true);
       updateUI();
       updateTownStatus();
       document.getElementById('townDialogText').textContent = 'ゆっくり休んで、元気が戻った！ HP・TPが全回復し、状態異常も治った。';
@@ -151,7 +153,10 @@ function visitTownPlace(id){
     openTownDialog('メイド喫茶','「いらっしゃいませ！ 探索のおともに、お持ち帰りのお食事はいかがですか？」');
     renderTownCafe();
   }else if(id === 'plaza'){
-    openTownDialog('町の広場','「東の出口から、奥のお屋敷へ向かえるよ。お給仕でいただいたコインは、メイド喫茶で使えるんだって。無理せず、休憩室にも寄ってね。」');
+    openTownDialog('町の広場',state.player.companion
+      ? 'こはるは隣でほほえんだ。「次のお給仕も、一緒に頑張ろうね。疲れたら休憩室に寄っていこう。」'
+      : '「私はこはる。ご主人様たちのお役に立ちたいの。一緒にお給仕に行ってもいい？」');
+    if(!state.player.companion) townDialogAction('一緒にお給仕する',recruitCompanion);
   }else if(id === 'exit'){
     openTownDialog('町の出口','門の向こうに、川沿いの道が続いている。お屋敷へ向かいますか？');
     townDialogAction('郊外へ出発',leaveTownForField);
@@ -238,12 +243,13 @@ function drawTown(){
   [[5,5],[9,7],[8,11],[12,4],[5,10]].forEach(([x,y]) => {
     ctx.fillRect(x*s+9,y*s+10,5,5);ctx.fillRect(x*s+20,y*s+20,5,5);
   });
-  drawMapPlayer(ctx,s,{x:6,y:6});
+  if(!state.player.companion) drawMapPlayer(ctx,s,{x:6,y:6});
   ctx.fillStyle = '#132d33';ctx.fillRect(5*s+17,6*s-14,2*s+13,18);
   ctx.fillStyle = '#fff';ctx.font = '13px sans-serif';ctx.textAlign = 'center';ctx.textBaseline = 'middle';
   ctx.fillText('町の広場',6*s+s/2,6*s-5);
   ctx.fillStyle = '#243943';ctx.fillRect(12*s+1,5*s+4,2*s-3,22);
   ctx.fillStyle = '#fff';ctx.fillText('お屋敷 →',13*s,5*s+15);
+  drawCompanionOnMap(ctx,s,state.town,(x,y)=>!townTileBlocked(x,y) && !townPlaceAt(x,y));
   drawMapPlayer(ctx,s,{x:state.town.x,y:state.town.y});
 }
 

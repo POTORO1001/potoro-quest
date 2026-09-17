@@ -20,6 +20,7 @@
 
 /* ===== Battle UI Update ===== */
 function updateUI(){
+  updateCompanionUI();
   const e = currentEnemy();
   const p = state.player;
 
@@ -254,13 +255,14 @@ function setButtonsDisabled(disabled){
   document
     .querySelectorAll('.command-panel button,.sub-menu-body button,.mini-btn,.sub-btn,.target-panel button')
     .forEach(btn => {
-      if(btn.id !== 'restartBtn') btn.disabled = disabled;
+      if(btn.id !== 'restartBtn') btn.disabled = disabled || (state.player.hp<=0 && !!btn.closest('.command-panel,.sub-menu-body'));
     });
+  updateCompanionUI();
 }
 
 /* ===== Damage Text ===== */
 function showDamage(value,target,extraClass,enemyIndex){
-  const area = target === 'player'
+  const area = target === 'companion' ? document.getElementById('companionPanel') : target === 'player'
     ? document.querySelector('.status-panel')
     : document.querySelector('.enemy-area');
 
@@ -268,7 +270,7 @@ function showDamage(value,target,extraClass,enemyIndex){
 
   const damage = document.createElement('div');
 
-  damage.className = target === 'player'
+  damage.className = target === 'player' || target === 'companion'
     ? 'damage-text player-damage'
     : 'damage-text';
 
@@ -377,10 +379,10 @@ function enemyFlash(enemyIndex){
 }
 
 /* ===== Player Hit Animation ===== */
-function playerFlash(){
+function playerFlash(member=state.player){
   screenShake();
 
-  const panel = document.querySelector('.status-panel');
+  const panel = member===state.player ? document.querySelector('.status-panel') : document.getElementById('companionPanel');
   if(!panel) return;
 
   panel.classList.remove('player-hit');

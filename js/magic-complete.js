@@ -141,6 +141,7 @@
   }
 
   function endPlayerMagicAction(){
+    if(!state.inBattle) return;
     state.enemyActedFirst = false;
     state.busy = false;
     setButtonsDisabled(false);

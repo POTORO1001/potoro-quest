@@ -1223,9 +1223,121 @@ async function main() {
     await page.locator('#startBtn').click();
     assert(await page.evaluate(() => state.location==='town' && !state.field && state.player.townCoins===30 && state.player.name==='新しい推し' && state.town.x===7 && state.town.y===10), '新しい冒険で町・フィールドの状態が初期化されません。');
 
+    await walkTown('plaza');
+    await page.getByRole('button',{name:'一緒にお給仕する',exact:true}).click();
+    assert(await page.evaluate(()=>state.player.companion?.name==='こはる' && state.player.companion.hp===24 && state.player.companion.mp===8),'広場で仲間が加入しません。');
+    const recruitedParty=await page.evaluate(()=>{const c=state.player.companion;recruitCompanion();return state.player.companion===c && partyMembers().length===2;});
+    assert(recruitedParty,'仲間を重複して加入させてしまいます。');
+    await page.locator('#townDialogClose').click();
+    await walkTown('rest');
+    await page.evaluate(()=>{const c=state.player.companion;c.hp=0;c.mp=0;c.status.sleep=2;});
+    await page.getByRole('button',{name:'ひと休みする',exact:true}).click();
+    assert(await page.evaluate(()=>{const c=state.player.companion;return c.hp===c.maxHp && c.mp===c.maxMp && c.status.sleep===0;}),'休憩室で倒れた仲間が回復しません。');
+    await page.locator('#townDialogClose').click();
+    await walkTown('exit');await departTown();
+    assert(await page.evaluate(()=>state.player.companion?.hp===24),'町・フィールドの往復で仲間が失われます。');
+
+    const companionChecks=await page.evaluate(async()=>{
+      const saved={sleep,showCutin,random:Math.random,giveReward,treasureDrop,showEnding,applyEquipmentDamageCut,resistsEquipmentStatus,applyEquipmentStatusTurns};
+      const checks={};
+      try{
+        sleep=()=>Promise.resolve();showCutin=()=>Promise.resolve();Math.random=()=>.5;giveReward=()=>false;treasureDrop=()=>false;
+        const p=state.player,c=p.companion;
+        const prepare=()=>{
+          endBattleToMap();state.busy=false;startBattle(getEnemyById('teiji'),true);syncCompanionLevel(true);
+          p.hp=p.maxHp;p.mp=p.maxMp;p.status={sleep:0,confuse:0,defDown:0};p.guarding=false;
+          const e=state.enemiesInBattle[0];Object.assign(e,{hp:9999,maxHp:9999,def:4,spd:0,exp:0,skill:'',sleepTurns:20});
+          c.strategy='attack';return e;
+        };
+        let e=prepare();state.enemiesInBattle.push({...e});
+        await playerAction('guard');
+        checks.oncePerRound=9999-e.hp===6 && state.enemiesInBattle[1].hp===9999 && state.enemyTurnCount===1;
+        c.strategy='heal';p.hp=1;const playerTp=p.mp,allyTp=c.mp;
+        await enemyTurn();checks.heal=p.hp===13 && c.mp===allyTp-3 && p.mp===playerTp;
+        c.mp=0;p.hp=1;const before=e.hp;await enemyTurn();
+        checks.noTpFallback=e.hp<before && c.mp===0 && p.hp===1;
+        e=prepare();c.strategy='guard';await enemyTurn();checks.guard=c.guarding;
+        let gearCalls=0;applyEquipmentDamageCut=damage=>{gearCalls++;return 1;};
+        document.querySelector('.status-panel').classList.remove('player-hit');
+        document.getElementById('companionPanel').classList.remove('player-hit');
+        const allyHp=c.hp;e.atk=20;await enemyBasicAttack(e,{recipient:c});
+        checks.separateDefense=c.hp===allyHp-6 && gearCalls===0;
+        checks.correctHitPanel=document.getElementById('companionPanel').classList.contains('player-hit') && !document.querySelector('.status-panel').classList.contains('player-hit');
+        const heroHp=p.hp;await enemyBasicAttack(e,{recipient:p});
+        checks.heroEquipment=p.hp===heroHp-1 && gearCalls===1;
+        resistsEquipmentStatus=()=>true;applyEquipmentStatusTurns=()=>1;
+        checks.specialTargetMatrix=true;
+        for(const skill of ['drain','double','confuse','powerup','sleep','drunk','defdown','lost','rush_pressure','spend','runaway','weight','boss']){
+          c.hp=c.maxHp=1000;c.mp=100;c.status={sleep:0,confuse:0,defDown:0};c.guarding=false;
+          e.skill=skill;e.pendingSpecial=skill;const hero=JSON.stringify({hp:p.hp,mp:p.mp,status:p.status});gearCalls=0;
+          const used=await enemySpecialAction(e,c);
+          checks.specialTargetMatrix=checks.specialTargetMatrix && used && gearCalls===0 && hero===JSON.stringify({hp:p.hp,mp:p.mp,status:p.status});
+        }
+        c.lv=0;syncCompanionLevel(true);
+        e.skill='sleep';e.pendingSpecial='sleep';await enemySpecialAction(e,c);
+        checks.separateSleep=c.status.sleep===2 && p.status.sleep===0;
+        e.skill='spend';e.pendingSpecial='spend';const oldHeroTp=p.mp,oldAllyTp=c.mp;
+        await enemySpecialAction(e,c);checks.separateTp=c.mp<oldAllyTp && p.mp===oldHeroTp;
+        c.hp=c.maxHp;c.status={sleep:1,confuse:0,defDown:0};const oldEnemyHp=e.hp;
+        await companionTurn();checks.sleepSkip=e.hp===oldEnemyHp && c.status.sleep===0;
+        c.status.confuse=1;Math.random=()=>0;await companionTurn();
+        checks.confuseSkip=e.hp===oldEnemyHp && c.status.confuse===0;
+        Math.random=()=>.5;e=prepare();c.hp=0;
+        checks.aliveTargetOnly=chooseEnemyPartyTarget()===p;
+        const soloHp=e.hp;await companionTurn();checks.downSkip=e.hp===soloHp;
+        c.hp=c.maxHp;p.hp=0;checks.allyTargetOnly=chooseEnemyPartyTarget()===c;
+        await continueCompanionBattle();checks.heroDownContinues=state.inBattle && !state.busy && e.hp<9999 && !document.getElementById('companionContinueBtn').disabled;
+        e=prepare();e.spd=999;e.sleepTurns=20;e.hp=1;
+        await playerAction('attack');
+        checks.fastEnemyAllyVictory=!state.inBattle && e.hp===0 && !state.busy && document.getElementById('mapScreen').classList.contains('hidden')===false;
+        e=prepare();e.boss=true;e.spd=999;e.hp=1;let endings=0;
+        showEnding=async()=>{endings++;state.busy=true;};
+        const bossCoins=p.townCoins;await playerAction('attack');
+        checks.bossAllyVictory=endings===1 && !state.inBattle && e.hp===0 && p.townCoins===bossCoins;
+        checks.allActionsEndLocked=true;
+        for(const action of ['guard','sleep','aura','tea']){
+          e=prepare();e.boss=true;e.hp=1;endings=0;
+          showEnding=async()=>{endings++;state.busy=true;hideElement('battleScreen');hideElement('mapScreen');showElement('endingScreen');};
+          if(action==='guard') await playerAction('guard');
+          else if(action==='tea'){p.items.tea=1;p.mp=0;await useItem('tea');}
+          else{p.lv=5;p.mp=100;await useMagic(action);}
+          checks[`endLocked_${action}`]=endings===1 && !state.inBattle && state.busy;
+          checks.allActionsEndLocked=checks.allActionsEndLocked && checks[`endLocked_${action}`];
+          hideElement('endingScreen');p.lv=1;
+        }
+        showEnding=saved.showEnding;
+        e=prepare();p.hp=0;c.hp=1;e.sleepTurns=0;e.atk=999;
+        await continueCompanionBattle();checks.partyGameOver=isPartyDefeated() && !state.inBattle && !document.getElementById('gameOverOverlay').classList.contains('hidden');
+        hideGameOverScreen();state.busy=false;
+        p.lv=3;syncCompanionLevel(true);
+        checks.growth=c.lv===3 && c.maxHp===32 && c.maxMp===12 && c.atk===10 && c.def===11;
+        p.hp=p.maxHp;
+        return checks;
+      }finally{
+        sleep=saved.sleep;showCutin=saved.showCutin;Math.random=saved.random;giveReward=saved.giveReward;treasureDrop=saved.treasureDrop;showEnding=saved.showEnding;
+        applyEquipmentDamageCut=saved.applyEquipmentDamageCut;resistsEquipmentStatus=saved.resistsEquipmentStatus;applyEquipmentStatusTurns=saved.applyEquipmentStatusTurns;
+        endBattleToMap();state.busy=false;updateCompanionUI();
+      }
+    });
+    assert(Object.values(companionChecks).every(Boolean),`2人パーティの検査に失敗: ${JSON.stringify(companionChecks)}`);
+    await page.evaluate(()=>{startBattle(getEnemyById('teiji'),true);state.busy=false;updateUI();});
+    await page.locator('#companionStrategy').selectOption('heal');
+    assert(await page.evaluate(()=>state.player.companion.strategy)==='heal','作戦の選択が反映されません。');
+    if(process.env.POTORO_TEST_SCREENSHOT){
+      await page.waitForTimeout(1500);
+      for(const width of [320,390,1280]){
+        await page.setViewportSize({width,height:844});
+        await page.screenshot({path:path.join(root,'test-results',`party-battle-${width}.png`),fullPage:true});
+        assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'仲間のお給仕画面が横にはみ出します。');
+      }
+    }
+    await page.evaluate(()=>{endBattleToMap();showTitleScreen();});
+    await page.locator('#startBtn').click();
+    assert(await page.evaluate(()=>!state.player.companion && partyMembers().length===1),'新しい冒険に前の仲間が残ります。');
+
     assert(!failedResponses.length, `読み込み失敗:\n${failedResponses.join('\n')}`);
     assert(!runtimeErrors.length, `ブラウザ実行エラー:\n${runtimeErrors.join('\n')}`);
-    console.log('ブラウザ検査 OK: タイトル / あらすじ / 町・メイド喫茶・休憩 / フィールド・橋・入場確認 / 1F・2F往復 / 宝箱 / 通常戦闘 / メニュー');
+    console.log('ブラウザ検査 OK: タイトル / あらすじ / 町・フィールド / 1F・2F往復 / 宝箱 / お給仕・装備 / 仲間加入・作戦・全敵特殊攻撃対象・勝敗');
   } finally {
     await browser.close();
     await new Promise(resolve => server.close(resolve));

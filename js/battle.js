@@ -17,7 +17,8 @@
 
 /* ===== Battle Unlock ===== */
 function unlockBattleControls(){
-  if(state.player && state.player.hp <= 0) return;
+  if(isPartyDefeated()) return;
+  if(!state.inBattle && !isMapMode()) return;
 
   state.enemyActedFirst = false;
   state.busy = false;
@@ -40,7 +41,9 @@ async function playerStatusCheck(){
     await sleep(800);
     await enemyTurn();
 
-    if(s.sleep <= 0){
+    if(!state.inBattle) return false;
+
+    if(s.sleep <= 0 && state.player.hp>0){
       setMessage(`${state.player.name} は目を覚ました！`);
       updateUI();
       await sleep(650);
@@ -60,7 +63,9 @@ async function playerStatusCheck(){
       await sleep(800);
       await enemyTurn();
 
-      if(s.confuse <= 0){
+      if(!state.inBattle) return false;
+
+      if(s.confuse <= 0 && state.player.hp>0){
         setMessage(`${state.player.name} は気持ちを整えた！`);
         updateUI();
         await sleep(650);
@@ -296,6 +301,7 @@ async function enemyTurn(){
   if(!attackers.length) return;
 
   for(const e of attackers){
+    if(e.hp<=0 || !state.inBattle) continue;
     if(e.stunTurns && e.stunTurns > 0){
       e.stunTurns--;
       setMessage(`${e.name} はひるんで動けない！`);
@@ -331,7 +337,9 @@ async function enemyTurn(){
       }
     }
 
-    if(await enemySpecialAction(e)){
+    const recipient=chooseEnemyPartyTarget();
+    if(!recipient) return;
+    if(await enemySpecialAction(e,recipient)){
       updateUI();
       await sleep(850);
 
@@ -340,12 +348,7 @@ async function enemyTurn(){
         return;
       }
 
-      if(p.hp <= 0){
-        setMessage(`${p.name} は たおれてしまった…`);
-        await sleep(900);
-        showGameOver();
-        return;
-      }
+      if(await announcePartyMemberDown(recipient)) return;
 
       continue;
     }
@@ -354,14 +357,9 @@ async function enemyTurn(){
       ? prepareEnemySpecialIntent(e)
       : false;
 
-    await enemyBasicAttack(e);
+    await enemyBasicAttack(e,{recipient});
 
-    if(p.hp <= 0){
-      setMessage(`${p.name} は たおれてしまった…`);
-      await sleep(900);
-      showGameOver();
-      return;
-    }
+    if(await announcePartyMemberDown(recipient)) return;
 
     if(preparedSpecial){
       setMessage(getEnemySpecialWarning(e));
@@ -371,6 +369,7 @@ async function enemyTurn(){
   }
 
   p.guarding = false;
+  if(p.companion) p.companion.guarding=false;
   const openingEnded = (state.enemyTurnCount || 0) === 0;
   state.enemyTurnCount = (state.enemyTurnCount || 0) + 1;
   if(openingEnded && equipmentEffectValue('firstTurnSpdBonus') > 0){
@@ -378,6 +377,7 @@ async function enemyTurn(){
     updateUI();
     await sleep(550);
   }
+  await companionTurn();
 }
 
 /* ===== Enemy Basic Attack ===== */
@@ -409,16 +409,16 @@ function potoroEnemyDamageFloorReport(){
 }
 
 async function enemyBasicAttack(e, options){
-  const p = state.player;
   const opts = options || {};
+  const p = opts.recipient || state.player;
 
-  let damage = calculateEnemyBasicDamage(e);
+  let damage = calculateEnemyBasicDamage(e,battleMemberDefense(p));
   const isCritical = Math.random() < 0.08;
 
   if(isCritical) damage = Math.floor(damage*2);
   if(p.guarding) damage = Math.max(1,Math.floor(damage/2));
   if(typeof applyEquipmentDamageCut === 'function'){
-    damage = applyEquipmentDamageCut(damage);
+    damage = battleMemberDamageCut(p,damage);
   }
 
   if(!opts.skipIntro){
@@ -433,12 +433,12 @@ async function enemyBasicAttack(e, options){
       : `${p.name} に ${damage} ダメージ！`
   );
 
-  showDamage(damage,'player',isCritical ? 'enemy-critical-text' : null);
+  showDamage(damage,battleMemberDamageTarget(p),isCritical ? 'enemy-critical-text' : null);
 
   if(isCritical) criticalFlash();
 
   seHit();
-  playerFlash();
+  playerFlash(p);
   updateUI();
 
   await sleep(isCritical ? 1050 : 850);
@@ -540,6 +540,7 @@ async function winBattle(){
     p.baseTalk += 2;
     p.hp = p.maxHp;
     p.mp = p.maxMp;
+    syncCompanionLevel(true);
 
     const learnedMagicName = typeof checkMagicLearnOnLevelUp === 'function'
       ? checkMagicLearnOnLevelUp()
@@ -564,6 +565,7 @@ async function winBattle(){
   }
 
   if(hasBoss){
+    state.inBattle = false;
     await showEnding();
     return;
   }

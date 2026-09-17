@@ -271,6 +271,7 @@ useMagic = async function(kind){
     return _potoroOriginalUseMagic(kind);
   }
 
+  if(!state.inBattle) return;
   state.enemyActedFirst = false;
   state.busy = false;
   setButtonsDisabled(false);
