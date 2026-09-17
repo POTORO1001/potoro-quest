@@ -104,6 +104,34 @@ async function main() {
     await page.locator('#startBtn').click();
     await page.locator('#mapScreen').waitFor({ state: 'visible' });
 
+    await page.waitForFunction(() => potoroMaidMapImage.complete && potoroMaidMapImage.naturalWidth > 0);
+    const maidSprite = await page.evaluate(() => {
+      const canvas = document.createElement('canvas');
+      canvas.width = canvas.height = 120;
+      const ctx = canvas.getContext('2d');
+      drawMapPlayer(ctx,40);
+      const data = ctx.getImageData(40,40,40,40).data;
+      let visible = 0;
+      let white = 0;
+      let transparent = 0;
+      for(let i=0;i<data.length;i+=4){
+        if(data[i+3] > 0) visible++;
+        else transparent++;
+        if(data[i+3] > 0 && data[i] > 180 && data[i+1] > 180 && data[i+2] > 180) white++;
+      }
+      return {visible,white,transparent,smoothing:ctx.imageSmoothingEnabled,preloaded:getImageAssets().some(src => src.includes('maid-map.png'))};
+    });
+    assert(maidSprite.visible > 100 && maidSprite.white > 10 && maidSprite.transparent > 100, 'メイドの画像が空白・不透明背景付き、または制服の白が描画されません。');
+    assert(maidSprite.smoothing && maidSprite.preloaded, '画像描画後にCanvas設定が戻らないか、プリロード対象になっていません。');
+    if(process.env.POTORO_TEST_SCREENSHOT){
+      fs.mkdirSync(path.join(root,'test-results'),{recursive:true});
+      for(const width of [320,390,1280]){
+        await page.setViewportSize({width,height:844});
+        await page.locator('#mapScreen').screenshot({path:path.join(root,'test-results',`maid-map-${width}.png`)});
+      }
+      await page.setViewportSize({width:390,height:844});
+    }
+
     const firstFloor = await page.evaluate(() => ({
       player: getPlayerSnapshot(),
       map: getMapSnapshot(),

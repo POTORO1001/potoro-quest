@@ -27,6 +27,34 @@ function getMapContext(){
 }
 
 /* ===== Maze Generate ===== */
+const potoroMaidMapImage = new Image();
+potoroMaidMapImage.onload = () => {
+  if(state.maze?.length && state.player) drawMaze();
+};
+potoroMaidMapImage.src = POTORO_ASSETS.characters[0];
+
+function drawMapPlayer(ctx,size){
+  const x = state.player.mapX * size;
+  const y = state.player.mapY * size;
+  ctx.save();
+  if(potoroMaidMapImage.complete && potoroMaidMapImage.naturalWidth > 0){
+    const height = size;
+    const width = height * potoroMaidMapImage.naturalWidth / potoroMaidMapImage.naturalHeight;
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(potoroMaidMapImage,x + (size-width)/2,y,width,height);
+  }else{
+    // Keep a recognizable maid marker if the image is not available.
+    ctx.fillStyle = '#16161b';
+    ctx.fillRect(x+size*.25,y+size*.2,size*.5,size*.65);
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(x+size*.25,y+size*.13,size*.5,size*.14);
+    ctx.fillRect(x+size*.35,y+size*.55,size*.3,size*.25);
+    ctx.fillStyle = '#ffd0ad';
+    ctx.fillRect(x+size*.35,y+size*.3,size*.3,size*.2);
+  }
+  ctx.restore();
+}
+
 function generateRandomMaze(){
   const maze = Array.from({length:MAZE_H}, () => Array(MAZE_W).fill(1));
   function carve(x,y){
@@ -384,10 +412,7 @@ function drawMaze(){
     mapCtx.fillRect(state.boss.x*size+size*.25,state.boss.y*size+size*.25,size*.5,size*.5);
   }
 
-  mapCtx.fillStyle = '#ff7ad6';
-  mapCtx.beginPath();
-  mapCtx.arc(state.player.mapX*size+size/2,state.player.mapY*size+size/2,size*.32,0,Math.PI*2);
-  mapCtx.fill();
+  drawMapPlayer(mapCtx,size);
 
   if(POTORO_FOG_CONFIG.enabled){
     const gradient = mapCtx.createRadialGradient(

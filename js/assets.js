@@ -28,6 +28,7 @@
 
 /* ===== Asset List ===== */
 const POTORO_ASSETS = {
+  characters: ['img/characters/maid-map.png?v=maid-map-v1'],
   enemies: [
     'img/enemies/teiji.png?v=enemy-canvas-v1',
     'img/enemies/kuufuku.png?v=enemy-canvas-v1',
@@ -62,6 +63,7 @@ const POTORO_ASSETS = {
 /* ===== Asset Helpers ===== */
 function getImageAssets(){
   return [
+    ...POTORO_ASSETS.characters,
     ...POTORO_ASSETS.enemies,
     ...POTORO_ASSETS.backgrounds
   ];
