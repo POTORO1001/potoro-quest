@@ -33,7 +33,7 @@
 .map-head{flex-wrap:wrap;}
 .party-summary{font-size:13px;line-height:1.7;color:#cce6df;border-left:3px solid #88cbbb;padding-left:10px;overflow-wrap:anywhere;}
 .companion-panel{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:14px 0;padding:14px 4px;border-top:1px solid #88cbbb;border-bottom:1px solid #88cbbb;position:relative;}
-.companion-panel img{object-fit:contain;image-rendering:pixelated;filter:hue-rotate(140deg);flex:none;}
+.companion-panel img{object-fit:contain;image-rendering:pixelated;flex:none;}
 .companion-info{flex:1 1 140px;min-width:0;}
 .companion-info h2{margin:0 0 6px;font-size:17px;color:#dcf7e9;overflow-wrap:anywhere;}
 .companion-vitals{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:14px;}

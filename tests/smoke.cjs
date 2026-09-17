@@ -1323,6 +1323,16 @@ async function main() {
     await page.evaluate(()=>{startBattle(getEnemyById('teiji'),true);state.busy=false;updateUI();});
     await page.locator('#companionStrategy').selectOption('heal');
     assert(await page.evaluate(()=>state.player.companion.strategy)==='heal','作戦の選択が反映されません。');
+    assert(await page.locator('#companionPanel img').evaluate(img=>getComputedStyle(img).filter)==='none','仲間の肌色を変えるフィルターが残っています。');
+    assert(await page.evaluate(()=>{
+      const canvas=document.createElement('canvas');canvas.width=64;canvas.height=64;
+      const ctx=canvas.getContext('2d');
+      drawCompanionOnMap(ctx,32,{x:0,y:0},()=>true);
+      const companionPixels=ctx.getImageData(0,32,32,24).data;
+      ctx.clearRect(0,0,64,64);drawMapPlayer(ctx,32,{x:0,y:1});
+      const originalPixels=ctx.getImageData(0,32,32,24).data;
+      return companionPixels.every((value,index)=>value===originalPixels[index]);
+    }),'マップの仲間の顔・衣装の色が元画像と違います。');
     if(process.env.POTORO_TEST_SCREENSHOT){
       await page.waitForTimeout(1500);
       for(const width of [320,390,1280]){

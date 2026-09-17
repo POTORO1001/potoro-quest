@@ -114,7 +114,13 @@ function drawCompanionOnMap(ctx,size,position,canStand){
   if(!state.player.companion) return;
   const spot=[[0,1],[-1,0],[1,0],[0,-1]].map(([dx,dy])=>({x:position.x+dx,y:position.y+dy})).find(p=>canStand(p.x,p.y));
   if(!spot) return;
-  ctx.save();ctx.filter='hue-rotate(140deg)';drawMapPlayer(ctx,size,spot);ctx.restore();
+  ctx.save();
+  ctx.fillStyle='#88cbbb';
+  ctx.beginPath();
+  ctx.ellipse((spot.x+.5)*size,(spot.y+.9)*size,size*.3,size*.08,0,0,Math.PI*2);
+  ctx.fill();
+  drawMapPlayer(ctx,size,spot);
+  ctx.restore();
 }
 
 function bindCompanionEvents(){
