@@ -1,4 +1,35 @@
 *{box-sizing:border-box;}
+.town-screen{width:min(100% - 24px,600px);margin:24px auto;color:#f4f8fa;letter-spacing:0;}
+.town-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;}
+.town-head h1{font-size:26px;margin:3px 0 0;}
+.town-kicker{font-size:12px;color:#b5d8d0;}
+.town-wallet{font-size:12px;margin:0;white-space:nowrap;}
+.town-wallet strong{display:block;text-align:right;font-size:24px;color:#ffe48c;}
+#townCanvas{display:block;width:100%;height:auto;aspect-ratio:15/13;image-rendering:pixelated;border:2px solid #8daead;border-radius:4px;background:#398a68;}
+.town-message{font-size:14px;line-height:1.7;min-height:3.4em;margin:16px 0 12px;padding-left:12px;border-left:3px solid #ef96bb;color:#edf4f3;}
+.town-status{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;padding:10px 0;border-top:1px solid #486267;border-bottom:1px solid #486267;font-size:13px;}
+.town-status span:first-child{flex:1 1 120px;color:#ffdd92;font-weight:700;overflow-wrap:anywhere;}
+.town-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:14px;}
+.town-actions button,.town-dialog button{border:1px solid #697e91;border-radius:6px;color:#fff;background:#344655;min-height:44px;padding:8px 12px;font:inherit;font-size:14px;}
+.town-actions button:first-child{background:#a83269;border-color:#d68bae;}
+.town-screen button:disabled,.town-dialog button:disabled{opacity:.5;cursor:default;}
+.town-screen button:focus-visible,.town-dialog button:focus-visible{outline:3px solid #ffdd92;outline-offset:3px;}
+.town-dpad{width:164px!important;grid-template-columns:repeat(3,48px)!important;gap:10px!important;margin:18px auto!important;}
+.town-dpad button{width:48px;height:48px;min-height:48px;border:1px solid #7690a0!important;border-radius:6px!important;background:#334c5d!important;color:#fff;font-size:19px;}
+.town-dialog{position:fixed;inset:0;z-index:700;background:rgba(6,16,22,.8);display:flex;align-items:center;justify-content:center;padding:16px;}
+.town-dialog-box{width:min(100%,440px);max-height:calc(100dvh - 32px);overflow:auto;background:#f5f8fa;color:#253740;border:2px solid #b984a2;border-radius:8px;padding:20px;}
+.town-dialog header{display:flex;justify-content:space-between;align-items:center;gap:12px;}
+.town-dialog h2{font-size:20px;margin:0;color:#843559;overflow-wrap:anywhere;}
+.town-dialog header button{width:44px;min-width:44px;padding:0;font-size:24px;}
+#townDialogText{font-size:15px;line-height:1.8;margin:16px 0;overflow-wrap:anywhere;}
+#townDialogBody{display:grid;gap:10px;}
+.town-cafe-wallet{font-size:14px;margin:0;color:#42575d;}
+.town-dialog .town-shop-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5px 10px;text-align:left;background:#fff;color:#253740;border-color:#acbdc4;}
+.town-shop-item strong{font-size:15px;color:#82355b;}
+.town-shop-item span{font-size:12px;align-self:center;}
+.town-shop-item small{grid-column:1/-1;font-size:13px;color:#456169;}
+@media(max-width:360px){.town-dialog-box{padding:14px;}.town-dialog .town-shop-item{grid-template-columns:minmax(0,1fr);}.town-shop-item small{grid-column:1;}}
+.map-head{flex-wrap:wrap;}
 html,body{
 margin:0;
 min-height:100%;

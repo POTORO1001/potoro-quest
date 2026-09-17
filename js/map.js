@@ -29,13 +29,14 @@ function getMapContext(){
 /* ===== Maze Generate ===== */
 const potoroMaidMapImage = new Image();
 potoroMaidMapImage.onload = () => {
+  if(state.location === 'town' && typeof drawTown === 'function') drawTown();
   if(state.maze?.length && state.player) drawMaze();
 };
 potoroMaidMapImage.src = POTORO_ASSETS.characters[0];
 
-function drawMapPlayer(ctx,size){
-  const x = state.player.mapX * size;
-  const y = state.player.mapY * size;
+function drawMapPlayer(ctx,size,position={x:state.player.mapX,y:state.player.mapY}){
+  const x = position.x * size;
+  const y = position.y * size;
   ctx.save();
   if(potoroMaidMapImage.complete && potoroMaidMapImage.naturalWidth > 0){
     const height = size;
@@ -455,6 +456,7 @@ function normalizeMoveDelta(dx,dy){
 }
 
 function movePlayer(dx,dy){
+  if(document.getElementById('mapScreen')?.classList.contains('hidden')) return;
   if(state.inBattle || state.busy) return;
   if(!potoroCanMoveOneStep()) return;
 

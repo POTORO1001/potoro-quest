@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>ポ・トロクエスト（スマホ版）</title>
-<link rel="stylesheet" href="css/style.css?v=independent-stun-v1">
+<link rel="stylesheet" href="css/style.css?v=town-v1">
   
 <style>
   #enemyStats,
@@ -147,11 +147,41 @@
   </div>
 </section>
 
+<main id="townScreen" class="town-screen hidden">
+  <header class="town-head">
+    <div><span class="town-kicker">憩いの町</span><h1>ポ・トロ</h1></div>
+    <p class="town-wallet">お給仕コイン <strong id="townCoins">30</strong></p>
+  </header>
+  <canvas id="townCanvas" width="480" height="416" aria-label="ポ・トロの町。お屋敷、休憩室、メイド喫茶、広場、東の出口。"></canvas>
+  <p id="townMessage" class="town-message" aria-live="polite"></p>
+  <div class="town-status"><span id="townPlayerName"></span><span id="townHp"></span><span id="townTp"></span></div>
+  <div class="town-actions">
+    <button id="townVisitBtn" type="button" disabled>訪ねる</button>
+    <button id="townEquipBtn" type="button">装備</button>
+    <button id="townSoundBtn" type="button">音: ON</button>
+  </div>
+  <div class="dpad town-dpad">
+    <div></div><button data-town-move="up" aria-label="上へ">▲</button><div></div>
+    <button data-town-move="left" aria-label="左へ">◀</button>
+    <button data-town-move="down" aria-label="下へ">▼</button>
+    <button data-town-move="right" aria-label="右へ">▶</button>
+  </div>
+</main>
+
+<section id="townDialog" class="town-dialog hidden" role="dialog" aria-modal="true" aria-labelledby="townDialogTitle">
+  <div class="town-dialog-box">
+    <header><h2 id="townDialogTitle"></h2><button id="townDialogClose" type="button" aria-label="閉じる">×</button></header>
+    <p id="townDialogText" aria-live="polite"></p>
+    <div id="townDialogBody"></div>
+  </div>
+</section>
+
 <main id="mapScreen" class="map-screen hidden">
   <section class="map-panel">
     <div class="map-head">
       <h2>お屋敷探索 <span id="floorLabel" class="floor-label">1F</span></h2>
       <button id="newMapBtn" class="mini-btn">マップ再生成</button>
+      <button id="mapTownBtn" class="mini-btn" type="button">町へ戻る</button>
     </div>
 
     <canvas id="mapCanvas" width="352" height="352"></canvas>
@@ -292,24 +322,25 @@ function closeHelp(){
 }
 </script>
 <script src="js/game.js?v=equipment-effects-v1"></script>
-<script src="js/core.js?v=equipment-effects-v1"></script>
+<script src="js/core.js?v=town-v1"></script>
 <script src="js/data.js?v=expanded-enemies-v1"></script>
 <script src="js/equipment.js?v=equipment-effects-v1"></script>
 <script src="js/assets.js?v=maid-map-v1"></script>
 <script src="js/loading.js"></script>
-<script src="js/audio.js"></script>
+<script src="js/audio.js?v=town-v1"></script>
 <script src="js/ui.js?v=combo-damage-display-v1"></script>
-<script src="js/opening.js?v=enemy-hints-v1"></script>
+<script src="js/opening.js?v=town-v1"></script>
 <script src="js/ending.js?v=normal-ending-v1"></script>
-<script src="js/scene.js?v=equipment-effects-v1"></script>
+<script src="js/scene.js?v=town-v1"></script>
 <script src="js/magic-learn-compat.js"></script>
-<script src="js/battle.js?v=attack-hit-display-v1"></script>
+<script src="js/battle.js?v=town-v1"></script>
 <script src="js/enemy.js?v=enemy-intent-v1"></script>
 <script src="js/item.js?v=equipment-effects-v1"></script>
-<script src="js/map.js?v=maid-map-v1"></script>
+<script src="js/map.js?v=town-v1"></script>
 <script src="js/balance.js?v=juuatsu-tune-v1"></script>
 <script src="js/drop.js?v=treasure-equip-choice-v1"></script>
 <script src="js/item-name-rename.js?v=term-tp-service-v1"></script>
+<script src="js/town.js?v=town-v1"></script>
 <script src="js/event.js"></script>
 <script src="js/magic-config.js?v=magic-tp-desc-v1"></script>
 <script src="js/magic.js?v=area-hit-display-v1"></script>

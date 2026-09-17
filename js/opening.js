@@ -48,7 +48,7 @@ function startGame(){
 
   setButtonsDisabled(false);
   setupFloor(1);
-  playMapBgm();
+  startTown();
 }
 
 /* ===== リセット ===== */

@@ -515,11 +515,12 @@ async function winBattle(){
     ? applyEquipmentExpBonus(baseExp)
     : baseExp;
   const hasBoss = defeatedEnemies.some(e => e.boss);
+  const townCoins = awardTownCoins(defeatedEnemies);
 
   victoryEffect();
   seVictory();
 
-  setMessage(`ご主人様たちを いやした！ EXP ${totalExp} 獲得！`);
+  setMessage(`ご主人様たちを いやした！ EXP ${totalExp} 獲得！${townCoins ? ` お給仕コイン ${townCoins}枚！` : ''}`);
 
   p.exp += totalExp;
   updateUI();

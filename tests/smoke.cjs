@@ -102,7 +102,107 @@ async function main() {
 
     await page.locator('#oshiNameInput').fill('テスト推し');
     await page.locator('#startBtn').click();
+    await page.locator('#townScreen').waitFor({state:'visible'});
+    assert(await page.locator('#townCoins').textContent() === '30', '町の初期コインが表示されません。');
+    const townSpawn = await page.evaluate(() => ({...state.town}));
+    await page.keyboard.press('ArrowUp');
+    const townMoved = await page.evaluate(() => ({...state.town}));
+    assert(townMoved.x === townSpawn.x && townMoved.y === townSpawn.y-1, '町のキーボード移動が1歩ずつ動きません。');
+    await page.waitForTimeout(150);
+    await page.locator('[data-town-move="down"]').click();
+    assert(await page.evaluate(() => state.town.y) === townSpawn.y, '町の十字キーが動きません。');
+    const walkTown = async id => page.evaluate(id => {
+      const target = [...POTORO_TOWN.buildings,...POTORO_TOWN.places].find(place => place.id === id).door;
+      const start = {x:state.town.x,y:state.town.y,path:[]};
+      const queue = [start];
+      const seen = new Set([`${start.x},${start.y}`]);
+      let path;
+      while(queue.length){
+        const current = queue.shift();
+        if(current.x === target.x && current.y === target.y){path = current.path;break;}
+        for(const [dx,dy] of [[0,-1],[1,0],[0,1],[-1,0]]){
+          const x=current.x+dx,y=current.y+dy,key=`${x},${y}`;
+          if(seen.has(key) || townTileBlocked(x,y)) continue;
+          const place = townPlaceAt(x,y);
+          if(place && place.id !== id) continue;
+          seen.add(key);queue.push({x,y,path:[...current.path,[dx,dy]]});
+        }
+      }
+      if(!path) throw new Error(`町の${id}へ到達できません。`);
+      for(const [dx,dy] of path){state.town.lastMoveAt=0;moveTownPlayer(dx,dy);}
+      return {x:state.town.x,y:state.town.y,busy:state.busy};
+    },id);
+    await walkTown('manor');
+    assert(await page.locator('#townDialogTitle').textContent() === 'お屋敷「ポ・トロ」', 'お屋敷で会話が開きません。');
+    const blockedDialogMove = await page.evaluate(() => {
+      const before = {...state.town};moveTownPlayer(1,0);
+      return before.x === state.town.x && before.y === state.town.y;
+    });
+    assert(blockedDialogMove, '会話中にも町を歩けてしまいます。');
+    await page.keyboard.press('Escape');
+    assert(await page.locator('#townDialog').isHidden(), '会話をEscapeで閉じられません。');
+    assert(await page.evaluate(() => {state.town.lastMoveAt=0;moveTownPlayer(0,-1);return state.town.y===4;}), '建物を通り抜けてしまいます。');
+    await walkTown('cafe');
+    const cafeBefore = await page.evaluate(() => ({coins:state.player.townCoins,count:state.player.items.omurice}));
+    await page.locator('[data-town-buy="omurice"]').click();
+    const cafeAfter = await page.evaluate(() => ({coins:state.player.townCoins,count:state.player.items.omurice}));
+    assert(cafeAfter.coins === cafeBefore.coins-10 && cafeAfter.count === cafeBefore.count+1, 'メイド喫茶の購入でコイン・所持数が更新されません。');
+    const cafeGuards = await page.evaluate(() => {
+      const p=state.player;
+      p.townCoins=0;renderTownCafe();
+      const noCoinsDisabled=document.querySelector('[data-town-buy="omurice"]').disabled;
+      const before=p.items.omurice;buyTownItem('omurice');
+      const noCoinsSafe=p.items.omurice===before && p.townCoins===0;
+      p.townCoins=30;p.items.omurice=getItemLimit('omurice');renderTownCafe();
+      const fullDisabled=document.querySelector('[data-town-buy="omurice"]').disabled;
+      buyTownItem('omurice');
+      const fullSafe=p.items.omurice===getItemLimit('omurice') && p.townCoins===30;
+      p.items.omurice=2;renderTownCafe();updateTownStatus();
+      return {noCoinsDisabled,noCoinsSafe,fullDisabled,fullSafe};
+    });
+    assert(Object.values(cafeGuards).every(Boolean), 'コイン不足または所持上限でも購入できてしまいます。');
+    if(process.env.POTORO_TEST_SCREENSHOT){
+      fs.mkdirSync(path.join(root,'test-results'),{recursive:true});
+      await page.screenshot({path:path.join(root,'test-results','town-cafe-mobile.png'),fullPage:true});
+    }
+    await page.locator('#townDialogClose').click();
+    await walkTown('rest');
+    await page.evaluate(() => {
+      const p=state.player;p.hp=1;p.mp=0;p.status={sleep:2,confuse:2,defDown:2};
+      p.buffs={kiraAura:3};p.itemBuffs={turns:3,atk:5};
+    });
+    await page.getByRole('button',{name:'ひと休みする',exact:true}).click();
+    assert(await page.evaluate(() => {
+      const p=state.player;
+      return p.hp===p.maxHp && p.mp===p.maxMp && Object.values(p.status).every(value=>value===0) && !Object.keys(p.buffs).length && !Object.keys(p.itemBuffs).length;
+    }), '休憩室でHP・TP・状態が回復しません。');
+    await page.locator('#townDialogClose').click();
+    await walkTown('plaza');
+    assert(await page.locator('#townDialogTitle').textContent() === '町の広場', '広場で会話が開きません。');
+    await page.locator('#townDialogClose').click();
+    if(process.env.POTORO_TEST_SCREENSHOT){
+      for(const width of [320,390,1280]){
+        await page.setViewportSize({width,height:844});
+        await page.locator('#townScreen').screenshot({path:path.join(root,'test-results',`town-${width}.png`)});
+        assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), '町画面に横方向のはみ出しがあります。');
+      }
+      await page.setViewportSize({width:390,height:844});
+    }
+    await walkTown('exit');
+    await page.getByRole('button',{name:'お屋敷へ出発',exact:true}).click();
     await page.locator('#mapScreen').waitFor({ state: 'visible' });
+    const dungeonBeforeTown = await page.evaluate(() => {
+      state.chests[0].opened=true;
+      return JSON.stringify({maze:state.maze,chests:state.chests,floor:state.floor,x:state.player.mapX,y:state.player.mapY});
+    });
+    await page.locator('#mapTownBtn').click();
+    await page.locator('.potoro-map-choice-primary').click();
+    await page.locator('#townScreen').waitFor({state:'visible'});
+    await page.locator('#townVisitBtn').click();
+    await page.getByRole('button',{name:'お屋敷へ出発',exact:true}).click();
+    const dungeonAfterTown = await page.evaluate(() => JSON.stringify({maze:state.maze,chests:state.chests,floor:state.floor,x:state.player.mapX,y:state.player.mapY}));
+    assert(dungeonBeforeTown===dungeonAfterTown, '町との往復で探索位置・マップ・宝箱が失われます。');
+    await page.evaluate(() => {state.chests[0].opened=false;});
 
     await page.waitForFunction(() => potoroMaidMapImage.complete && potoroMaidMapImage.naturalWidth > 0);
     const maidSprite = await page.evaluate(() => {
@@ -284,6 +384,13 @@ async function main() {
     assert(secondFloor.chests.length === 8, '2Fの宝箱数が8個ではありません。');
     assert(secondFloor.boss.x >= 0 && secondFloor.boss.y >= 0, '2Fにボスが配置されていません。');
     assert(secondFloor.goalIsInAllowedZone, '2Fのボスが指定された3領域の外に配置されています。');
+
+    const secondFloorBeforeTown = await page.evaluate(() => JSON.stringify(getMapSnapshot()));
+    await page.locator('#mapTownBtn').click();
+    await page.locator('.potoro-map-choice-primary').click();
+    await page.locator('#townVisitBtn').click();
+    await page.getByRole('button',{name:'お屋敷へ出発',exact:true}).click();
+    assert(await page.evaluate(() => JSON.stringify(getMapSnapshot())) === secondFloorBeforeTown, '町との往復で2Fの探索状態が失われます。');
 
     await page.evaluate(() => {
       setupFloor(1);
@@ -1025,9 +1132,33 @@ async function main() {
       assert(result.victimHp === 0 && result.survivorHp === 9999 && result.targetIndex === 0, '撃破後の対象切替やHP処理が変わっています。');
     }
 
+    const coinRewards = await page.evaluate(async () => {
+      const saved = {sleep,giveReward,treasureDrop,showEnding,coins:state.player.townCoins};
+      try {
+        sleep=()=>Promise.resolve();giveReward=()=>false;treasureDrop=()=>false;showEnding=async()=>{};
+        const results=[];
+        for(const ids of [['teiji','maigo'],['boss'],['tamachan']]){
+          const party=ids.map(id=>({...getEnemyById(id),exp:0,hp:0}));
+          state.enemiesInBattle=party;state.enemy=party[0];state.lastDefeatedEnemy=null;state.inBattle=true;
+          const before=state.player.townCoins || 0;
+          await winBattle();
+          results.push((state.player.townCoins || 0)-before);
+        }
+        return results;
+      } finally {
+        sleep=saved.sleep;giveReward=saved.giveReward;treasureDrop=saved.treasureDrop;showEnding=saved.showEnding;
+        endBattleToMap();state.player.townCoins=saved.coins;
+      }
+    });
+    assert(JSON.stringify(coinRewards)==='[10,0,0]', '通常敵のコイン報酬、BOSS・たまちゃんの報酬除外が変わっています。');
+
+    await page.evaluate(() => {showTitleScreen();document.getElementById('oshiNameInput').value='新しい推し';});
+    await page.locator('#startBtn').click();
+    assert(await page.evaluate(() => state.location==='town' && state.player.townCoins===30 && state.player.name==='新しい推し' && state.town.x===7 && state.town.y===10), '新しい冒険で町の状態が初期化されません。');
+
     assert(!failedResponses.length, `読み込み失敗:\n${failedResponses.join('\n')}`);
     assert(!runtimeErrors.length, `ブラウザ実行エラー:\n${runtimeErrors.join('\n')}`);
-    console.log('ブラウザ検査 OK: タイトル / あらすじ / 1F・2F / 宝箱 / 通常戦闘 / メニュー');
+    console.log('ブラウザ検査 OK: タイトル / あらすじ / 町・メイド喫茶・休憩 / 1F・2F往復 / 宝箱 / 通常戦闘 / メニュー');
   } finally {
     await browser.close();
     await new Promise(resolve => server.close(resolve));

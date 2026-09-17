@@ -79,6 +79,8 @@ function getBattleOpeningMessage(){
 
 /* ===== お給仕開始 ===== */
 function startBattle(enemy,fromMap){
+  state.location = 'dungeon';
+  hideElement('townScreen');
   playBgm(
     (enemy && enemy.helper)
       ? 'bgmTamachan'
@@ -263,6 +265,8 @@ function hideGameOverScreen(){
 
 /* ===== 主要画面リセット補助 ===== */
 function hideAllGameScreens(){
+  hideElement('townScreen');
+  hideElement('townDialog');
   hideElement('battleScreen');
   hideElement('mapScreen');
   hideElement('endingScreen');
